@@ -67,6 +67,21 @@ body {
 </head>
 <body>
 
+<!-- 비밀번호 모달 -->
+<div id="pwModal" style="position:fixed;inset:0;background:#030712;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:32px;">
+  <div style="font-size:11px;color:#64748b;letter-spacing:0.12em;margin-bottom:4px;">QLD + SSO</div>
+  <div style="font-size:20px;font-weight:700;color:#f1f5f9;margin-bottom:32px;">전략 대시보드</div>
+  <input id="pwInput" type="password" placeholder="비밀번호 입력"
+    style="width:100%;max-width:280px;background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px 16px;color:#e2e8f0;font-size:15px;font-family:inherit;outline:none;text-align:center;margin-bottom:12px;"
+    onkeydown="if(event.key==='Enter')checkPW()">
+  <button onclick="checkPW()"
+    style="width:100%;max-width:280px;background:#1d4ed8;border:none;border-radius:10px;color:#e2e8f0;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;">
+    입력
+  </button>
+  <div id="pwErr" style="color:#f87171;font-size:12px;margin-top:10px;display:none;">비밀번호가 틀렸습니다</div>
+</div>
+
+<div id="appWrap" style="display:none;">
 <div class="header">
   <div>
     <div class="header-sub">QLD + SSO</div>
@@ -144,6 +159,8 @@ body {
     F&amp;G: CNN 공개 API (불안정 시 N/A 표시)
   </div>
 </div>
+
+</div><!-- /appWrap -->
 
 <script>
 const CFG = {
@@ -369,7 +386,63 @@ function renderRules(){
 }
 
 loadSettings(); renderStatic(null); renderRules();
-window.addEventListener("load", fetchAll);
+
+// 비밀번호 체크
+const PW_HASH = "79d9d8f002c1c955fa0d21eeaaf2ebf03c3a878d2fdcb6e78d915b3ed81cc886";
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+async function checkPW() {
+  const val = document.getElementById("pwInput").value;
+  const hash = await sha256(val);
+  const stored = localStorage.getItem("qld_pw_hash") || PW_HASH;
+  if (hash === stored) {
+    document.getElementById("pwModal").style.display = "none";
+    document.getElementById("appWrap").style.display = "block";
+    fetchAll();
+  } else {
+    document.getElementById("pwErr").style.display = "block";
+    document.getElementById("pwInput").value = "";
+    document.getElementById("pwInput").focus();
+  }
+}
+
+// 저장된 인증 확인
+(async () => {
+  const session = sessionStorage.getItem("qld_auth");
+  if (session === "1") {
+    document.getElementById("pwModal").style.display = "none";
+    document.getElementById("appWrap").style.display = "block";
+    window.addEventListener("load", fetchAll);
+  } else {
+    document.getElementById("pwInput").focus();
+  }
+})();
+
+document.getElementById("pwInput").addEventListener("focus", () => {
+  document.getElementById("pwErr").style.display = "none";
+});
+
+// 인증 성공 시 세션 저장
+const _origCheck = checkPW;
+window.checkPW = async function() {
+  const val = document.getElementById("pwInput").value;
+  const hash = await sha256(val);
+  const stored = localStorage.getItem("qld_pw_hash") || PW_HASH;
+  if (hash === stored) {
+    sessionStorage.setItem("qld_auth", "1");
+    document.getElementById("pwModal").style.display = "none";
+    document.getElementById("appWrap").style.display = "block";
+    fetchAll();
+  } else {
+    document.getElementById("pwErr").style.display = "block";
+    document.getElementById("pwInput").value = "";
+    document.getElementById("pwInput").focus();
+  }
+};
 </script>
 </body>
 </html>

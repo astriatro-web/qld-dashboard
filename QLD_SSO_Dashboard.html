@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>QLD+SSO 전략 대시보드</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #030712; color: #e2e8f0;
+  font-family: 'DM Mono', 'Courier New', monospace;
+  min-height: 100vh; max-width: 480px; margin: 0 auto;
+  padding-bottom: 48px;
+}
+.header { padding: 18px 16px 0; display: flex; justify-content: space-between; align-items: center; }
+.header-sub { font-size: 10px; color: #64748b; letter-spacing: 0.12em; margin-bottom: 2px; }
+.header-title { font-size: 17px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; }
+.last-updated { padding: 4px 16px 12px; font-size: 10px; color: #475569; }
+.btn-refresh { background: #1d4ed8; border: none; border-radius: 8px; color: #e2e8f0; padding: 9px 16px; font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+.btn-refresh:disabled { background: #1e293b; cursor: default; }
+.btn-refresh:active { transform: scale(0.96); }
+.tabs { display: flex; padding: 0 16px; gap: 4px; margin-bottom: 14px; }
+.tab { flex: 1; padding: 8px 4px; font-size: 12px; background: #0f172a; color: #64748b; border: 1px solid #1e293b; border-radius: 8px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.tab.active { background: #1e40af; color: #bfdbfe; border-color: #3b82f6; font-weight: 700; }
+.panel { padding: 0 16px; display: none; }
+.panel.active { display: block; }
+.card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+.card-label { font-size: 10px; color: #64748b; letter-spacing: 0.1em; margin-bottom: 8px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.mc { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; }
+.mc-label { font-size: 10px; color: #64748b; margin-bottom: 4px; }
+.mc-value { font-size: 17px; font-weight: 700; }
+.mc-sub { font-size: 10px; color: #475569; margin-top: 2px; }
+.action-list { list-style: none; }
+.action-item { font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.action-item:last-child { border-bottom: none; }
+.progress-info { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 5px; }
+.progress-track { height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+.progress-fill { height: 100%; background: #3b82f6; border-radius: 2px; transition: width 0.6s; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-item .sl { font-size: 10px; color: #475569; }
+.stat-item .sv { font-size: 12px; font-weight: 600; color: #cbd5e1; margin-top: 2px; }
+.rebuy-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1e293b; font-size: 11px; color: #64748b; }
+.rebuy-row:last-child { border-bottom: none; }
+.dots { display: flex; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot.on { background: #16a34a; } .dot.off { background: #dc2626; } .dot.na { background: #475569; }
+.setting-group { margin-bottom: 12px; }
+.setting-label { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+.setting-input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #e2e8f0; font-size: 13px; font-family: inherit; outline: none; }
+.setting-input:focus { border-color: #3b82f6; }
+.btn-toggle { width: 100%; border-radius: 8px; padding: 10px 16px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.btn-toggle.off { background: #0f172a; border: 1px solid #334155; color: #64748b; }
+.btn-toggle.on  { background: #450a0a; border: 1px solid #dc2626; color: #f87171; }
+.rules-section { margin-bottom: 12px; border-radius: 8px; overflow: hidden; }
+.rules-header { padding: 9px 14px; font-size: 11px; font-weight: 700; color: #e2e8f0; }
+.rules-row:nth-child(odd)  { background: #0f172a; }
+.rules-row:nth-child(even) { background: #0d1424; }
+.rules-row { padding: 10px 14px; border-left: 3px solid; }
+.rl { font-size: 10px; color: #64748b; font-weight: 600; margin-bottom: 3px; }
+.rd { font-size: 12px; color: #cbd5e1; line-height: 1.5; }
+.info-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; font-size: 11px; color: #475569; line-height: 1.7; margin-top: 8px; }
+.err-box { background: #450a0a; border: 1px solid #dc2626; border-radius: 10px; padding: 12px; font-size: 12px; color: #f87171; margin-bottom: 10px; white-space: pre-line; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 14px; height: 14px; border: 2px solid #334155; border-top-color: #60a5fa; border-radius: 50%; animation: spin 0.7s linear infinite; display:inline-block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-sub">QLD + SSO</div>
+    <div class="header-title">전략 대시보드</div>
+  </div>
+  <button class="btn-refresh" id="btnRefresh" onclick="fetchAll()">
+    <span id="btnIcon">↻</span> 새로고침
+  </button>
+</div>
+<div class="last-updated" id="lastUpdated">새로고침을 눌러 데이터를 불러오세요</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
+  <button class="tab" onclick="switchTab('rules')">매매원칙</button>
+  <button class="tab" onclick="switchTab('settings')">설정</button>
+</div>
+
+<div class="panel active" id="panel-dashboard">
+  <div id="errBox" class="err-box" style="display:none;"></div>
+  <div id="modeCard" class="card">
+    <div class="card-label">현재 모드</div>
+    <div id="modeName" style="font-size:20px;font-weight:700;color:#94a3b8;">—</div>
+  </div>
+  <div class="card" id="actionCard" style="display:none;">
+    <div class="card-label">오늘의 액션</div>
+    <ul class="action-list" id="actionList"></ul>
+  </div>
+  <div class="grid2">
+    <div class="mc"><div class="mc-label">QLD</div><div class="mc-value" id="v-qld" style="color:#94a3b8;">—</div><div class="mc-sub" id="v-ma120">MA120 —</div></div>
+    <div class="mc"><div class="mc-label">이격률 / DD</div><div class="mc-value" id="v-gap" style="color:#94a3b8;">—</div><div class="mc-sub" id="v-dd">DD —</div></div>
+    <div class="mc"><div class="mc-label">SSO / SPY</div><div class="mc-value" id="v-sso" style="color:#94a3b8;">—</div><div class="mc-sub" id="v-spy">SPY —</div></div>
+    <div class="mc"><div class="mc-label">SGOV / 환율</div><div class="mc-value" id="v-sgov" style="color:#94a3b8;">—</div><div class="mc-sub" id="v-usdkrw">환율 —</div></div>
+  </div>
+  <div class="grid2">
+    <div class="mc"><div class="mc-label">Fear &amp; Greed</div><div class="mc-value" id="v-fg" style="color:#94a3b8;">—</div><div class="mc-sub" id="v-fglabel">—</div></div>
+    <div class="mc"><div class="mc-label">VIX</div><div class="mc-value" id="v-vix" style="color:#94a3b8;">—</div><div class="mc-sub" id="v-vixlabel">—</div></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><div class="card-label">골든크로스 (MA20 vs MA60)</div><div id="v-gc" style="font-size:13px;font-weight:600;color:#94a3b8;">—</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;color:#475569;">MA20 / MA60</div><div id="v-ma2060" style="font-size:12px;color:#475569;">— / —</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-label">탄환 현황</div>
+    <div class="progress-info"><span id="v-elapsed">0일차</span><span id="v-remain">잔여 —일</span></div>
+    <div class="progress-track"><div class="progress-fill" id="v-progress" style="width:0%"></div></div>
+    <div class="stat-grid">
+      <div class="stat-item"><div class="sl">일일 투입금</div><div class="sv" id="v-daily">—</div></div>
+      <div class="stat-item"><div class="sl">탄환 총액</div><div class="sv" id="v-total">—</div></div>
+      <div class="stat-item"><div class="sl">오늘 매수 주수</div><div class="sv" id="v-shares">—</div></div>
+      <div class="stat-item"><div class="sl">익절현금풀</div><div class="sv" id="v-profit">—</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-label">재투입 조건 (DD / F&amp;G / VIX)</div>
+    <div id="rebuyRows"></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-rules"></div>
+
+<div class="panel" id="panel-settings">
+  <div class="setting-group"><div class="setting-label">매수 시작일</div><input class="setting-input" type="text" id="s-entryDate" placeholder="2026-02-06" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">탄환 총액 (원)</div><input class="setting-input" type="number" id="s-totalBullet" placeholder="149100000" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">월 투자금액 (원)</div><input class="setting-input" type="number" id="s-monthlyBudget" placeholder="10000000" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">익절현금풀 잔액 (원)</div><input class="setting-input" type="number" id="s-profitCash" placeholder="0" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">골든크로스 연속일 (휩소방지)</div><input class="setting-input" type="number" id="s-gcCount" placeholder="0" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">재투입 조건 연속일 (휩소방지)</div><input class="setting-input" type="number" id="s-rebuyCount" placeholder="0" oninput="saveSettings()"></div>
+  <div class="setting-group" style="margin-bottom:16px;"><div class="setting-label">B-3 생존모드 플래그</div><button class="btn-toggle off" id="btnPlanb3" onclick="togglePlanb3()">⚪ B-3 비활성</button></div>
+  <div class="info-box">
+    설정값은 브라우저에 자동 저장됩니다.<br>
+    탄환 총액 = SGOV 290주 청산금 + 연간 월급(1,000만 × 12)<br>
+    데이터: Yahoo Finance (무료, API 키 불필요)<br>
+    F&amp;G: CNN 공개 API (불안정 시 N/A 표시)
+  </div>
+</div>
+
+<script>
+const CFG = {
+  SPLIT_DAYS:75, PLANB3_DAYS:120,
+  QLD_RATIO:0.70, SSO_RATIO:0.30,
+  SELL_GAP:[0.25,0.45,0.65], SELL_PCT:[0.08,0.08,0.09],
+  REBUY_DD:[0.20,0.35,0.50], REBUY_FG:[45,30,20],
+  REBUY_VIX:[20,20,20], REBUY_PCT:[0.30,0.35,0.35],
+  RESUME_FG:35, WS_RESUME:2, WS_REBUY:2,
+};
+
+const RULES = [
+  {title:"탄환 구조",color:"#1e3a5f",items:[["탄환 총액","SGOV 290주 청산금 + 연간 월급(×12) ÷ 75일 = 일일 균등 투입"],["재원 전환","SGOV 소진 후 월급으로 자연 전환"],["진입일","SGOV + SPYM 전량 청산 (손실 무관, 당일/익일)"]]},
+  {title:"매수 모드",color:"#14532d",items:[["비율","QLD 70% + SSO 30%"],["기간","75일 균등 분할 매수"],["재개","120일선 하회 즉시 재개"],["B-2","75~120일: 월 1,000만원만 투입. SSO→QLD 전환 없음"],["B-3","120일+: 매수 동결 / QLD:SSO=5:5 / SGOV 100%"],["B-3 재개","골든크로스 2일 연속 AND F&G≥35 (VIX 참고만)"]]},
+  {title:"대기 모드",color:"#1e3a5f",items:[["기본","SGOV 70% + SPYM 30%"],["SPYM 조건","QLD 120일선 AND SPY 200일선 동시 위일 때만"],["SPYM 청산","120일선 하회 즉시 전량 청산"]]},
+  {title:"익절",color:"#7c2d12",items:[["1단계","+25% → 포지션 8% 매도 (QLD 우선) → 익절현금 SGOV 보관"],["2단계","+45% → 추가 8% 매도"],["3단계","+65% → 추가 9% 매도"],["한도","최대 25% 현금화. 75% 절대 유지"]]},
+  {title:"재투입 (3중 AND)",color:"#14532d",items:[["1차","고점 -20% AND F&G≤45 AND VIX≥20 → 2일 연속 → 30%"],["2차","고점 -35% AND F&G≤30 AND VIX≥20 → 2일 연속 → 35%"],["3차","고점 -50% AND F&G≤20 AND VIX≥20 → 2일 연속 → 35%"],["18개월 룰","18개월 내 미충족 시 F&G/VIX 무시 강제 투입"]]},
+  {title:"휩소 방지",color:"#374151",items:[["신규 진입","120일선 하회 3일 연속 확인 후 매수 시작"],["B-3 재개","골든크로스 2일 연속 확인 후 재개"],["재투입","F&G AND VIX 조건 2일 연속 충족 후 실행"]]},
+  {title:"리밸런싱 & 리셋",color:"#374151",items:[["리밸런싱","분기 말 or QLD:SSO ±5% 이탈. 매수모드 중엔 비율 조정만"],["연간 리셋","매년 1월: 7:3 원복 / 잔여 익절현금→SGOV / 탄환 점검"]]},
+];
+
+// 설정
+let S = {};
+function loadSettings() {
+  try { S = JSON.parse(localStorage.getItem("qld_s10")||"{}"); } catch { S={}; }
+  S.entryDate     = S.entryDate     || "2026-02-06";
+  S.totalBullet   = S.totalBullet   || 149100000;
+  S.monthlyBudget = S.monthlyBudget || 10000000;
+  S.profitCash    = S.profitCash    || 0;
+  S.gcCount       = S.gcCount       || 0;
+  S.rebuyCount    = S.rebuyCount    || 0;
+  S.planb3Active  = S.planb3Active  || false;
+  document.getElementById("s-entryDate").value     = S.entryDate;
+  document.getElementById("s-totalBullet").value   = S.totalBullet;
+  document.getElementById("s-monthlyBudget").value = S.monthlyBudget;
+  document.getElementById("s-profitCash").value    = S.profitCash;
+  document.getElementById("s-gcCount").value       = S.gcCount;
+  document.getElementById("s-rebuyCount").value    = S.rebuyCount;
+  updatePlanb3Btn();
+}
+function saveSettings() {
+  S.entryDate     = document.getElementById("s-entryDate").value.trim();
+  S.totalBullet   = parseFloat(document.getElementById("s-totalBullet").value)||149100000;
+  S.monthlyBudget = parseFloat(document.getElementById("s-monthlyBudget").value)||10000000;
+  S.profitCash    = parseFloat(document.getElementById("s-profitCash").value)||0;
+  S.gcCount       = parseInt(document.getElementById("s-gcCount").value)||0;
+  S.rebuyCount    = parseInt(document.getElementById("s-rebuyCount").value)||0;
+  localStorage.setItem("qld_s10", JSON.stringify(S));
+  renderStatic(null);
+}
+function togglePlanb3() { S.planb3Active=!S.planb3Active; localStorage.setItem("qld_s10",JSON.stringify(S)); updatePlanb3Btn(); }
+function updatePlanb3Btn() {
+  const btn=document.getElementById("btnPlanb3");
+  btn.className=S.planb3Active?"btn-toggle on":"btn-toggle off";
+  btn.textContent=S.planb3Active?"🔴 B-3 활성 (탭하여 해제)":"⚪ B-3 비활성";
+}
+function switchTab(id) {
+  document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",["dashboard","rules","settings"][i]===id));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("panel-"+id).classList.add("active");
+}
+
+// 유틸
+const f=(n,d=1)=>(n!=null&&!isNaN(n))?parseFloat(n).toFixed(d):"N/A";
+const fKRW=n=>n?`₩${Math.round(n/10000).toLocaleString()}만`:"₩0";
+const fgLbl=v=>v<=20?"극단공포":v<=40?"공포":v<=60?"중립":v<=80?"탐욕":"극단탐욕";
+const vixLbl=v=>!v?"N/A":v>=40?"극단공포":v>=30?"높은공포":v>=20?"주의":"안정";
+const fgClr=v=>v<=25?"#f87171":v<=45?"#fbbf24":v<=60?"#94a3b8":"#4ade80";
+const vixClr=v=>v>=30?"#f87171":v>=20?"#fbbf24":"#4ade80";
+const elapsed=()=>!S.entryDate?0:Math.max(0,Math.floor((new Date()-new Date(S.entryDate))/86400000));
+function setText(id,text,color){const el=document.getElementById(id);if(!el)return;el.textContent=text;if(color)el.style.color=color;}
+
+// 구글 스프레드시트 웹앱으로 데이터 조회 (CORS 없음)
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyy6Oq4sVV9FOKE5IeHLruLm9YT6ms4tXGgWb6U6wzFnYipcJja9-hxrA4TZPRvIjka/exec";
+
+let MD = null;
+
+async function fetchAll() {
+  const btn  = document.getElementById("btnRefresh");
+  const icon = document.getElementById("btnIcon");
+  btn.disabled = true;
+  icon.innerHTML = '<span class="spinner"></span>';
+  document.getElementById("errBox").style.display = "none";
+
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "GET",
+      mode: "cors",
+      redirect: "follow",
+    });
+    if (!res.ok) throw new Error("서버 응답 오류: " + res.status);
+    const d = await res.json();
+
+    if (!d.qld || d.qld === 0) throw new Error("QLD 데이터 없음 — 스프레드시트 B1 수식을 확인해주세요");
+
+    MD = {
+      qld:      d.qld,
+      qldHigh:  d.high52 || d.qld,
+      sso:      d.sso,
+      spy:      d.spy,
+      sgov:     d.sgov,
+      vix:      d.vix,
+      usdkrw:   d.usdkrw || 1350,
+      fg:       d.fg || null,
+      ma20:     d.ma20,
+      ma60:     d.ma60,
+      ma120:    d.ma120,
+      ma200spy: d.ma200spy,
+    };
+
+    renderDashboard(MD);
+    document.getElementById("lastUpdated").textContent =
+      new Date().toLocaleTimeString("ko-KR") + " 업데이트";
+
+  } catch(e) {
+    console.error(e);
+    const eb = document.getElementById("errBox");
+    eb.style.display = "block";
+    eb.textContent = "조회 실패: " + e.message + "\n\n구글 스프레드시트 웹앱 URL을 확인해주세요.";
+  }
+
+  btn.disabled = false;
+  icon.textContent = "↻";
+}
+
+// 모드 판정
+function determineMode(d){
+  const belowMA=d.ma120?d.qld<d.ma120:null;
+  const gap=d.ma120?(d.qld-d.ma120)/d.ma120:null;
+  const gc=d.ma20&&d.ma60?d.ma20>d.ma60:null;
+  const dd=d.qldHigh?(d.qldHigh-d.qld)/d.qldHigh:0;
+  const el=elapsed(); const rem=Math.max(0,CFG.SPLIT_DAYS-el);
+  const dw=Math.round(S.totalBullet/CFG.SPLIT_DAYS/10000);
+  const mw=Math.round(S.monthlyBudget/10000);
+  const PC={
+    buy:{bg:"#052e16",bd:"#16a34a",tx:"#4ade80"},
+    planb2:{bg:"#431407",bd:"#ea580c",tx:"#fb923c"},
+    planb3:{bg:"#450a0a",bd:"#dc2626",tx:"#f87171"},
+    resume:{bg:"#052e16",bd:"#16a34a",tx:"#4ade80"},
+    hold:{bg:"#0f172a",bd:"#475569",tx:"#94a3b8"},
+    sell1:{bg:"#422006",bd:"#d97706",tx:"#fbbf24"},
+    sell2:{bg:"#422006",bd:"#d97706",tx:"#fbbf24"},
+    sell3:{bg:"#422006",bd:"#d97706",tx:"#fbbf24"},
+    loading:{bg:"#0f172a",bd:"#475569",tx:"#94a3b8"},
+  };
+  let name,phase,actions=[];
+  if(S.planb3Active||el>=CFG.PLANB3_DAYS){
+    const canResume=gc&&S.gcCount>=CFG.WS_RESUME&&d.fg>=CFG.RESUME_FG;
+    if(canResume){name="B-3 해제 — 재개";phase="resume";actions=[`골든크로스 ${S.gcCount}일 연속 ✓  F&G ${d.fg} ≥ 35 ✓`,"QLD:SSO 5:5 → 7:3 원복","월 적립 SGOV 70% + SPYM 30% 재개","설정: B-3 플래그 OFF / 진입일 리셋"];}
+    else{name="B-3 생존모드";phase="planb3";const miss=[];if(!gc)miss.push("골든크로스 미발생");else if(S.gcCount<CFG.WS_RESUME)miss.push(`골든크로스 ${S.gcCount}일 (2일 필요)`);if(d.fg!=null&&d.fg<CFG.RESUME_FG)miss.push(`F&G ${d.fg} < 35`);actions=["매수 완전 동결","QLD:SSO = 5:5 유지","월 적립 → SGOV 100%",...miss.map(m=>"미충족: "+m)];}
+  }else if(belowMA===false){
+    if(gap>=CFG.SELL_GAP[2]){name="익절 3단계";phase="sell3";actions=[`이격 +${f(gap*100)}%  →  포지션 9% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
+    else if(gap>=CFG.SELL_GAP[1]){name="익절 2단계";phase="sell2";actions=[`이격 +${f(gap*100)}%  →  포지션 8% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
+    else if(gap>=CFG.SELL_GAP[0]){name="익절 1단계";phase="sell1";actions=[`이격 +${f(gap*100)}%  →  포지션 8% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
+    else{name="홀드";phase="hold";actions=[`이격 ${gap!=null?(gap*100).toFixed(1)+"%":"N/A"}  →  홀드 (트리거 +25%)`,`월 적립: SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만`];}
+    if(S.profitCash>0&&S.rebuyCount>=CFG.WS_REBUY){for(let i=CFG.REBUY_DD.length-1;i>=0;i--){if(dd>=CFG.REBUY_DD[i]&&d.fg<=CFG.REBUY_FG[i]&&d.vix>=CFG.REBUY_VIX[i]){actions.push(`재투입 ${i+1}차: 익절현금풀 ${CFG.REBUY_PCT[i]*100}% → QLD 매수`);break;}}}
+  }else if(belowMA===true){
+    if(el>=CFG.SPLIT_DAYS&&el<CFG.PLANB3_DAYS){name="B-2 매수연장";phase="planb2";actions=[`월 ${mw}만원 투입 (QLD 70% + SSO 30%)`,`B-3 전환까지 ${CFG.PLANB3_DAYS-el}일`];}
+    else{name="매수 진행 중";phase="buy";actions=[`QLD 70% + SSO 30%  /  ${el+1}일차 / 75일`,`일일 투입: 약 ${dw}만원`,`잔여 ${rem}일`];}
+  }else{name="데이터 조회 중";phase="loading";actions=["새로고침을 눌러주세요"];}
+  return{name,phase,actions,pc:PC[phase]||PC.loading,gap,dd,elapsed:el,remain:rem};
+}
+
+function renderDashboard(d){
+  const mode=determineMode(d); const pc=mode.pc;
+  const mc=document.getElementById("modeCard");
+  mc.style.background=pc.bg; mc.style.borderColor=pc.bd;
+  setText("modeName",mode.name,pc.tx);
+  const al=document.getElementById("actionList");
+  const ac=document.getElementById("actionCard");
+  al.innerHTML=mode.actions.map(a=>`<li class="action-item" style="color:${pc.tx}">${a}</li>`).join("");
+  ac.style.display="block"; ac.style.borderColor=pc.bd+"40";
+  const maClr=d.ma120?(d.qld<d.ma120?"#4ade80":"#fbbf24"):"#94a3b8";
+  setText("v-qld",`$${f(d.qld,2)}`,maClr);
+  setText("v-ma120",`MA120 ${d.ma120?"$"+f(d.ma120,2):"계산 중"}`);
+  const gap=d.ma120?(d.qld-d.ma120)/d.ma120:null;
+  setText("v-gap",gap!=null?`${gap>=0?"+":""}${f(gap*100)}%`:"N/A",gap==null?"#94a3b8":gap<0?"#4ade80":gap>0.25?"#fbbf24":"#94a3b8");
+  const dd=d.qldHigh?(d.qldHigh-d.qld)/d.qldHigh:0;
+  setText("v-dd",`DD -${f(dd*100)}%`);
+  setText("v-sso",`$${f(d.sso,2)}`);
+  setText("v-spy",`SPY $${f(d.spy,2)}`);
+  setText("v-sgov",`$${f(d.sgov,2)}`);
+  setText("v-usdkrw",`${d.usdkrw?Math.round(d.usdkrw).toLocaleString():"—"}원/USD`);
+  if(d.fg!=null){setText("v-fg",""+d.fg,fgClr(d.fg));setText("v-fglabel",fgLbl(d.fg));}
+  else{setText("v-fg","N/A");setText("v-fglabel","조회 실패");}
+  setText("v-vix",f(d.vix),vixClr(d.vix));
+  setText("v-vixlabel",vixLbl(d.vix));
+  const gc=d.ma20&&d.ma60?d.ma20>d.ma60:null;
+  const gcEl=document.getElementById("v-gc");
+  gcEl.textContent=gc===true?"20 > 60  골든크로스 ✓":gc===false?"20 < 60  데드크로스 ✗":"데이터 수집 중 (20일 후 자동)";
+  gcEl.style.color=gc===true?"#4ade80":gc===false?"#f87171":"#94a3b8";
+  document.getElementById("v-ma2060").textContent=`${d.ma20?"$"+f(d.ma20,1):"—"} / ${d.ma60?"$"+f(d.ma60,1):"—"}`;
+  renderStatic(d);
+  document.getElementById("rebuyRows").innerHTML=CFG.REBUY_DD.map((tdd,i)=>{
+    const ddOk=dd>=tdd,fgOk=d.fg!=null&&d.fg<=CFG.REBUY_FG[i],vixOk=d.vix!=null&&d.vix>=CFG.REBUY_VIX[i];
+    const dc=c=>`<div class="dot ${c}"></div>`;
+    return`<div class="rebuy-row"><span>${i+1}차 -${tdd*100}%&nbsp;&nbsp;F&G≤${CFG.REBUY_FG[i]}&nbsp;&nbsp;VIX≥${CFG.REBUY_VIX[i]}</span><div class="dots">${dc(ddOk?"on":"off")}${dc(fgOk?"on":"off")}${dc(vixOk?"on":"off")}</div></div>`;
+  }).join("");
+}
+
+function renderStatic(d){
+  const el=elapsed(), rem=Math.max(0,CFG.SPLIT_DAYS-el);
+  const daily=Math.round(S.totalBullet/CFG.SPLIT_DAYS);
+  const pct=Math.min(100,el/CFG.SPLIT_DAYS*100);
+  setText("v-elapsed",`${el}일차`); setText("v-remain",`잔여 ${rem}일`);
+  document.getElementById("v-progress").style.width=pct+"%";
+  setText("v-daily",`약 ${Math.round(daily/10000)}만원`);
+  setText("v-total",`${Math.round(S.totalBullet/10000)}만원`);
+  setText("v-profit",fKRW(S.profitCash));
+  if(d&&d.qld&&d.sso&&d.usdkrw){
+    const qS=Math.floor(daily*0.7/(d.qld*d.usdkrw));
+    const sS=Math.floor(daily*0.3/(d.sso*d.usdkrw));
+    setText("v-shares",`QLD ${qS}주 + SSO ${sS}주`);
+  }
+}
+
+function renderRules(){
+  document.getElementById("panel-rules").innerHTML=RULES.map(sec=>`
+    <div class="rules-section">
+      <div class="rules-header" style="background:${sec.color}">${sec.title}</div>
+      ${sec.items.map(([l,d])=>`<div class="rules-row" style="border-left-color:${sec.color}"><div class="rl">${l}</div><div class="rd">${d}</div></div>`).join("")}
+    </div>`).join("");
+}
+
+loadSettings(); renderStatic(null); renderRules();
+window.addEventListener("load", fetchAll);
+</script>
+</body>
+</html>

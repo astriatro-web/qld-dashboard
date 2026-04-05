@@ -149,6 +149,7 @@ body {
   <div class="setting-group"><div class="setting-label">탄환 총액 (원)</div><input class="setting-input" type="number" id="s-totalBullet" placeholder="149100000" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">월 투자금액 (원)</div><input class="setting-input" type="number" id="s-monthlyBudget" placeholder="10000000" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">익절현금풀 잔액 (원)</div><input class="setting-input" type="number" id="s-profitCash" placeholder="0" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">Fear &amp; Greed 수동 입력 (0~100)</div><input class="setting-input" type="number" id="s-fg" placeholder="현재값 입력 (예: 34)" min="0" max="100" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">골든크로스 연속일 (휩소방지)</div><input class="setting-input" type="number" id="s-gcCount" placeholder="0" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">재투입 조건 연속일 (휩소방지)</div><input class="setting-input" type="number" id="s-rebuyCount" placeholder="0" oninput="saveSettings()"></div>
   <div class="setting-group" style="margin-bottom:16px;"><div class="setting-label">B-3 생존모드 플래그</div><button class="btn-toggle off" id="btnPlanb3" onclick="togglePlanb3()">⚪ B-3 비활성</button></div>
@@ -190,6 +191,7 @@ function loadSettings() {
   S.totalBullet   = S.totalBullet   || 149100000;
   S.monthlyBudget = S.monthlyBudget || 10000000;
   S.profitCash    = S.profitCash    || 0;
+  S.fg            = S.fg            || null;
   S.gcCount       = S.gcCount       || 0;
   S.rebuyCount    = S.rebuyCount    || 0;
   S.planb3Active  = S.planb3Active  || false;
@@ -197,6 +199,7 @@ function loadSettings() {
   document.getElementById("s-totalBullet").value   = S.totalBullet;
   document.getElementById("s-monthlyBudget").value = S.monthlyBudget;
   document.getElementById("s-profitCash").value    = S.profitCash;
+  document.getElementById("s-fg").value           = S.fg || "";
   document.getElementById("s-gcCount").value       = S.gcCount;
   document.getElementById("s-rebuyCount").value    = S.rebuyCount;
   updatePlanb3Btn();
@@ -206,6 +209,8 @@ function saveSettings() {
   S.totalBullet   = parseFloat(document.getElementById("s-totalBullet").value)||149100000;
   S.monthlyBudget = parseFloat(document.getElementById("s-monthlyBudget").value)||10000000;
   S.profitCash    = parseFloat(document.getElementById("s-profitCash").value)||0;
+  const fgInput   = document.getElementById("s-fg").value;
+  S.fg            = fgInput !== "" ? parseInt(fgInput) : null;
   S.gcCount       = parseInt(document.getElementById("s-gcCount").value)||0;
   S.rebuyCount    = parseInt(document.getElementById("s-rebuyCount").value)||0;
   localStorage.setItem("qld_s10", JSON.stringify(S));
@@ -264,7 +269,7 @@ async function fetchAll() {
       sgov:     d.sgov,
       vix:      d.vix,
       usdkrw:   d.usdkrw || 1350,
-      fg:       d.fg || null,
+      fg:       d.fg || S.fg || null,  // API 실패 시 수동 입력값 사용
       ma20:     d.ma20,
       ma60:     d.ma60,
       ma120:    d.ma120,

@@ -64,7 +64,7 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner { width: 14px; height: 14px; border: 2px solid #334155; border-top-color: #60a5fa; border-radius: 50%; animation: spin 0.7s linear infinite; display:inline-block; }
 
-/* LOC 주문 카드 */
+/* ── LOC 주문 카드 ── */
 .loc-card { background: #0a1628; border: 1px solid #1e3a5f; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
 .loc-title { font-size: 10px; color: #60a5fa; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 700; }
 .loc-ticker { font-size: 11px; color: #94a3b8; font-weight: 700; margin: 8px 0 4px; letter-spacing: 0.08em; }
@@ -181,7 +181,7 @@ body {
   <div class="setting-group"><div class="setting-label">재투입 조건 연속일 (휩소방지)</div><input class="setting-input" type="number" id="s-rebuyCount" placeholder="0" oninput="saveSettings()"></div>
 
   <!-- LOC 설정 -->
-  <div style="border-top:1px solid #1e293b;margin:16px 0 12px;padding-top:12px;">
+  <div style="border-top:1px solid #1e293b;margin:4px 0 12px;padding-top:12px;">
     <div style="font-size:10px;color:#60a5fa;letter-spacing:0.1em;margin-bottom:10px;font-weight:700;">LOC 주문 설정</div>
     <div class="setting-group"><div class="setting-label">QLD 현재 보유 주수</div><input class="setting-input" type="number" id="s-qldHeld" placeholder="14" oninput="saveSettings()"></div>
     <div class="setting-group"><div class="setting-label">SSO 현재 보유 주수</div><input class="setting-input" type="number" id="s-ssoHeld" placeholder="7" oninput="saveSettings()"></div>
@@ -189,10 +189,9 @@ body {
 
   <div class="setting-group" style="margin-bottom:16px;"><div class="setting-label">B-3 생존모드 플래그</div><button class="btn-toggle off" id="btnPlanb3" onclick="togglePlanb3()">⚪ B-3 비활성</button></div>
   <div class="info-box">
-    설정값은 브라우저에 자동 저장됩니다.<br>
-    탄환 총액 = SGOV 290주 청산금 + 연간 월급(1,000만 × 12)<br>
-    LOC: A주문(종가×1.025) 거의 확실 체결 / B주문(종가×0.990) 유리한 가격<br>
-    데이터: Yahoo Finance (무료, API 키 불필요)<br>
+    설정값은 브라우저에 자동 저장됩니다.  
+    탄환 총액 = SGOV 290주 청산금 + 연간 월급(1,000만 × 12)  
+    데이터: Yahoo Finance (무료, API 키 불필요)  
     F&amp;G: CNN 공개 API (불안정 시 N/A 표시)
   </div>
 </div>
@@ -207,9 +206,6 @@ const CFG = {
   REBUY_DD:[0.20,0.35,0.50], REBUY_FG:[45,30,20],
   REBUY_VIX:[20,20,20], REBUY_PCT:[0.30,0.35,0.35],
   RESUME_FG:35, WS_RESUME:2, WS_REBUY:2,
-  // LOC 배율
-  LOC_A: 1.025,   // 확실 체결
-  LOC_B: 0.990,   // 유리한 가격
 };
 
 const RULES = [
@@ -283,73 +279,46 @@ const vixClr=v=>v>=30?"#f87171":v>=20?"#fbbf24":"#4ade80";
 const elapsed=()=>!S.entryDate?0:Math.max(0,Math.floor((new Date()-new Date(S.entryDate))/86400000));
 function setText(id,text,color){const el=document.getElementById(id);if(!el)return;el.textContent=text;if(color)el.style.color=color;}
 
-// LOC 주문 계산기 렌더링
+// ── LOC 계산기 ──
 function renderLOC(qldPrice, ssoPrice) {
   const container = document.getElementById("loc-body");
   if (!qldPrice || !ssoPrice) {
     container.innerHTML = '<div class="loc-na">시세 조회 후 표시됩니다</div>';
     return;
   }
-
   const qldHeld = S.qldHeld || 14;
   const ssoHeld = S.ssoHeld || 7;
-
-  // 매수 주수: 보유량의 절반 (반올림)
-  const qldBuy  = Math.round(qldHeld / 2);  // 7주
-  const ssoBuy  = Math.round(ssoHeld / 2);  // 4주 (3.5→4)
-
-  // 절반씩 분할
-  const qldA = Math.ceil(qldBuy / 2);   // QLD A주문 (올림)
-  const qldB = Math.floor(qldBuy / 2);  // QLD B주문 (내림)
-  const ssoA = Math.ceil(ssoBuy / 2);   // SSO A주문
-  const ssoB = Math.floor(ssoBuy / 2);  // SSO B주문
-
-  // 가격 계산
-  const qldPriceA = (qldPrice * CFG.LOC_A).toFixed(2);
-  const qldPriceB = (qldPrice * CFG.LOC_B).toFixed(2);
-  const ssoPriceA = (ssoPrice * CFG.LOC_A).toFixed(2);
-  const ssoPriceB = (ssoPrice * CFG.LOC_B).toFixed(2);
-
+  const qldBuy  = Math.round(qldHeld / 2);
+  const ssoBuy  = Math.round(ssoHeld / 2);
+  const qldA = Math.ceil(qldBuy / 2);
+  const qldB = Math.floor(qldBuy / 2);
+  const ssoA = Math.ceil(ssoBuy / 2);
+  const ssoB = Math.floor(ssoBuy / 2);
+  const f2 = n => n.toFixed(2);
   container.innerHTML = `
-    <div class="loc-ticker">QLD  <span style="color:#475569;font-weight:400;">전날종가 $${f(qldPrice,2)} → 매수 ${qldBuy}주</span></div>
+    <div class="loc-ticker">QLD <span style="color:#475569;font-weight:400;">종가 $${f2(qldPrice)} → 매수 ${qldBuy}주</span></div>
     <div class="loc-row type-a">
       <div class="loc-row-label"><span class="tag a">A</span>확실체결 LOC</div>
-      <div class="loc-row-right">
-        <div class="loc-price a">$${qldPriceA}</div>
-        <div class="loc-shares">${qldA}주 · ×${CFG.LOC_A}</div>
-      </div>
+      <div class="loc-row-right"><div class="loc-price a">$${f2(qldPrice*1.025)}</div><div class="loc-shares">${qldA}주 &nbsp;·&nbsp; ×1.025</div></div>
     </div>
     <div class="loc-row type-b">
       <div class="loc-row-label"><span class="tag b">B</span>유리한가격 LOC</div>
-      <div class="loc-row-right">
-        <div class="loc-price b">$${qldPriceB}</div>
-        <div class="loc-shares">${qldB}주 · ×${CFG.LOC_B}</div>
-      </div>
+      <div class="loc-row-right"><div class="loc-price b">$${f2(qldPrice*0.990)}</div><div class="loc-shares">${qldB}주 &nbsp;·&nbsp; ×0.990</div></div>
     </div>
-
     <hr class="loc-divider">
-
-    <div class="loc-ticker">SSO  <span style="color:#475569;font-weight:400;">전날종가 $${f(ssoPrice,2)} → 매수 ${ssoBuy}주</span></div>
+    <div class="loc-ticker">SSO <span style="color:#475569;font-weight:400;">종가 $${f2(ssoPrice)} → 매수 ${ssoBuy}주</span></div>
     <div class="loc-row type-a">
       <div class="loc-row-label"><span class="tag a">A</span>확실체결 LOC</div>
-      <div class="loc-row-right">
-        <div class="loc-price a">$${ssoPriceA}</div>
-        <div class="loc-shares">${ssoA}주 · ×${CFG.LOC_A}</div>
-      </div>
+      <div class="loc-row-right"><div class="loc-price a">$${f2(ssoPrice*1.025)}</div><div class="loc-shares">${ssoA}주 &nbsp;·&nbsp; ×1.025</div></div>
     </div>
     <div class="loc-row type-b">
       <div class="loc-row-label"><span class="tag b">B</span>유리한가격 LOC</div>
-      <div class="loc-row-right">
-        <div class="loc-price b">$${ssoPriceB}</div>
-        <div class="loc-shares">${ssoB}주 · ×${CFG.LOC_B}</div>
-      </div>
+      <div class="loc-row-right"><div class="loc-price b">$${f2(ssoPrice*0.990)}</div><div class="loc-shares">${ssoB}주 &nbsp;·&nbsp; ×0.990</div></div>
     </div>
-
-    <div class="loc-base">A: 종가×1.025 (거의 무조건 체결) &nbsp;|&nbsp; B: 종가×0.990 (눌릴 때 유리)</div>
-  `;
+    <div class="loc-base">A: ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B: ×0.990 눌릴 때 유리</div>`;
 }
 
-// 구글 스프레드시트 웹앱으로 데이터 조회
+// 구글 스프레드시트 웹앱으로 데이터 조회 (CORS 없음)
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyy6Oq4sVV9FOKE5IeHLruLm9YT6ms4tXGgWb6U6wzFnYipcJja9-hxrA4TZPRvIjka/exec";
 
 let MD = null;
@@ -504,7 +473,7 @@ function renderRules(){
 
 loadSettings(); renderStatic(null); renderRules();
 
-// 비밀번호 체크
+// ── 비밀번호 체크 (원본 그대로) ──
 const PW_HASH = "79d9d8f002c1c955fa0d21eeaaf2ebf03c3a878d2fdcb6e78d915b3ed81cc886";
 
 async function sha256(str) {
@@ -512,6 +481,39 @@ async function sha256(str) {
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 
+async function checkPW() {
+  const val = document.getElementById("pwInput").value;
+  const hash = await sha256(val);
+  const stored = localStorage.getItem("qld_pw_hash") || PW_HASH;
+  if (hash === stored) {
+    document.getElementById("pwModal").style.display = "none";
+    document.getElementById("appWrap").style.display = "block";
+    fetchAll();
+  } else {
+    document.getElementById("pwErr").style.display = "block";
+    document.getElementById("pwInput").value = "";
+    document.getElementById("pwInput").focus();
+  }
+}
+
+// 저장된 인증 확인
+(async () => {
+  const session = sessionStorage.getItem("qld_auth");
+  if (session === "1") {
+    document.getElementById("pwModal").style.display = "none";
+    document.getElementById("appWrap").style.display = "block";
+    window.addEventListener("load", fetchAll);
+  } else {
+    document.getElementById("pwInput").focus();
+  }
+})();
+
+document.getElementById("pwInput").addEventListener("focus", () => {
+  document.getElementById("pwErr").style.display = "none";
+});
+
+// 인증 성공 시 세션 저장 (원본 그대로)
+const _origCheck = checkPW;
 window.checkPW = async function() {
   const val = document.getElementById("pwInput").value;
   const hash = await sha256(val);
@@ -527,21 +529,6 @@ window.checkPW = async function() {
     document.getElementById("pwInput").focus();
   }
 };
-
-(async () => {
-  const session = sessionStorage.getItem("qld_auth");
-  if (session === "1") {
-    document.getElementById("pwModal").style.display = "none";
-    document.getElementById("appWrap").style.display = "block";
-    window.addEventListener("load", fetchAll);
-  } else {
-    document.getElementById("pwInput").focus();
-  }
-})();
-
-document.getElementById("pwInput").addEventListener("focus", () => {
-  document.getElementById("pwErr").style.display = "none";
-});
 </script>
 </body>
 </html>

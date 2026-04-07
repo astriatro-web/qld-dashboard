@@ -432,7 +432,7 @@ function determineMode(d){
   const gc=d.ma20&&d.ma60?d.ma20>d.ma60:null;
   const dd=d.qldHigh?(d.qldHigh-d.qld)/d.qldHigh:0;
   const el=elapsed(); const rem=Math.max(0,CFG.SPLIT_DAYS-el);
-  const dw=Math.round(S.totalBullet/CFG.SPLIT_DAYS/10000);
+  const dw=rem>0?Math.round(S.totalBullet/rem/10000):0;
   const mw=Math.round(S.monthlyBudget/10000);
   const PC={
     buy:{bg:"#052e16",bd:"#16a34a",tx:"#4ade80"},
@@ -504,7 +504,7 @@ function renderDashboard(d){
 
 function renderStatic(d){
   const el=elapsed(), rem=Math.max(0,CFG.SPLIT_DAYS-el);
-  const daily=Math.round(S.totalBullet/CFG.SPLIT_DAYS);
+  const daily=rem>0?Math.round(S.totalBullet/rem):0;
   const pct=Math.min(100,el/CFG.SPLIT_DAYS*100);
   setText("v-elapsed",`${el}일차`); setText("v-remain",`잔여 ${rem}일`);
   document.getElementById("v-progress").style.width=pct+"%";

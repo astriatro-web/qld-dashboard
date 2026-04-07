@@ -472,7 +472,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw, mult) {
     <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; A ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B ×0.990 눌릴 때 유리</div>`;
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyy6Oq4sVV9FOKE5IeHLruLm9YT6ms4tXGgWb6U6wzFnYipcJja9-hxrA4TZPRvIjka/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyQJNxlf2GmjWafm46ccNpLLTyqlje4RzbsZIMk_N5_6fHqO0o5JSe-IQKx_uLmZuJVUg/exec";
 let MD = null;
 
 async function fetchAll() {
@@ -597,97 +597,48 @@ async function runWarMonitor() {
   const ssoPrice = MD ? MD.sso : null;
   const usdkrw   = MD ? MD.usdkrw : 1380;
 
-  const strategyContext = `
-현재 전략 상태:
-- 매수 ${el}일차 / 총 ${splitDays()}일 / 잔여 ${rem}일
-- 현재 모드: ${isB2 ? "B-2 연장" : el >= CFG.PLANB3_DAYS ? "B-3 생존" : "정상 매수"}
-- 일일 기본 투입금: 약 ${Math.round(dailyBase/10000)}만원
-- QLD 현재가: ${qldPrice ? "$"+qldPrice.toFixed(2) : "데이터없음"}
-- SSO 현재가: ${ssoPrice ? "$"+ssoPrice.toFixed(2) : "데이터없음"}
-- 환율: ${Math.round(usdkrw)}원
-- VIX: ${MD ? f(MD.vix) : "N/A"}
-- F&G: ${MD ? (MD.fg || S.fg || "N/A") : "N/A"}
-`;
-
-  const prompt = `
-당신은 QLD+SSO 레버리지 ETF 분할매수 전략을 운용하는 투자자의 AI 어시스턴트입니다.
-아래 임무를 수행하세요:
-
-1) https://stockhub.kr 에서 미국-이란 전쟁 관련 최신 뉴스를 확인하세요 (웹 검색 가능)
-2) 전쟁 상황을 다음 5단계 중 하나로 분류하세요:
-   - RED: 인프라 실제 공격 발생 (발전소/교량/원전 등)
-   - ORANGE: 에스컬레이션 (새로운 전선 확대, 걸프국 피격 등)
-   - YELLOW: 데드라인 재연장 / 협상 교착 (가장 일반적 패턴)
-   - GREEN: 휴전 합의 / 종전 선언
-   - GRAY: 관련 정보 없음
-
-3) 반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
-
-{
-  "grade": "YELLOW",
-  "oil_price": "$113",
-  "hormuz": "제한",
-  "nego_status": "교착",
-  "facts": [
-    "트럼프, 4/8 09:00 KST를 최후 데드라인으로 설정 — 4번째 연장",
-    "이란, 45일 휴전안 공식 거부. 영구 종전·제재 해제 요구",
-    "파키스탄 중재 채널 가동 중 — 밴스·아라그치 간접 통화",
-    "테헤란·쿠웨이트·UAE 상호 공습 지속"
-  ],
-  "judgment": "패턴상 데드라인 재연장 가능성 높음. 단 Bridge Day 위협은 이전과 달리 구체적 목표 명시로 질적 차이 있음. 4/8 결과 확인 전까지 정상 매수 유지 권장. 호르무즈 완전 봉쇄 장기화 시 B-3 조기 전환 검토.",
-  "checkpoints": [
-    "4/8 09:00 KST — 트럼프 실제 공격 명령 여부",
-    "파키스탄 중재 결과 공식 발표",
-    "호르무즈 해협 선박 통행 실시간 데이터",
-    "WTI $120 돌파 여부 (고유가 임계점)"
-  ]
-}
-
-${strategyContext}
-
-오늘 날짜: ${new Date().toLocaleDateString("ko-KR")}
-`;
-
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
-        messages: [{ role: "user", content: prompt }]
-      })
+    // GAS가 stockhub.kr fetch + 키워드 분석 후 결과 반환
+    const res = await fetch(GAS_URL + "?action=war", {
+      method: "GET",
+      mode: "cors",
+      redirect: "follow"
     });
+    if (!res.ok) throw new Error("GAS 응답 오류: " + res.status);
+    const result = await res.json();
 
-    const data = await response.json();
-
-    // 텍스트 블록 추출
-    let rawText = "";
-    if (data.content) {
-      for (const block of data.content) {
-        if (block.type === "text") rawText += block.text;
-      }
+    // judgment / checkpoints 가 없으면 등급 기반으로 자동 생성
+    if (!result.judgment) {
+      const judgeMap = {
+        RED:    "인프라 공격 발생. 에너지 위기 심화 가능성 높음. 매수량 50% 축소 권장. 탄약 보존 최우선.",
+        ORANGE: "전선 확대 및 에스컬레이션 진행 중. 불확실성 유지로 매수량 30% 축소 권장.",
+        YELLOW: "데드라인 연장 / 협상 교착 패턴. 정상 매수 유지. 4차례 연장 전례상 추가 연장 가능성 높음.",
+        GREEN:  "휴전/종전 합의 신호. 불확실성 해소로 기술주 반등 기대. 매수량 30% 확대 권장.",
+        GRAY:   "이란 관련 주요 뉴스 없음. 정상 매수 유지."
+      };
+      result.judgment = judgeMap[result.grade] || judgeMap.GRAY;
     }
-
-    // JSON 파싱
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI 응답에서 JSON을 찾을 수 없습니다");
-    const result = JSON.parse(jsonMatch[0]);
+    if (!result.checkpoints || result.checkpoints.length === 0) {
+      result.checkpoints = [
+        "호르무즈 해협 선박 통행 여부",
+        "WTI $120 돌파 여부 (고유가 임계점)",
+        "트럼프 발언 / 데드라인 변동",
+        "파키스탄·이집트 중재 결과"
+      ];
+    }
 
     renderWarResult(result, dailyBase, qldPrice, ssoPrice, usdkrw);
 
   } catch(e) {
     console.error(e);
-    // 에러 시 YELLOW 기본값으로 렌더링
     renderWarResult({
       grade: "GRAY",
       oil_price: "조회 실패",
       hormuz: "—",
       nego_status: "—",
-      facts: ["AI 분석 실패: " + e.message, "잠시 후 다시 시도해주세요"],
-      judgment: "분석 실패로 기본값(정상 매수) 유지",
-      checkpoints: ["재시도 후 확인"]
+      facts: ["GAS 분석 실패: " + e.message, "GAS 재배포 후 다시 시도해주세요"],
+      judgment: "분석 실패 — 정상 매수 유지",
+      checkpoints: ["GAS Apps Script 재배포 확인"]
     }, dailyBase, qldPrice, ssoPrice, usdkrw);
   }
 

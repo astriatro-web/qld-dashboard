@@ -334,23 +334,27 @@ function renderHoldings(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── LOC 계산기 ──
-function renderLOC(qldPrice, ssoPrice) {
+function renderLOC(qldPrice, ssoPrice, usdkrw) {
   const container = document.getElementById("loc-body");
-  if (!qldPrice || !ssoPrice) {
+  if (!qldPrice || !ssoPrice || !usdkrw) {
     container.innerHTML = '<div class="loc-na">시세 조회 후 표시됩니다</div>';
     return;
   }
-  const qldHeld = S.qldHeld || 14;
-  const ssoHeld = S.ssoHeld || 7;
-  const qldBuy  = Math.round(qldHeld / 2);
-  const ssoBuy  = Math.round(ssoHeld / 2);
-  const qldA = Math.ceil(qldBuy / 2);
-  const qldB = Math.floor(qldBuy / 2);
-  const ssoA = Math.ceil(ssoBuy / 2);
-  const ssoB = Math.floor(ssoBuy / 2);
+  const daily = Math.round((S.totalBullet + S.monthlyBudget * 12) / Math.max(1, Math.max(0, CFG.SPLIT_DAYS - elapsed())));
+
+  // 오늘 매수 주수 (일일투입금 기준)
+  const qldTotal = Math.floor(daily * 0.7 / (qldPrice * usdkrw));
+  const ssoTotal = Math.floor(daily * 0.3 / (ssoPrice * usdkrw));
+
+  // 6:4 분할
+  const qldA = Math.round(qldTotal * 0.6);
+  const qldB = qldTotal - qldA;
+  const ssoA = Math.round(ssoTotal * 0.6);
+  const ssoB = ssoTotal - ssoA;
+
   const f2 = n => n.toFixed(2);
   container.innerHTML = `
-    <div class="loc-ticker">QLD <span style="color:#475569;font-weight:400;">종가 $${f2(qldPrice)} → 매수 ${qldBuy}주</span></div>
+    <div class="loc-ticker">QLD <span style="color:#475569;font-weight:400;">종가 $${f2(qldPrice)} → 오늘 매수 ${qldTotal}주</span></div>
     <div class="loc-row type-a">
       <div class="loc-row-label"><span class="tag a">A</span>확실체결 LOC</div>
       <div class="loc-row-right"><div class="loc-price a">$${f2(qldPrice*1.025)}</div><div class="loc-shares">${qldA}주 &nbsp;·&nbsp; ×1.025</div></div>
@@ -360,7 +364,7 @@ function renderLOC(qldPrice, ssoPrice) {
       <div class="loc-row-right"><div class="loc-price b">$${f2(qldPrice*0.990)}</div><div class="loc-shares">${qldB}주 &nbsp;·&nbsp; ×0.990</div></div>
     </div>
     <hr class="loc-divider">
-    <div class="loc-ticker">SSO <span style="color:#475569;font-weight:400;">종가 $${f2(ssoPrice)} → 매수 ${ssoBuy}주</span></div>
+    <div class="loc-ticker">SSO <span style="color:#475569;font-weight:400;">종가 $${f2(ssoPrice)} → 오늘 매수 ${ssoTotal}주</span></div>
     <div class="loc-row type-a">
       <div class="loc-row-label"><span class="tag a">A</span>확실체결 LOC</div>
       <div class="loc-row-right"><div class="loc-price a">$${f2(ssoPrice*1.025)}</div><div class="loc-shares">${ssoA}주 &nbsp;·&nbsp; ×1.025</div></div>
@@ -369,7 +373,7 @@ function renderLOC(qldPrice, ssoPrice) {
       <div class="loc-row-label"><span class="tag b">B</span>유리한가격 LOC</div>
       <div class="loc-row-right"><div class="loc-price b">$${f2(ssoPrice*0.990)}</div><div class="loc-shares">${ssoB}주 &nbsp;·&nbsp; ×0.990</div></div>
     </div>
-    <div class="loc-base">A: ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B: ×0.990 눌릴 때 유리</div>`;
+    <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; A ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B ×0.990 눌릴 때 유리</div>`;
 }
 
 // 구글 스프레드시트 웹앱으로 데이터 조회 (CORS 없음)
@@ -494,7 +498,7 @@ function renderDashboard(d){
   document.getElementById("v-ma2060").textContent=`${d.ma20?"$"+f(d.ma20,1):"—"} / ${d.ma60?"$"+f(d.ma60,1):"—"}`;
   renderStatic(d);
   renderHoldings(d.qld, d.sso, d.usdkrw);
-  renderLOC(d.qld, d.sso);
+  renderLOC(d.qld, d.sso, d.usdkrw);
   document.getElementById("rebuyRows").innerHTML=CFG.REBUY_DD.map((tdd,i)=>{
     const ddOk=dd>=tdd,fgOk=d.fg!=null&&d.fg<=CFG.REBUY_FG[i],vixOk=d.vix!=null&&d.vix>=CFG.REBUY_VIX[i];
     const dc=c=>`<div class="dot ${c}"></div>`;

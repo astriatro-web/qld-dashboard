@@ -358,7 +358,11 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
     container.innerHTML = '<div class="loc-na">시세 조회 후 표시됩니다</div>';
     return;
   }
-  const daily = Math.round((S.totalBullet + S.monthlyBudget * 12) / Math.max(1, Math.max(0, splitDays() - elapsed())));
+  const el2 = elapsed();
+  const isB2 = el2>=splitDays() && el2<CFG.PLANB3_DAYS;
+  const daily = isB2
+    ? Math.round(S.monthlyBudget/30)
+    : Math.round((S.totalBullet + S.monthlyBudget * 12) / Math.max(1, splitDays() - el2));
 
   // 오늘 매수 주수 (일일투입금 기준)
   const qldTotal = Math.floor(daily * 0.7 / (qldPrice * usdkrw));
@@ -479,7 +483,11 @@ function determineMode(d){
     else{name="홀드";phase="hold";actions=[`이격 ${gap!=null?(gap*100).toFixed(1)+"%":"N/A"}  →  홀드 (트리거 +25%)`,`월 적립: SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만`];}
     if(S.profitCash>0&&S.rebuyCount>=CFG.WS_REBUY){for(let i=CFG.REBUY_DD.length-1;i>=0;i--){if(dd>=CFG.REBUY_DD[i]&&d.fg<=CFG.REBUY_FG[i]&&d.vix>=CFG.REBUY_VIX[i]){actions.push(`재투입 ${i+1}차: 익절현금풀 ${CFG.REBUY_PCT[i]*100}% → QLD 매수`);break;}}}
   }else if(belowMA===true){
-    if(el>=CFG.SPLIT_DAYS&&el<CFG.PLANB3_DAYS){name="B-2 매수연장";phase="planb2";actions=[`월 ${mw}만원 투입 (QLD 70% + SSO 30%)`,`B-3 전환까지 ${CFG.PLANB3_DAYS-el}일`];}
+    if(el>=splitDays()&&el<CFG.PLANB3_DAYS){
+      const mwDaily=Math.round(S.monthlyBudget/30/10000);
+      name="B-2 매수연장";phase="planb2";
+      actions=[`월 ${mw}만원 투입 (QLD 70% + SSO 30%)`,`일일 투입: 약 ${mwDaily}만원 (월투자금÷30)`,`B-3 전환까지 ${CFG.PLANB3_DAYS-el}일`];
+    }
     else{name="매수 진행 중";phase="buy";actions=[`QLD 70% + SSO 30%  /  ${el+1}일차 / ${splitDays()}일`,`일일 투입: 약 ${dw}만원`,`잔여 ${rem}일`];}
   }else{name="데이터 조회 중";phase="loading";actions=["새로고침을 눌러주세요"];}
   return{name,phase,actions,pc:PC[phase]||PC.loading,gap,dd,elapsed:el,remain:rem};
@@ -526,7 +534,10 @@ function renderDashboard(d){
 
 function renderStatic(d){
   const el=elapsed(), rem=Math.max(0,splitDays()-el);
-  const daily=rem>0?Math.round((S.totalBullet+S.monthlyBudget*12)/rem):0;
+  const isB2 = el>=splitDays() && el<CFG.PLANB3_DAYS;
+  const daily = isB2
+    ? Math.round(S.monthlyBudget/30)
+    : (rem>0 ? Math.round((S.totalBullet+S.monthlyBudget*12)/rem) : 0);
   const pct=Math.min(100,el/splitDays()*100);
   setText("v-elapsed",`${el}일차`); setText("v-remain",`잔여 ${rem}일`);
   document.getElementById("v-progress").style.width=pct+"%";

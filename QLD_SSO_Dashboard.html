@@ -157,6 +157,12 @@ body {
     </div>
   </div>
 
+  <!-- 보유 평가액 카드 -->
+  <div class="card">
+    <div class="card-label">보유 평가액</div>
+    <div id="holdingRows"><div style="font-size:12px;color:#475569;">설정탭에서 보유 주수를 입력하세요</div></div>
+  </div>
+
   <!-- LOC 주문 계산기 카드 -->
   <div class="loc-card">
     <div class="loc-title">📋 LOC 주문 가이드 (전날 종가 기준)</div>
@@ -172,8 +178,8 @@ body {
 <div class="panel" id="panel-rules"></div>
 
 <div class="panel" id="panel-settings">
-  <div class="setting-group"><div class="setting-label">매수 시작일</div><input class="setting-input" type="text" id="s-entryDate" placeholder="2026-02-06" oninput="saveSettings()"></div>
-  <div class="setting-group"><div class="setting-label">탄환 총액 (원)</div><input class="setting-input" type="number" id="s-totalBullet" placeholder="149100000" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">매수 시작일</div><input class="setting-input" type="text" id="s-entryDate" placeholder="2026-03-01" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">탄환 총액 (원)</div><input class="setting-input" type="number" id="s-totalBullet" placeholder="100000000" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">월 투자금액 (원)</div><input class="setting-input" type="number" id="s-monthlyBudget" placeholder="10000000" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">익절현금풀 잔액 (원)</div><input class="setting-input" type="number" id="s-profitCash" placeholder="0" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">Fear &amp; Greed 수동 입력 (0~100)</div><input class="setting-input" type="number" id="s-fg" placeholder="현재값 입력 (예: 34)" min="0" max="100" oninput="saveSettings()"></div>
@@ -182,9 +188,9 @@ body {
 
   <!-- LOC 설정 -->
   <div style="border-top:1px solid #1e293b;margin:4px 0 12px;padding-top:12px;">
-    <div style="font-size:10px;color:#60a5fa;letter-spacing:0.1em;margin-bottom:10px;font-weight:700;">LOC 주문 설정</div>
-    <div class="setting-group"><div class="setting-label">QLD 현재 보유 주수</div><input class="setting-input" type="number" id="s-qldHeld" placeholder="14" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">SSO 현재 보유 주수</div><input class="setting-input" type="number" id="s-ssoHeld" placeholder="7" oninput="saveSettings()"></div>
+    <div style="font-size:10px;color:#60a5fa;letter-spacing:0.1em;margin-bottom:10px;font-weight:700;">보유 수량</div>
+    <div class="setting-group"><div class="setting-label">QLD 현재 보유 주수</div><input class="setting-input" type="number" id="s-qldHeld" placeholder="0" oninput="saveSettings()"></div>
+    <div class="setting-group"><div class="setting-label">SSO 현재 보유 주수</div><input class="setting-input" type="number" id="s-ssoHeld" placeholder="0" oninput="saveSettings()"></div>
   </div>
 
   <div class="setting-group" style="margin-bottom:16px;"><div class="setting-label">B-3 생존모드 플래그</div><button class="btn-toggle off" id="btnPlanb3" onclick="togglePlanb3()">⚪ B-3 비활성</button></div>
@@ -222,8 +228,8 @@ const RULES = [
 let S = {};
 function loadSettings() {
   try { S = JSON.parse(localStorage.getItem("qld_s10")||"{}"); } catch { S={}; }
-  S.entryDate     = S.entryDate     || "2026-02-06";
-  S.totalBullet   = S.totalBullet   || 149100000;
+  S.entryDate     = S.entryDate     || "2026-03-01";
+  S.totalBullet   = S.totalBullet   || 100000000;
   S.monthlyBudget = S.monthlyBudget || 10000000;
   S.profitCash    = S.profitCash    || 0;
   S.fg            = S.fg            || null;
@@ -278,6 +284,49 @@ const fgClr=v=>v<=25?"#f87171":v<=45?"#fbbf24":v<=60?"#94a3b8":"#4ade80";
 const vixClr=v=>v>=30?"#f87171":v>=20?"#fbbf24":"#4ade80";
 const elapsed=()=>!S.entryDate?0:Math.max(0,Math.floor((new Date()-new Date(S.entryDate))/86400000));
 function setText(id,text,color){const el=document.getElementById(id);if(!el)return;el.textContent=text;if(color)el.style.color=color;}
+
+// ── 보유 평가액 ──
+function renderHoldings(qldPrice, ssoPrice, usdkrw) {
+  const container = document.getElementById("holdingRows");
+  const qh = S.qldHeld || 0;
+  const sh = S.ssoHeld || 0;
+  if (!qh && !sh) {
+    container.innerHTML = '<div style="font-size:12px;color:#475569;">설정탭에서 보유 주수를 입력하세요</div>';
+    return;
+  }
+  if (!qldPrice || !ssoPrice || !usdkrw) {
+    container.innerHTML = '<div style="font-size:12px;color:#475569;">시세 조회 후 표시됩니다</div>';
+    return;
+  }
+  const qldUsd  = qh * qldPrice;
+  const ssoUsd  = sh * ssoPrice;
+  const totalUsd = qldUsd + ssoUsd;
+  const qldKrw  = Math.round(qldUsd * usdkrw);
+  const ssoKrw  = Math.round(ssoUsd * usdkrw);
+  const totalKrw = Math.round(totalUsd * usdkrw);
+  const fw = n => Math.round(n/10000).toLocaleString();
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:11px;margin-bottom:6px;">
+      <div style="color:#64748b;"></div>
+      <div style="color:#64748b;text-align:right;">USD</div>
+      <div style="color:#64748b;text-align:right;">원화</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid #1e293b;">
+      <div style="color:#94a3b8;">QLD <span style="color:#475569;">${qh}주</span></div>
+      <div style="color:#e2e8f0;text-align:right;">$${Math.round(qldUsd).toLocaleString()}</div>
+      <div style="color:#e2e8f0;text-align:right;">${fw(qldKrw)}만</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid #1e293b;">
+      <div style="color:#94a3b8;">SSO <span style="color:#475569;">${sh}주</span></div>
+      <div style="color:#e2e8f0;text-align:right;">$${Math.round(ssoUsd).toLocaleString()}</div>
+      <div style="color:#e2e8f0;text-align:right;">${fw(ssoKrw)}만</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;font-weight:700;padding:6px 0;">
+      <div style="color:#60a5fa;">합계</div>
+      <div style="color:#60a5fa;text-align:right;">$${Math.round(totalUsd).toLocaleString()}</div>
+      <div style="color:#60a5fa;text-align:right;">${fw(totalKrw)}만</div>
+    </div>`;
+}
 
 // ── LOC 계산기 ──
 function renderLOC(qldPrice, ssoPrice) {
@@ -439,6 +488,7 @@ function renderDashboard(d){
   gcEl.style.color=gc===true?"#4ade80":gc===false?"#f87171":"#94a3b8";
   document.getElementById("v-ma2060").textContent=`${d.ma20?"$"+f(d.ma20,1):"—"} / ${d.ma60?"$"+f(d.ma60,1):"—"}`;
   renderStatic(d);
+  renderHoldings(d.qld, d.sso, d.usdkrw);
   renderLOC(d.qld, d.sso);
   document.getElementById("rebuyRows").innerHTML=CFG.REBUY_DD.map((tdd,i)=>{
     const ddOk=dd>=tdd,fgOk=d.fg!=null&&d.fg<=CFG.REBUY_FG[i],vixOk=d.vix!=null&&d.vix>=CFG.REBUY_VIX[i];

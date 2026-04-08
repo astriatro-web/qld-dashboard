@@ -237,7 +237,31 @@ body {
 </div>
 
 <!-- ── 매매원칙 패널 ── -->
-<div class="panel" id="panel-rules"></div>
+<div class="panel" id="panel-rules">
+  <div id="guideBox" style="background:#0a1628;border:1px solid #1e3a5f;border-radius:12px;padding:14px 16px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:10px;color:#60a5fa;letter-spacing:0.1em;font-weight:700;">📖 대시보드 사용 설명서</div>
+      <button onclick="document.getElementById('guideBox').style.display='none';localStorage.setItem('guideHidden','1')"
+        style="background:none;border:none;color:#475569;font-size:16px;cursor:pointer;padding:0 4px;font-family:inherit;">✕</button>
+    </div>
+    <div style="font-size:12px;color:#94a3b8;line-height:1.9;">
+      <b style="color:#e2e8f0;">① 설정 탭</b> 먼저 입력하세요<br>
+      &nbsp;&nbsp;· 매수 시작일 / 탄환 총액 / 월 투자금 / QLD·SSO 평단가<br>
+      &nbsp;&nbsp;· 보유 주수 입력 시 평가액 자동 계산<br><br>
+      <b style="color:#e2e8f0;">② 대시보드 탭</b> — 매일 아침 새로고침<br>
+      &nbsp;&nbsp;· 현재 모드(매수/홀드/익절/B-3) 자동 판단<br>
+      &nbsp;&nbsp;· LOC 주문 가이드: A(×1.025 확실체결) + B(×0.990 유리가격) 6:4 분할<br>
+      &nbsp;&nbsp;· F&amp;G 자동 조회 실패 시 → 설정탭에서 수동 입력<br><br>
+      <b style="color:#e2e8f0;">③ 전쟁모니터 탭</b> — 필요 시 분석<br>
+      &nbsp;&nbsp;· ⚡ AI 분석 버튼: StockHub 최신 전쟁 뉴스 → Claude 분석<br>
+      &nbsp;&nbsp;· 등급(RED/ORANGE/YELLOW/GREEN)에 따라 LOC 매수량 자동 조율<br>
+      &nbsp;&nbsp;· 분할일수 연장 권장 시 "적용" 버튼으로 즉시 반영<br><br>
+      <b style="color:#e2e8f0;">④ 익절 기준</b><br>
+      &nbsp;&nbsp;· 평단가 입력 시: 평단 대비 +25%/+45%/+65% 트리거<br>
+      &nbsp;&nbsp;· 미입력 시: MA120 이격률 기준 (기존 방식)
+    </div>
+  </div>
+</div>
 
 <!-- ── 전쟁모니터 패널 ── -->
 <div class="panel" id="panel-war">
@@ -250,7 +274,7 @@ body {
 
   <div id="warEmpty" class="war-empty">
     AI 분석 버튼을 누르면<br>StockHub 최신 전쟁 뉴스를 읽고<br>오늘 매수량을 자동 조율합니다<br><br>
-    <span style="color:#1e3a5f;">하루 1회 권장 · 비용 약 ₩30/회</span>
+    <span style="color:#1e3a5f;">하루 1회 권장 · 비용 약 ₩3~4/회</span>
   </div>
 
   <div id="warResult" style="display:none;">
@@ -506,7 +530,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw, mult) {
     <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; A ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B ×0.990 눌릴 때 유리</div>`;
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxZJUf7ayTyfca6hdsQSyNAKwNlHzlYlk-I6dkCNnVCSsVmi9vAUOeiTAxRJCcnaZTZiA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxCf7H8N86j5DrOOHaYMdNpc4GKLsZC5y_2xAhaUncfUhEegTFOfo6tIiStIcIucryO6g/exec";
 let MD = null;
 
 async function fetchAll() {
@@ -617,6 +641,8 @@ function renderStatic(d){
 }
 
 function renderRules(){
+  const guideBox = document.getElementById("guideBox");
+  if (guideBox) guideBox.style.display = localStorage.getItem("guideHidden") === "1" ? "none" : "block";
   document.getElementById("panel-rules").innerHTML=getRULES().map(sec=>`
     <div class="rules-section">
       <div class="rules-header" style="background:${sec.color}">${sec.title}</div>

@@ -173,7 +173,7 @@ body {
 <div class="tabs">
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
   <button class="tab" onclick="switchTab('rules')">매매원칙</button>
-  <button class="tab" onclick="switchTab('war')">전쟁모니터</button>
+  <button class="tab" onclick="switchTab('war')">거시모니터</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
 
@@ -253,8 +253,8 @@ body {
       &nbsp;&nbsp;· LOC 주문 가이드: A(×1.025 확실체결) + B(×0.990 유리가격) 6:4 분할<br>
       &nbsp;&nbsp;· F&amp;G 자동 조회 실패 시 → 설정탭에서 수동 입력<br><br>
       <b style="color:#e2e8f0;">③ 전쟁모니터 탭</b> — 필요 시 분석<br>
-      &nbsp;&nbsp;· ⚡ AI 분석 버튼: StockHub 최신 전쟁 뉴스 → Claude 분석<br>
-      &nbsp;&nbsp;· 등급(RED/ORANGE/YELLOW/GREEN)에 따라 LOC 매수량 자동 조율<br>
+      &nbsp;&nbsp;· ⚡ AI 분석 버튼: StockHub 최신 뉴스 → Claude 거시 리스크 분석<br>
+      &nbsp;&nbsp;· 전쟁·금융위기·AI버블·관세 등 거시 리스크 등급으로 LOC 자동 조율<br>
       &nbsp;&nbsp;· 분할일수 연장 권장 시 "적용" 버튼으로 즉시 반영<br><br>
       <b style="color:#e2e8f0;">④ 익절 기준</b><br>
       &nbsp;&nbsp;· 평단가 입력 시: 평단 대비 +25%/+45%/+65% 트리거<br>
@@ -266,15 +266,15 @@ body {
 <!-- ── 전쟁모니터 패널 ── -->
 <div class="panel" id="panel-war">
   <div class="war-header">
-    <div class="war-title">🛡 전쟁모니터 · 매수 조율</div>
+    <div class="war-title">🌐 거시모니터 · 매수 조율</div>
     <button class="btn-war" id="btnWar" onclick="runWarMonitor()">
       <span id="warBtnIcon">⚡</span> AI 분석
     </button>
   </div>
 
   <div id="warEmpty" class="war-empty">
-    AI 분석 버튼을 누르면<br>StockHub 최신 전쟁 뉴스를 읽고<br>오늘 매수량을 자동 조율합니다<br><br>
-    <span style="color:#1e3a5f;">하루 1회 권장 · 비용 약 ₩3~4/회</span>
+    AI 분석 버튼을 누르면<br>StockHub 최신 뉴스를 읽고<br>오늘의 거시 리스크를 자동 판단합니다<br><br>
+    <span style="color:#1e3a5f;">전쟁 · 금융위기 · AI버블 · 관세 · 연준 등<br>하루 1회 권장 · 비용 약 ₩3~4/회</span>
   </div>
 
   <div id="warResult" style="display:none;">
@@ -282,16 +282,18 @@ body {
 
     <!-- 상황 등급 -->
     <div class="card" style="padding:14px 16px 12px;">
-      <div class="card-label">전쟁 상황 등급</div>
+      <div class="card-label">거시 리스크 등급</div>
       <div id="warBadge" class="war-badge gray">분석 중</div>
       <div id="warGradeDesc" style="font-size:11px;color:#64748b;margin-top:4px;line-height:1.5;"></div>
     </div>
 
     <!-- 주요 지표 -->
     <div class="war-kpi">
-      <div class="war-kpi-item"><div class="war-kpi-label">WTI 유가</div><div class="war-kpi-value" id="wk-oil" style="color:#fbbf24;">—</div></div>
-      <div class="war-kpi-item"><div class="war-kpi-label">호르무즈</div><div class="war-kpi-value" id="wk-hormuz" style="color:#f87171;">—</div></div>
-      <div class="war-kpi-item"><div class="war-kpi-label">협상 상태</div><div class="war-kpi-value" id="wk-nego" style="color:#94a3b8;">—</div></div>
+      <div class="war-kpi-item" style="grid-column:span 3;"><div class="war-kpi-label">주요 테마</div><div class="war-kpi-value" id="wk-main-theme" style="color:#fbbf24;font-size:12px;">—</div></div>
+    </div>
+    <div class="war-kpi" style="margin-top:-4px;">
+      <div class="war-kpi-item"><div class="war-kpi-label">보조 테마</div><div class="war-kpi-value" id="wk-sub-theme" style="color:#94a3b8;font-size:11px;">—</div></div>
+      <div class="war-kpi-item" style="grid-column:span 2;"><div class="war-kpi-label">시장 신호</div><div class="war-kpi-value" id="wk-market-signal" style="color:#60a5fa;font-size:11px;">—</div></div>
     </div>
 
     <!-- AI 팩트 요약 -->
@@ -392,11 +394,11 @@ const CFG = {
 // ── 전쟁 상황 등급 정의 ──
 // 5단계: RED(인프라공격) / ORANGE(에스컬레이션) / YELLOW(교착/연장) / GREEN(휴전합의) / GRAY(정보없음)
 const WAR_GRADES = {
-  RED:    { label:"🔴 RED — 인프라 공격",    color:"red",    adjMult: 0.5,  adjNote:"매수량 50% 축소 (에너지위기·추가하락 대비)" },
-  ORANGE: { label:"🟠 ORANGE — 에스컬레이션", color:"amber",  adjMult: 0.7,  adjNote:"매수량 30% 축소 (불확실성 유지)" },
-  YELLOW: { label:"🟡 YELLOW — 데드라인 연장", color:"yellow", adjMult: 1.0,  adjNote:"매수량 정상 유지 (패턴상 가장 유력)" },
-  GREEN:  { label:"🟢 GREEN — 휴전/종전 합의", color:"green",  adjMult: 1.3,  adjNote:"매수량 30% 확대 (불확실성 해소 반등)" },
-  GRAY:   { label:"⚪ GRAY — 정보 없음",      color:"gray",   adjMult: 1.0,  adjNote:"매수량 정상 유지" },
+  RED:    { label:"🔴 RED — 시스템 리스크",     color:"red",    adjMult: 0.5,  adjNote:"매수량 50% 축소 (금융위기·패닉·시장붕괴 신호)" },
+  ORANGE: { label:"🟠 ORANGE — 고위험 불확실성", color:"amber",  adjMult: 0.7,  adjNote:"매수량 30% 축소 (전쟁확대·버블붕괴·정책쇼크)" },
+  YELLOW: { label:"🟡 YELLOW — 불확실성 유지",   color:"yellow", adjMult: 1.0,  adjNote:"매수량 정상 유지 (리스크 존재하나 현상 유지)" },
+  GREEN:  { label:"🟢 GREEN — 리스크 완화",      color:"green",  adjMult: 1.3,  adjNote:"매수량 30% 확대 (협상타결·우려해소·긍정신호)" },
+  GRAY:   { label:"⚪ GRAY — 특이사항 없음",     color:"gray",   adjMult: 1.0,  adjNote:"매수량 정상 유지" },
 };
 
 function getRULES() {
@@ -530,7 +532,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw, mult) {
     <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; A ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B ×0.990 눌릴 때 유리</div>`;
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxejQryasfLO0Q8-keTYNWtwyo7ErmRGsBK-S1xxkixx5PdYPmp4Q8NEHEpElnoze9MLg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz5m3oxOsG4p5a1oPBgtEorOsJXMjjOBXw61-WQ0kobpYcOPAwJK9ffrq1YYBmmGHJ-0Q/exec";
 let MD = null;
 
 async function fetchAll() {
@@ -849,12 +851,10 @@ function renderWarResult(r, dailyBase, qldPrice, ssoPrice, usdkrw) {
   // 등급 설명
   document.getElementById("warGradeDesc").textContent = grade.adjNote;
 
-  // KPI
-  document.getElementById("wk-oil").textContent = r.oil_price || "—";
-  const hormuzEl = document.getElementById("wk-hormuz");
-  hormuzEl.textContent = r.hormuz || "—";
-  hormuzEl.style.color = r.hormuz === "개방" ? "#4ade80" : "#f87171";
-  document.getElementById("wk-nego").textContent = r.nego_status || "—";
+  // KPI — 거시 테마
+  document.getElementById("wk-main-theme").textContent = r.main_theme || r.oil_price || "—";
+  document.getElementById("wk-sub-theme").textContent = r.sub_theme || r.nego_status || "—";
+  document.getElementById("wk-market-signal").textContent = r.market_signal || r.hormuz || "—";
 
   // 팩트
   const factsEl = document.getElementById("warFacts");
@@ -869,7 +869,7 @@ function renderWarResult(r, dailyBase, qldPrice, ssoPrice, usdkrw) {
   const adjCard = document.getElementById("adjCard");
   adjCard.className = `adj-card ${c}`;
   document.getElementById("adjTitle").className = `adj-title ${c}`;
-  document.getElementById("adjTitle").textContent = "📊 오늘 매수 조율 — " + grade.label;
+  document.getElementById("adjTitle").textContent = "📊 거시 리스크 기반 매수 조율 — " + grade.label;
 
   const adjMultiplier = grade.adjMult;
   const adjDaily = Math.round(dailyBase * adjMultiplier);

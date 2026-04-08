@@ -530,7 +530,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw, mult) {
     <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; A ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B ×0.990 눌릴 때 유리</div>`;
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxCf7H8N86j5DrOOHaYMdNpc4GKLsZC5y_2xAhaUncfUhEegTFOfo6tIiStIcIucryO6g/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxejQryasfLO0Q8-keTYNWtwyo7ErmRGsBK-S1xxkixx5PdYPmp4Q8NEHEpElnoze9MLg/exec";
 let MD = null;
 
 async function fetchAll() {
@@ -643,11 +643,18 @@ function renderStatic(d){
 function renderRules(){
   const guideBox = document.getElementById("guideBox");
   if (guideBox) guideBox.style.display = localStorage.getItem("guideHidden") === "1" ? "none" : "block";
-  document.getElementById("panel-rules").innerHTML=getRULES().map(sec=>`
+  const rulesHtml = getRULES().map(sec=>`
     <div class="rules-section">
       <div class="rules-header" style="background:${sec.color}">${sec.title}</div>
       ${sec.items.map(([l,d])=>`<div class="rules-row" style="border-left-color:${sec.color}"><div class="rl">${l}</div><div class="rd">${d}</div></div>`).join("")}
     </div>`).join("");
+  let rulesContainer = document.getElementById("rules-content");
+  if (!rulesContainer) {
+    rulesContainer = document.createElement("div");
+    rulesContainer.id = "rules-content";
+    document.getElementById("panel-rules").appendChild(rulesContainer);
+  }
+  rulesContainer.innerHTML = rulesHtml;
 }
 
 // ════════════════════════════════════════

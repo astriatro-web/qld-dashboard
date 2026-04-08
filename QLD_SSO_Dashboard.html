@@ -288,6 +288,21 @@ body {
       <div id="warLocBody"><div class="loc-na">AI 분석 후 표시됩니다</div></div>
     </div>
 
+    <!-- 분할일수 조언 -->
+    <div class="card" id="splitAdviceCard" style="display:none;">
+      <div class="card-label">분할일수 조정 권장</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div>
+          <div id="splitAdviceText" style="font-size:13px;color:#e2e8f0;margin-bottom:4px;"></div>
+          <div id="splitAdviceReason" style="font-size:11px;color:#64748b;"></div>
+        </div>
+        <button id="splitAdviceBtn" onclick="applySplitAdvice()"
+          style="background:#1d4ed8;border:none;border-radius:8px;color:#e2e8f0;padding:8px 14px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-left:12px;">
+          적용
+        </button>
+      </div>
+    </div>
+
     <!-- 다음 모니터 포인트 -->
     <div class="card">
       <div class="card-label">내일 체크포인트</div>
@@ -310,6 +325,12 @@ body {
     <div style="font-size:10px;color:#60a5fa;letter-spacing:0.1em;margin-bottom:10px;font-weight:700;">보유 수량</div>
     <div class="setting-group"><div class="setting-label">QLD 현재 보유 주수</div><input class="setting-input" type="number" id="s-qldHeld" placeholder="0" oninput="saveSettings()"></div>
     <div class="setting-group"><div class="setting-label">SSO 현재 보유 주수</div><input class="setting-input" type="number" id="s-ssoHeld" placeholder="0" oninput="saveSettings()"></div>
+  </div>
+  <div style="border-top:1px solid #1e293b;margin:4px 0 12px;padding-top:12px;">
+    <div style="font-size:10px;color:#f59e0b;letter-spacing:0.1em;margin-bottom:10px;font-weight:700;">익절 기준 평단가 (USD)</div>
+    <div class="setting-group"><div class="setting-label">QLD 평단가 ($)</div><input class="setting-input" type="number" id="s-qldAvg" placeholder="예: 68.50" step="0.01" oninput="saveSettings()"></div>
+    <div class="setting-group"><div class="setting-label">SSO 평단가 ($)</div><input class="setting-input" type="number" id="s-ssoAvg" placeholder="예: 80.20" step="0.01" oninput="saveSettings()"></div>
+    <div class="info-box" style="margin-top:0;margin-bottom:0;">평단가 입력 시 <b style="color:#f59e0b;">평단 대비 수익률</b>로 익절 트리거 계산. 미입력 시 52주 고가 대비 이격률 유지.</div>
   </div>
   <div class="setting-group" style="margin-bottom:16px;"><div class="setting-label">B-3 생존모드 플래그</div><button class="btn-toggle off" id="btnPlanb3" onclick="togglePlanb3()">⚪ B-3 비활성</button></div>
   <div class="info-box">
@@ -384,6 +405,8 @@ function loadSettings() {
   S.splitDays     = S.splitDays     || 75;
   S.qldHeld       = S.qldHeld       != null ? S.qldHeld : 0;
   S.ssoHeld       = S.ssoHeld       != null ? S.ssoHeld : 0;
+  S.qldAvg        = S.qldAvg        || null;
+  S.ssoAvg        = S.ssoAvg        || null;
   document.getElementById("s-entryDate").value     = S.entryDate;
   document.getElementById("s-totalBullet").value   = S.totalBullet;
   document.getElementById("s-monthlyBudget").value = S.monthlyBudget;
@@ -394,6 +417,8 @@ function loadSettings() {
   const _sd = document.getElementById("s-splitDays"); if(_sd) _sd.value = S.splitDays;
   const _qh = document.getElementById("s-qldHeld"); if(_qh) _qh.value = S.qldHeld;
   const _sh = document.getElementById("s-ssoHeld"); if(_sh) _sh.value = S.ssoHeld;
+  const _qa = document.getElementById("s-qldAvg"); if(_qa) _qa.value = S.qldAvg || "";
+  const _sa = document.getElementById("s-ssoAvg"); if(_sa) _sa.value = S.ssoAvg || "";
   updatePlanb3Btn();
 }
 function saveSettings() {
@@ -408,6 +433,8 @@ function saveSettings() {
   const _sd = document.getElementById("s-splitDays"); S.splitDays = _sd ? parseInt(_sd.value)||75 : (S.splitDays||75);
   const _qh = document.getElementById("s-qldHeld"); S.qldHeld = _qh ? parseInt(_qh.value)||0 : (S.qldHeld||0);
   const _sh = document.getElementById("s-ssoHeld"); S.ssoHeld = _sh ? parseInt(_sh.value)||7  : (S.ssoHeld||7);
+  const _qa2 = document.getElementById("s-qldAvg"); S.qldAvg = _qa2 && _qa2.value ? parseFloat(_qa2.value) : null;
+  const _sa2 = document.getElementById("s-ssoAvg"); S.ssoAvg = _sa2 && _sa2.value ? parseFloat(_sa2.value) : null;
   localStorage.setItem("qld_s10", JSON.stringify(S));
   renderStatic(null);
 }
@@ -472,7 +499,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw, mult) {
     <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; A ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B ×0.990 눌릴 때 유리</div>`;
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbydS53zgqygkioJxfpLd1ScC-av4PHLLEwHbCridvFGUoDisIGpLx3NBeGTXlePhy77Dw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwRvbwPxFxmUdQKYgPQ1SA8foutFk-WgBLS3n6fEsG0NFpa27nEayR8kLo-wCyHygQ_4Q/exec";
 let MD = null;
 
 async function fetchAll() {
@@ -503,22 +530,39 @@ function determineMode(d){
   const dw=rem>0?Math.round((S.totalBullet+S.monthlyBudget*12)/rem/10000):0;
   const mw=Math.round(S.monthlyBudget/10000);
   const PC={buy:{bg:"#052e16",bd:"#16a34a",tx:"#4ade80"},planb2:{bg:"#431407",bd:"#ea580c",tx:"#fb923c"},planb3:{bg:"#450a0a",bd:"#dc2626",tx:"#f87171"},resume:{bg:"#052e16",bd:"#16a34a",tx:"#4ade80"},hold:{bg:"#0f172a",bd:"#475569",tx:"#94a3b8"},sell1:{bg:"#422006",bd:"#d97706",tx:"#fbbf24"},sell2:{bg:"#422006",bd:"#d97706",tx:"#fbbf24"},sell3:{bg:"#422006",bd:"#d97706",tx:"#fbbf24"},loading:{bg:"#0f172a",bd:"#475569",tx:"#94a3b8"}};
+
+  // ── 익절 트리거: 평단가 입력 시 평단 기준, 없으면 52주 고가 대비 이격률 ──
+  // QLD 기준으로 판단 (주력 포지션)
+  let sellGap = null;
+  let sellBasis = "";
+  if (S.qldAvg && S.qldAvg > 0 && d.qld) {
+    // 평단 대비 수익률
+    sellGap = (d.qld - S.qldAvg) / S.qldAvg;
+    const ssoGap = (S.ssoAvg && S.ssoAvg > 0 && d.sso) ? (d.sso - S.ssoAvg) / S.ssoAvg : null;
+    const ssoTxt = ssoGap != null ? `  SSO ${ssoGap>=0?"+":""}${(ssoGap*100).toFixed(1)}%` : "";
+    sellBasis = `평단 대비 QLD ${sellGap>=0?"+":""}${(sellGap*100).toFixed(1)}%${ssoTxt}`;
+  } else if (d.ma120 && gap != null) {
+    // 기존: MA120 이격률
+    sellGap = gap;
+    sellBasis = `MA120 이격 ${gap>=0?"+":""}${(gap*100).toFixed(1)}%`;
+  }
+
   let name,phase,actions=[];
   if(S.planb3Active||el>=CFG.PLANB3_DAYS){
     const canResume=gc&&S.gcCount>=CFG.WS_RESUME&&d.fg>=CFG.RESUME_FG;
     if(canResume){name="B-3 해제 — 재개";phase="resume";actions=[`골든크로스 ${S.gcCount}일 연속 ✓  F&G ${d.fg} ≥ 35 ✓`,"QLD:SSO 5:5 → 7:3 원복","월 적립 SGOV 70% + SPYM 30% 재개","설정: B-3 플래그 OFF / 진입일 리셋"];}
     else{name="B-3 생존모드";phase="planb3";const miss=[];if(!gc)miss.push("골든크로스 미발생");else if(S.gcCount<CFG.WS_RESUME)miss.push(`골든크로스 ${S.gcCount}일 (2일 필요)`);if(d.fg!=null&&d.fg<CFG.RESUME_FG)miss.push(`F&G ${d.fg} < 35`);actions=["매수 완전 동결","QLD:SSO = 5:5 유지","월 적립 → SGOV 100%",...miss.map(m=>"미충족: "+m)];}
   }else if(belowMA===false){
-    if(gap>=CFG.SELL_GAP[2]){name="익절 3단계";phase="sell3";actions=[`이격 +${f(gap*100)}%  →  포지션 9% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
-    else if(gap>=CFG.SELL_GAP[1]){name="익절 2단계";phase="sell2";actions=[`이격 +${f(gap*100)}%  →  포지션 8% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
-    else if(gap>=CFG.SELL_GAP[0]){name="익절 1단계";phase="sell1";actions=[`이격 +${f(gap*100)}%  →  포지션 8% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
-    else{name="홀드";phase="hold";actions=[`이격 ${gap!=null?(gap*100).toFixed(1)+"%":"N/A"}  →  홀드 (트리거 +25%)`,`월 적립: SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만`];}
+    if(sellGap!=null&&sellGap>=CFG.SELL_GAP[2]){name="익절 3단계";phase="sell3";actions=[`${sellBasis}  →  포지션 9% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
+    else if(sellGap!=null&&sellGap>=CFG.SELL_GAP[1]){name="익절 2단계";phase="sell2";actions=[`${sellBasis}  →  포지션 8% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
+    else if(sellGap!=null&&sellGap>=CFG.SELL_GAP[0]){name="익절 1단계";phase="sell1";actions=[`${sellBasis}  →  포지션 8% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
+    else{name="홀드";phase="hold";actions=[`${sellBasis||"이격률 계산 중"}  →  홀드 (트리거 +25%)`,`월 적립: SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만`];}
     if(S.profitCash>0&&S.rebuyCount>=CFG.WS_REBUY){for(let i=CFG.REBUY_DD.length-1;i>=0;i--){if(dd>=CFG.REBUY_DD[i]&&d.fg<=CFG.REBUY_FG[i]&&d.vix>=CFG.REBUY_VIX[i]){actions.push(`재투입 ${i+1}차: 익절현금풀 ${CFG.REBUY_PCT[i]*100}% → QLD 매수`);break;}}}
   }else if(belowMA===true){
     if(el>=splitDays()&&el<CFG.PLANB3_DAYS){const mwDaily=Math.round(S.monthlyBudget/30/10000);name="B-2 매수연장";phase="planb2";actions=[`월 ${mw}만원 투입 (QLD 70% + SSO 30%)`,`일일 투입: 약 ${mwDaily}만원 (월투자금÷30)`,`B-3 전환까지 ${CFG.PLANB3_DAYS-el}일`];}
     else{name="매수 진행 중";phase="buy";actions=[`QLD 70% + SSO 30%  /  ${el+1}일차 / ${splitDays()}일`,`일일 투입: 약 ${Math.round((S.totalBullet+S.monthlyBudget*12)/Math.max(1,splitDays()-el)/10000)}만원`,`잔여 ${rem}일`];}
   }else{name="데이터 조회 중";phase="loading";actions=["새로고침을 눌러주세요"];}
-  return{name,phase,actions,pc:PC[phase]||PC.loading,gap,dd,elapsed:el,remain:rem};
+  return{name,phase,actions,pc:PC[phase]||PC.loading,gap,sellGap,dd,elapsed:el,remain:rem};
 }
 
 function renderDashboard(d){
@@ -731,9 +775,40 @@ function renderWarResult(r, dailyBase, qldPrice, ssoPrice, usdkrw) {
     `<li class="war-fact"><span class="war-fact-dot">→</span><span>${cp}</span></li>`
   ).join("");
 
+  // 분할일수 조언
+  const splitCard = document.getElementById("splitAdviceCard");
+  const adv = r.split_days_advice;
+  if (adv && adv.recommended && adv.recommended !== adv.current) {
+    const cur = adv.current || S.splitDays || 75;
+    const rec = adv.recommended;
+    document.getElementById("splitAdviceText").textContent =
+      `현재 ${cur}일 → ${rec}일로 연장 권장`;
+    document.getElementById("splitAdviceReason").textContent = adv.reason || "";
+    document.getElementById("splitAdviceBtn").dataset.days = rec;
+    splitCard.style.display = "block";
+  } else {
+    splitCard.style.display = "none";
+  }
+
   // 업데이트 시각
   document.getElementById("warUpdated").textContent =
     new Date().toLocaleTimeString("ko-KR") + " 분석 완료";
+}
+
+// 분할일수 적용 버튼
+function applySplitAdvice() {
+  const btn = document.getElementById("splitAdviceBtn");
+  const days = parseInt(btn.dataset.days);
+  if (!days) return;
+  S.splitDays = days;
+  localStorage.setItem("qld_s10", JSON.stringify(S));
+  const el = document.getElementById("s-splitDays");
+  if (el) el.value = days;
+  renderStatic(MD);
+  renderRules();
+  btn.textContent = "적용됨 ✓";
+  btn.style.background = "#166534";
+  btn.disabled = true;
 }
 
 // ── 비밀번호 체크 ──

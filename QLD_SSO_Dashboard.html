@@ -556,7 +556,10 @@ function determineMode(d){
   const belowMA=d.ma120?d.qld<d.ma120:null;
   const gap=d.ma120?(d.qld-d.ma120)/d.ma120:null;
   const gc=d.ma20&&d.ma60?d.ma20>d.ma60:null;
-  const dd=d.qldHigh?(d.qldHigh-d.qld)/d.qldHigh:0;
+  // DD: 평단 입력 시 평단 기준, 없으면 52주 고가 기준
+  const ddBase = (S.qldAvg && S.qldAvg > 0) ? S.qldAvg : d.qldHigh;
+  const ddBaseLabel = (S.qldAvg && S.qldAvg > 0) ? "평단" : "52주고가";
+  const dd = ddBase ? Math.max(0, (ddBase - d.qld) / ddBase) : 0;
   const el=elapsed(); const rem=Math.max(0,splitDays()-el);
   const dw=rem>0?Math.round((S.totalBullet+S.monthlyBudget*12)/rem/10000):0;
   const mw=Math.round(S.monthlyBudget/10000);
@@ -572,26 +575,87 @@ function determineMode(d){
     const ssoGap = (S.ssoAvg && S.ssoAvg > 0 && d.sso) ? (d.sso - S.ssoAvg) / S.ssoAvg : null;
     const ssoTxt = ssoGap != null ? `  SSO ${ssoGap>=0?"+":""}${(ssoGap*100).toFixed(1)}%` : "";
     sellBasis = `평단 대비 QLD ${sellGap>=0?"+":""}${(sellGap*100).toFixed(1)}%${ssoTxt}`;
-  } else if (d.ma120 && gap != null) {
-    // 기존: MA120 이격률
-    sellGap = gap;
-    sellBasis = `MA120 이격 ${gap>=0?"+":""}${(gap*100).toFixed(1)}%`;
+  } else {
+    // 평단 미입력 → 익절 트리거 비활성화, 경고만 표시
+    sellGap = null;
+    sellBasis = "⚠ 평단가 미입력 — 설정탭에서 QLD/SSO 평단가를 입력하세요";
   }
 
   let name,phase,actions=[];
   if(S.planb3Active||el>=CFG.PLANB3_DAYS){
     const canResume=gc&&S.gcCount>=CFG.WS_RESUME&&d.fg>=CFG.RESUME_FG;
-    if(canResume){name="B-3 해제 — 재개";phase="resume";actions=[`골든크로스 ${S.gcCount}일 연속 ✓  F&G ${d.fg} ≥ 35 ✓`,"QLD:SSO 5:5 → 7:3 원복","월 적립 SGOV 70% + SPYM 30% 재개","설정: B-3 플래그 OFF / 진입일 리셋"];}
+    if(canResume){
+      name="B-3 해제 — 재개";phase="resume";
+      const spyAbove200resume = d.spy && d.ma200spy ? d.spy > d.ma200spy : false;
+      const spymResumeTxt = spyAbove200resume
+        ? "월 적립: SGOV 70% + SPYM 30% 재개 (SPY 200일선 위 ✓)"
+        : "월 적립: SGOV 100% (SPY 200일선 아래 — SPYM 아직 매수 불가)";
+      actions=[
+        `골든크로스 ${S.gcCount}일 연속 ✓  F&G ${d.fg} ≥ 35 ✓`,
+        "QLD:SSO 5:5 → 7:3 원복",
+        spymResumeTxt,
+        "설정: B-3 플래그 OFF / 진입일 리셋"
+      ];
+    }
     else{name="B-3 생존모드";phase="planb3";const miss=[];if(!gc)miss.push("골든크로스 미발생");else if(S.gcCount<CFG.WS_RESUME)miss.push(`골든크로스 ${S.gcCount}일 (2일 필요)`);if(d.fg!=null&&d.fg<CFG.RESUME_FG)miss.push(`F&G ${d.fg} < 35`);actions=["매수 완전 동결","QLD:SSO = 5:5 유지","월 적립 → SGOV 100%",...miss.map(m=>"미충족: "+m)];}
   }else if(belowMA===false){
-    if(sellGap!=null&&sellGap>=CFG.SELL_GAP[2]){name="익절 3단계";phase="sell3";actions=[`${sellBasis}  →  포지션 9% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
-    else if(sellGap!=null&&sellGap>=CFG.SELL_GAP[1]){name="익절 2단계";phase="sell2";actions=[`${sellBasis}  →  포지션 8% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
-    else if(sellGap!=null&&sellGap>=CFG.SELL_GAP[0]){name="익절 1단계";phase="sell1";actions=[`${sellBasis}  →  포지션 8% 매도 (QLD 우선)`,"익절현금 → SGOV 별도 보관"];}
-    else{name="홀드";phase="hold";actions=[`${sellBasis||"이격률 계산 중"}  →  홀드 (트리거 +25%)`,`월 적립: SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만`];}
+    if(sellGap!=null&&sellGap>=CFG.SELL_GAP[2]){
+      name="익절 3단계";phase="sell3";
+      actions=[`${sellBasis}  →  포지션 9% 매도 (QLD 우선)`,
+        "익절현금 → SGOV 별도 보관",
+        "누적 익절: 최대 25%까지 / 나머지 75% 절대 유지"];
+    }
+    else if(sellGap!=null&&sellGap>=CFG.SELL_GAP[1]){
+      name="익절 2단계";phase="sell2";
+      actions=[`${sellBasis}  →  포지션 8% 매도 (QLD 우선)`,
+        "익절현금 → SGOV 별도 보관",
+        `다음 트리거: +${CFG.SELL_GAP[2]*100}% (3단계 9% 매도)`];
+    }
+    else if(sellGap!=null&&sellGap>=CFG.SELL_GAP[0]){
+      name="익절 1단계";phase="sell1";
+      actions=[`${sellBasis}  →  포지션 8% 매도 (QLD 우선)`,
+        "익절현금 → SGOV 별도 보관",
+        `다음 트리거: +${CFG.SELL_GAP[1]*100}% (2단계 8% 매도)`];
+    }
+    else{
+      name="홀드";phase="hold";
+      // SPY 200일선 체크 → SPYM 조건 판단
+      const spyAbove200 = d.spy && d.ma200spy ? d.spy > d.ma200spy : false;
+      const standbyDesc = spyAbove200
+        ? `월 적립: SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만 (SPY 200일선 위 ✓)`
+        : `월 적립: SGOV 100% ${Math.round(S.monthlyBudget/10000)}만 (SPY 200일선 아래 — SPYM 매수 중단)`;
+      const sellTriggerTxt = S.qldAvg && S.qldAvg > 0
+        ? `${sellBasis}  →  홀드 (익절 트리거: 평단 +25%/+45%/+65%)`
+        : `⚠ 평단가 미입력 — 익절 자동판단 불가. 설정탭에서 입력하세요`;
+      actions=[
+        sellTriggerTxt,
+        standbyDesc,
+        `매수 재개 조건: QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"}) 하회 시 자동 전환`
+      ];
+    }
     if(S.profitCash>0&&S.rebuyCount>=CFG.WS_REBUY){for(let i=CFG.REBUY_DD.length-1;i>=0;i--){if(dd>=CFG.REBUY_DD[i]&&d.fg<=CFG.REBUY_FG[i]&&d.vix>=CFG.REBUY_VIX[i]){actions.push(`재투입 ${i+1}차: 익절현금풀 ${CFG.REBUY_PCT[i]*100}% → QLD 매수`);break;}}}
   }else if(belowMA===true){
-    if(el>=splitDays()&&el<CFG.PLANB3_DAYS){const mwDaily=Math.round(S.monthlyBudget/30/10000);name="B-2 매수연장";phase="planb2";actions=[`월 ${mw}만원 투입 (QLD 70% + SSO 30%)`,`일일 투입: 약 ${mwDaily}만원 (월투자금÷30)`,`B-3 전환까지 ${CFG.PLANB3_DAYS-el}일`];}
-    else{name="매수 진행 중";phase="buy";actions=[`QLD 70% + SSO 30%  /  ${el+1}일차 / ${splitDays()}일`,`일일 투입: 약 ${Math.round((S.totalBullet+S.monthlyBudget*12)/Math.max(1,splitDays()-el)/10000)}만원`,`잔여 ${rem}일`];}
+    if(el>=splitDays()&&el<CFG.PLANB3_DAYS){
+      const mwDaily=Math.round(S.monthlyBudget/30/10000);
+      name="B-2 매수연장";phase="planb2";
+      const daysToB3 = CFG.PLANB3_DAYS - el;
+      const ma120b2txt = d.ma120 ? `MA120 $${f(d.ma120,1)} 하회 중 ✓` : "MA120 계산 중";
+      actions=[
+        `월 ${mw}만원 투입 (QLD 70% + SSO 30%)`,
+        `일일 투입: 약 ${mwDaily}만원  /  B-3 전환까지 ${daysToB3}일`,
+        ma120b2txt,
+        daysToB3 <= 7 ? `⚠ B-3 전환 ${daysToB3}일 전 — 생존모드 준비` : ""
+      ].filter(Boolean);
+    }
+    else{
+      name="매수 진행 중";phase="buy";
+      const ma120txt = d.ma120 ? `MA120 $${f(d.ma120,1)} 하회 중 ✓` : "MA120 계산 중";
+      actions=[
+        `QLD 70% + SSO 30%  /  ${el+1}일차 / ${splitDays()}일`,
+        `일일 투입: 약 ${Math.round((S.totalBullet+S.monthlyBudget*12)/Math.max(1,splitDays()-el)/10000)}만원  /  잔여 ${rem}일`,
+        ma120txt
+      ];
+    }
   }else{name="데이터 조회 중";phase="loading";actions=["새로고침을 눌러주세요"];}
   return{name,phase,actions,pc:PC[phase]||PC.loading,gap,sellGap,dd,elapsed:el,remain:rem};
 }
@@ -607,8 +671,11 @@ function renderDashboard(d){
   setText("v-qld",`$${f(d.qld,2)}`,maClr); setText("v-ma120",`MA120 ${d.ma120?"$"+f(d.ma120,2):"계산 중"}`);
   const gap=d.ma120?(d.qld-d.ma120)/d.ma120:null;
   setText("v-gap",gap!=null?`${gap>=0?"+":""}${f(gap*100)}%`:"N/A",gap==null?"#94a3b8":gap<0?"#4ade80":gap>0.25?"#fbbf24":"#94a3b8");
-  const dd=d.qldHigh?(d.qldHigh-d.qld)/d.qldHigh:0;
-  setText("v-dd",`DD -${f(dd*100)}%`);
+  // DD: 평단 입력 시 평단 기준, 없으면 52주 고가 기준
+  const ddBase = (S.qldAvg && S.qldAvg > 0) ? S.qldAvg : d.qldHigh;
+  const ddBaseLabel = (S.qldAvg && S.qldAvg > 0) ? "평단" : "52주고가";
+  const dd = ddBase ? Math.max(0, (ddBase - d.qld) / ddBase) : 0;
+  setText("v-dd",`DD -${f(dd*100)}% (${ddBaseLabel}기준)`);
   setText("v-sso",`$${f(d.sso,2)}`); setText("v-spy",`SPY $${f(d.spy,2)}`);
   setText("v-sgov",`$${f(d.sgov,2)}`); setText("v-usdkrw",`${d.usdkrw?Math.round(d.usdkrw).toLocaleString():"—"}원/USD`);
   if(d.fg!=null){setText("v-fg",""+d.fg,fgClr(d.fg));setText("v-fglabel",fgLbl(d.fg));}
@@ -619,12 +686,41 @@ function renderDashboard(d){
   gcEl.textContent=gc===true?"20 > 60  골든크로스 ✓":gc===false?"20 < 60  데드크로스 ✗":"데이터 수집 중 (20일 후 자동)";
   gcEl.style.color=gc===true?"#4ade80":gc===false?"#f87171":"#94a3b8";
   document.getElementById("v-ma2060").textContent=`${d.ma20?"$"+f(d.ma20,1):"—"} / ${d.ma60?"$"+f(d.ma60,1):"—"}`;
-  renderStatic(d); renderHoldings(d.qld,d.sso,d.usdkrw); renderLOC(d.qld,d.sso,d.usdkrw,1.0);
-  document.getElementById("rebuyRows").innerHTML=CFG.REBUY_DD.map((tdd,i)=>{
-    const ddOk=dd>=tdd,fgOk=d.fg!=null&&d.fg<=CFG.REBUY_FG[i],vixOk=d.vix!=null&&d.vix>=CFG.REBUY_VIX[i];
-    const dc=c=>`<div class="dot ${c}"></div>`;
-    return`<div class="rebuy-row"><span>${i+1}차 -${tdd*100}%&nbsp;&nbsp;F&G≤${CFG.REBUY_FG[i]}&nbsp;&nbsp;VIX≥${CFG.REBUY_VIX[i]}</span><div class="dots">${dc(ddOk?"on":"off")}${dc(fgOk?"on":"off")}${dc(vixOk?"on":"off")}</div></div>`;
-  }).join("");
+  renderStatic(d); renderHoldings(d.qld,d.sso,d.usdkrw);
+  // 홀드/익절 모드면 LOC 대신 대기모드 안내 표시
+  const locMode = mode.phase;
+  if(locMode==="hold"||locMode==="sell1"||locMode==="sell2"||locMode==="sell3"){
+    const spyAbove200 = d.spy && d.ma200spy ? d.spy > d.ma200spy : false;
+    const spymTxt = spyAbove200
+      ? `SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만`
+      : `SGOV 100% ${Math.round(S.monthlyBudget/10000)}만 (SPY 200일선 아래)`;
+    document.getElementById("loc-body").innerHTML =
+      '<div style="font-size:12px;color:#475569;padding:8px 0;line-height:1.8;">' +
+      '📋 <b style="color:#94a3b8;">대기모드 — 매수 없음</b><br>' +
+      '월 적립: ' + spymTxt + '<br>' +
+      '<span style="font-size:10px;color:#334155;">120일선 하회 시 매수 재개</span></div>';
+    const locCard = document.querySelector(".loc-card");
+    if(locCard) locCard.style.borderColor = "#1e293b";
+  } else {
+    renderLOC(d.qld,d.sso,d.usdkrw,1.0);
+  }
+  // 재투입 조건 — 120일선 위(홀드/익절)일 때만 의미 있음
+  const rebuyContainer = document.getElementById("rebuyRows");
+  const rebuyCard = rebuyContainer ? rebuyContainer.closest(".card") : null;
+  if(mode.phase==="hold"||mode.phase==="sell1"||mode.phase==="sell2"||mode.phase==="sell3"){
+    const ddBasisTxt = (S.qldAvg && S.qldAvg > 0) ? "평단기준" : "52주고가기준";
+    rebuyContainer.innerHTML=
+      `<div style="font-size:9px;color:#475569;margin-bottom:4px;">DD ${ddBasisTxt} · 3중 AND 조건 · ${S.rebuyCount || 0}일 연속 충족</div>` +
+      CFG.REBUY_DD.map((tdd,i)=>{
+        const ddOk=dd2>=tdd,fgOk=d.fg!=null&&d.fg<=CFG.REBUY_FG[i],vixOk=d.vix!=null&&d.vix>=CFG.REBUY_VIX[i];
+        const allOk = ddOk&&fgOk&&vixOk;
+        const dc=c=>`<div class="dot ${c}"></div>`;
+        return`<div class="rebuy-row" style="${allOk?"border-left:2px solid #16a34a;padding-left:6px;":""}"><span>${i+1}차 -${tdd*100}%&nbsp;&nbsp;F&G≤${CFG.REBUY_FG[i]}&nbsp;&nbsp;VIX≥${CFG.REBUY_VIX[i]}</span><div class="dots">${dc(ddOk?"on":"off")}${dc(fgOk?"on":"off")}${dc(vixOk?"on":"off")}</div></div>`;
+      }).join("");
+    if(rebuyCard) rebuyCard.style.display="block";
+  } else {
+    if(rebuyCard) rebuyCard.style.display="none";
+  }
 }
 
 function renderStatic(d){
@@ -637,7 +733,18 @@ function renderStatic(d){
   setText("v-daily",`약 ${Math.round(daily/10000)}만원`);
   setText("v-total",`${Math.round(S.totalBullet/10000)}만원`);
   setText("v-profit",fKRW(S.profitCash));
-  if(d&&d.qld&&d.sso&&d.usdkrw){const qS=Math.floor(daily*0.7/(d.qld*d.usdkrw)),sS=Math.floor(daily*0.3/(d.sso*d.usdkrw));setText("v-shares",`QLD ${qS}주 + SSO ${sS}주`);}
+  if(d&&d.qld&&d.sso&&d.usdkrw){
+    // 홀드/익절/B-3 모드면 매수 주수 대신 대기 표시
+    const curPhase = determineMode(d).phase;
+    if(curPhase==="hold"||curPhase==="sell1"||curPhase==="sell2"||curPhase==="sell3"){
+      setText("v-shares","대기중 — 매수 없음","#475569");
+    } else if(curPhase==="planb3"){
+      setText("v-shares","동결 — B-3 생존모드","#f87171");
+    } else {
+      const qS=Math.floor(daily*0.7/(d.qld*d.usdkrw)),sS=Math.floor(daily*0.3/(d.sso*d.usdkrw));
+      setText("v-shares",`QLD ${qS}주 + SSO ${sS}주`);
+    }
+  }
 }
 
 function renderRules(){

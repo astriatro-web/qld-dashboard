@@ -5,157 +5,335 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>QLD+SSO 전략 대시보드</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: #030712; color: #e2e8f0;
-  font-family: 'DM Mono', 'Courier New', monospace;
-  min-height: 100vh; max-width: 480px; margin: 0 auto;
-  padding-bottom: 48px;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #050a15;
+  --bg2: #0d1525;
+  --bg3: #111c30;
+  --border: #1e2d45;
+  --border2: #253550;
+  --text1: #f0f4ff;
+  --text2: #8a9bc0;
+  --text3: #4a5a78;
+  --blue: #3b82f6;
+  --blue-dim: #1e3a5f;
+  --green: #22c55e;
+  --red: #ef4444;
+  --amber: #f59e0b;
 }
-.header { padding: 18px 16px 0; display: flex; justify-content: space-between; align-items: center; }
-.header-sub { font-size: 10px; color: #64748b; letter-spacing: 0.12em; margin-bottom: 2px; }
-.header-title { font-size: 17px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; }
-.last-updated { padding: 4px 16px 12px; font-size: 10px; color: #475569; }
-.btn-refresh { background: #1d4ed8; border: none; border-radius: 8px; color: #e2e8f0; padding: 9px 16px; font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-.btn-refresh:disabled { background: #1e293b; cursor: default; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text1);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── 헤더 ── */
+.header {
+  padding: 20px 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.header-sub {
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text1);
+  letter-spacing: -0.03em;
+}
+.last-updated {
+  padding: 4px 16px 14px;
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* ── 새로고침 버튼 ── */
+.btn-refresh {
+  background: var(--blue);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+.btn-refresh:hover { background: #2563eb; }
+.btn-refresh:disabled { background: var(--bg3); box-shadow: none; cursor: default; color: var(--text3); }
 .btn-refresh:active { transform: scale(0.96); }
-.tabs { display: flex; padding: 0 16px; gap: 4px; margin-bottom: 14px; }
-.tab { flex: 1; padding: 8px 4px; font-size: 11px; background: #0f172a; color: #64748b; border: 1px solid #1e293b; border-radius: 8px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-.tab.active { background: #1e40af; color: #bfdbfe; border-color: #3b82f6; font-weight: 700; }
+
+/* ── 탭 ── */
+.tabs {
+  display: flex;
+  padding: 0 16px;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.tab {
+  flex: 1;
+  padding: 9px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--bg2);
+  color: var(--text3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  letter-spacing: 0.01em;
+}
+.tab:hover { color: var(--text2); border-color: var(--border2); }
+.tab.active {
+  background: rgba(59,130,246,0.15);
+  color: #93c5fd;
+  border-color: rgba(59,130,246,0.5);
+  font-weight: 700;
+}
+
+/* ── 패널 ── */
 .panel { padding: 0 16px; display: none; }
 .panel.active { display: block; }
-.card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
-.card-label { font-size: 10px; color: #64748b; letter-spacing: 0.1em; margin-bottom: 8px; }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-.mc { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; }
-.mc-label { font-size: 10px; color: #64748b; margin-bottom: 4px; }
-.mc-value { font-size: 17px; font-weight: 700; }
-.mc-sub { font-size: 10px; color: #475569; margin-top: 2px; }
-.action-list { list-style: none; }
-.action-item { font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
-.action-item:last-child { border-bottom: none; }
-.progress-info { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 5px; }
-.progress-track { height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
-.progress-fill { height: 100%; background: #3b82f6; border-radius: 2px; transition: width 0.6s; }
-.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.stat-item .sl { font-size: 10px; color: #475569; }
-.stat-item .sv { font-size: 12px; font-weight: 600; color: #cbd5e1; margin-top: 2px; }
-.rebuy-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1e293b; font-size: 11px; color: #64748b; }
-.rebuy-row:last-child { border-bottom: none; }
-.dots { display: flex; gap: 5px; }
-.dot { width: 9px; height: 9px; border-radius: 50%; }
-.dot.on { background: #16a34a; } .dot.off { background: #dc2626; } .dot.na { background: #475569; }
-.setting-group { margin-bottom: 12px; }
-.setting-label { font-size: 11px; color: #64748b; margin-bottom: 4px; }
-.setting-input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #e2e8f0; font-size: 13px; font-family: inherit; outline: none; }
-.setting-input:focus { border-color: #3b82f6; }
-.btn-toggle { width: 100%; border-radius: 8px; padding: 10px 16px; font-size: 13px; cursor: pointer; font-family: inherit; }
-.btn-toggle.off { background: #0f172a; border: 1px solid #334155; color: #64748b; }
-.btn-toggle.on  { background: #450a0a; border: 1px solid #dc2626; color: #f87171; }
-.rules-section { margin-bottom: 12px; border-radius: 8px; overflow: hidden; }
-.rules-header { padding: 9px 14px; font-size: 11px; font-weight: 700; color: #e2e8f0; }
-.rules-row:nth-child(odd)  { background: #0f172a; }
-.rules-row:nth-child(even) { background: #0d1424; }
-.rules-row { padding: 10px 14px; border-left: 3px solid; }
-.rl { font-size: 10px; color: #64748b; font-weight: 600; margin-bottom: 3px; }
-.rd { font-size: 12px; color: #cbd5e1; line-height: 1.5; }
-.info-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; font-size: 11px; color: #475569; line-height: 1.7; margin-top: 8px; }
-.err-box { background: #450a0a; border: 1px solid #dc2626; border-radius: 10px; padding: 12px; font-size: 12px; color: #f87171; margin-bottom: 10px; white-space: pre-line; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.spinner { width: 14px; height: 14px; border: 2px solid #334155; border-top-color: #60a5fa; border-radius: 50%; animation: spin 0.7s linear infinite; display:inline-block; }
 
-/* LOC 주문 카드 */
-.loc-card { background: #0a1628; border: 1px solid #1e3a5f; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
-.loc-title { font-size: 10px; color: #60a5fa; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 700; }
-.loc-ticker { font-size: 11px; color: #94a3b8; font-weight: 700; margin: 8px 0 4px; letter-spacing: 0.08em; }
-.loc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 7px; margin-bottom: 4px; }
-.loc-row.type-a { background: #052e16; border: 1px solid #166534; }
-.loc-row.type-b { background: #1c1108; border: 1px solid #78350f; }
-.loc-row-label { font-size: 11px; }
-.loc-row-label .tag { font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 4px; margin-right: 5px; }
-.loc-row-label .tag.a { background: #166534; color: #4ade80; }
-.loc-row-label .tag.b { background: #78350f; color: #fbbf24; }
+/* ── 카드 ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.card-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ── 지표 그리드 ── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.mc {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  transition: border-color 0.2s;
+}
+.mc:hover { border-color: var(--border2); }
+.mc-label { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.mc-value { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.mc-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* ── 액션 리스트 ── */
+.action-list { list-style: none; }
+.action-item {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  line-height: 1.5;
+}
+.action-item:last-child { border-bottom: none; }
+
+/* ── 진행 바 ── */
+.progress-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+.progress-track { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 3px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+/* ── 통계 그리드 ── */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat-item .sl { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+.stat-item .sv { font-size: 14px; font-weight: 700; color: var(--text1); margin-top: 3px; }
+
+/* ── 재투입 조건 ── */
+.rebuy-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text2);
+}
+.rebuy-row:last-child { border-bottom: none; }
+.dots { display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.on { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+.dot.off { background: var(--red); }
+.dot.na { background: var(--text3); }
+
+/* ── 설정 ── */
+.setting-group { margin-bottom: 14px; }
+.setting-label { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 5px; letter-spacing: 0.03em; }
+.setting-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text1);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.setting-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+.btn-toggle { width: 100%; border-radius: 10px; padding: 11px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+.btn-toggle.off { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); }
+.btn-toggle.on  { background: rgba(239,68,68,0.15); border: 1px solid var(--red); color: var(--red); }
+
+/* ── 매매원칙 ── */
+.rules-section { margin-bottom: 14px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+.rules-header { padding: 11px 16px; font-size: 12px; font-weight: 700; color: var(--text1); letter-spacing: 0.02em; }
+.rules-row:nth-child(odd)  { background: var(--bg2); }
+.rules-row:nth-child(even) { background: var(--bg3); }
+.rules-row { padding: 11px 16px; border-left: 3px solid; }
+.rl { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.rd { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+/* ── 정보박스 / 에러박스 ── */
+.info-box { background: var(--bg3); border: 1px solid var(--border2); border-radius: 12px; padding: 14px; font-size: 12px; color: var(--text3); line-height: 1.8; margin-top: 8px; }
+.err-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; padding: 14px; font-size: 13px; color: #f87171; margin-bottom: 12px; white-space: pre-line; }
+
+/* ── 스피너 ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 14px; height: 14px; border: 2px solid var(--border2); border-top-color: #60a5fa; border-radius: 50%; animation: spin 0.7s linear infinite; display:inline-block; }
+
+/* ── LOC 주문 카드 ── */
+.loc-card { background: rgba(30,58,95,0.3); border: 1px solid var(--blue-dim); border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; }
+.loc-title { font-size: 10px; font-weight: 700; color: #60a5fa; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; }
+.loc-ticker { font-size: 12px; font-weight: 700; color: var(--text2); margin: 10px 0 6px; letter-spacing: 0.05em; }
+.loc-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border-radius: 9px; margin-bottom: 5px; }
+.loc-row.type-a { background: rgba(22,101,52,0.25); border: 1px solid rgba(22,163,74,0.4); }
+.loc-row.type-b { background: rgba(120,83,8,0.25); border: 1px solid rgba(202,138,4,0.4); }
+.loc-row-label { font-size: 12px; font-weight: 500; }
+.loc-row-label .tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 5px; margin-right: 6px; }
+.loc-row-label .tag.a { background: rgba(22,163,74,0.3); color: #4ade80; }
+.loc-row-label .tag.b { background: rgba(202,138,4,0.3); color: #fbbf24; }
 .loc-row-right { text-align: right; }
-.loc-price { font-size: 15px; font-weight: 700; }
+.loc-price { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
 .loc-price.a { color: #4ade80; }
 .loc-price.b { color: #fbbf24; }
-.loc-shares { font-size: 10px; color: #64748b; margin-top: 1px; }
-.loc-divider { border: none; border-top: 1px solid #1e293b; margin: 8px 0; }
-.loc-base { font-size: 10px; color: #475569; text-align: center; margin-top: 6px; }
-.loc-na { font-size: 12px; color: #475569; text-align: center; padding: 10px 0; }
+.loc-shares { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.loc-divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+.loc-base { font-size: 10px; color: var(--text3); text-align: center; margin-top: 8px; }
+.loc-na { font-size: 13px; color: var(--text3); text-align: center; padding: 12px 0; }
 
-/* ── 전쟁모니터 탭 전용 ── */
-.war-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.war-title { font-size: 10px; color: #f97316; letter-spacing: 0.12em; font-weight: 700; }
-.btn-war { background: #7c2d12; border: 1px solid #ea580c; border-radius: 8px; color: #fb923c; padding: 8px 14px; font-size: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
-.btn-war:disabled { background: #1e293b; border-color: #334155; color: #475569; cursor: default; }
+/* ── 거시모니터 ── */
+.war-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.war-title { font-size: 11px; font-weight: 700; color: #fb923c; letter-spacing: 0.12em; text-transform: uppercase; }
+.btn-war {
+  background: rgba(124,45,18,0.4);
+  border: 1px solid #ea580c;
+  border-radius: 10px;
+  color: #fb923c;
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.btn-war:hover { background: rgba(124,45,18,0.6); }
+.btn-war:disabled { background: var(--bg3); border-color: var(--border); color: var(--text3); cursor: default; }
 .btn-war:active { transform: scale(0.96); }
 
-/* 상황 등급 배지 */
-.war-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; }
-.war-badge.red    { background: #450a0a; color: #f87171; border: 1px solid #dc2626; }
-.war-badge.amber  { background: #431407; color: #fb923c; border: 1px solid #ea580c; }
-.war-badge.yellow { background: #422006; color: #fbbf24; border: 1px solid #d97706; }
-.war-badge.green  { background: #052e16; color: #4ade80; border: 1px solid #16a34a; }
-.war-badge.gray   { background: #0f172a; color: #64748b; border: 1px solid #334155; }
+.war-badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 20px; margin-bottom: 10px; letter-spacing: 0.02em; }
+.war-badge.red    { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+.war-badge.amber  { background: rgba(234,88,12,0.15); color: #fb923c; border: 1px solid rgba(234,88,12,0.4); }
+.war-badge.yellow { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); }
+.war-badge.green  { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.4); }
+.war-badge.gray   { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
 
-/* 주요 지표 행 */
-.war-kpi { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 10px; }
-.war-kpi-item { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px; }
-.war-kpi-label { font-size: 9px; color: #475569; margin-bottom: 3px; }
-.war-kpi-value { font-size: 14px; font-weight: 700; }
+.war-kpi { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+.war-kpi-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.war-kpi-label { font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.war-kpi-value { font-size: 13px; font-weight: 700; }
 
-/* 팩트 리스트 */
 .war-facts { list-style: none; margin-bottom: 10px; }
-.war-fact { font-size: 11px; color: #94a3b8; padding: 5px 0; border-bottom: 1px solid #1e293b; line-height: 1.5; display: flex; gap: 6px; }
+.war-fact { font-size: 12px; color: var(--text2); padding: 7px 0; border-bottom: 1px solid var(--border); line-height: 1.6; display: flex; gap: 8px; }
 .war-fact:last-child { border-bottom: none; }
-.war-fact-dot { color: #f97316; flex-shrink: 0; margin-top: 1px; }
+.war-fact-dot { color: #fb923c; flex-shrink: 0; margin-top: 2px; }
 
-/* 매수 조율 결과 박스 */
-.adj-card { border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
-.adj-card.red    { background: #1a0505; border: 1px solid #dc2626; }
-.adj-card.amber  { background: #1a0d00; border: 1px solid #ea580c; }
-.adj-card.yellow { background: #1a1200; border: 1px solid #d97706; }
-.adj-card.green  { background: #011a0a; border: 1px solid #16a34a; }
-.adj-card.gray   { background: #0f172a; border: 1px solid #334155; }
-.adj-title { font-size: 10px; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 10px; }
-.adj-title.red    { color: #f87171; }
-.adj-title.amber  { color: #fb923c; }
-.adj-title.yellow { color: #fbbf24; }
-.adj-title.green  { color: #4ade80; }
-.adj-title.gray   { color: #64748b; }
-.adj-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; }
+.adj-card { border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; }
+.adj-card.red    { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.35); }
+.adj-card.amber  { background: rgba(234,88,12,0.08); border: 1px solid rgba(234,88,12,0.35); }
+.adj-card.yellow { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.35); }
+.adj-card.green  { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.35); }
+.adj-card.gray   { background: var(--bg2); border: 1px solid var(--border); }
+.adj-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+.adj-title.red { color: #f87171; } .adj-title.amber { color: #fb923c; }
+.adj-title.yellow { color: #fbbf24; } .adj-title.green { color: #4ade80; } .adj-title.gray { color: var(--text3); }
+.adj-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
 .adj-row:last-child { border-bottom: none; }
-.adj-key { color: #64748b; }
+.adj-key { color: var(--text3); font-weight: 500; }
 .adj-val { font-weight: 700; }
 
-/* LOC 조율 박스 */
-.loc-adj-card { background: #0a1628; border: 1px solid #1e3a5f; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
-.loc-adj-title { font-size: 10px; color: #60a5fa; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 10px; }
-.loc-adj-warn { font-size: 11px; color: #fb923c; background: #1a0d00; border: 1px solid #ea580c; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; line-height: 1.5; }
+.loc-adj-card { background: rgba(30,58,95,0.25); border: 1px solid var(--blue-dim); border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; }
+.loc-adj-title { font-size: 10px; font-weight: 700; color: #60a5fa; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; }
+.loc-adj-warn { font-size: 12px; color: #fb923c; background: rgba(234,88,12,0.12); border: 1px solid rgba(234,88,12,0.35); border-radius: 9px; padding: 10px 14px; margin-bottom: 12px; line-height: 1.6; }
 
-/* AI 요약 박스 */
-.ai-summary { background: #0d1424; border: 1px solid #1e3a5f; border-radius: 10px; padding: 12px; font-size: 11px; color: #94a3b8; line-height: 1.7; margin-bottom: 10px; }
-.ai-summary-label { font-size: 9px; color: #3b82f6; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 6px; }
+.ai-summary { background: rgba(30,58,95,0.2); border: 1px solid var(--blue-dim); border-radius: 12px; padding: 14px; font-size: 12px; color: var(--text2); line-height: 1.8; margin-bottom: 12px; }
+.ai-summary-label { font-size: 9px; font-weight: 700; color: var(--blue); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
 
-.war-updated { font-size: 10px; color: #334155; text-align: right; margin-bottom: 8px; }
-.war-empty { font-size: 12px; color: #334155; text-align: center; padding: 32px 0; line-height: 1.8; }
+.war-updated { font-size: 10px; color: var(--text3); text-align: right; margin-bottom: 10px; }
+.war-empty { font-size: 13px; color: var(--text3); text-align: center; padding: 40px 0; line-height: 2.0; }
 </style>
 </head>
 <body>
 
 <!-- 비밀번호 모달 -->
-<div id="pwModal" style="position:fixed;inset:0;background:#030712;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:32px;">
-  <div style="font-size:11px;color:#64748b;letter-spacing:0.12em;margin-bottom:4px;">QLD + SSO</div>
-  <div style="font-size:20px;font-weight:700;color:#f1f5f9;margin-bottom:32px;">전략 대시보드</div>
+<div id="pwModal" style="position:fixed;inset:0;background:#050a15;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:32px;overflow-y:auto;">
+  <div style="font-size:10px;color:#4a5a78;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;">QLD + SSO</div>
+  <div style="font-size:26px;font-weight:800;color:#f0f4ff;margin-bottom:4px;letter-spacing:-0.03em;">전략 대시보드</div>
+  <div style="font-size:12px;color:#4a5a78;margin-bottom:36px;">레버리지 ETF 전략 관리 시스템</div>
   <input id="pwInput" type="password" placeholder="비밀번호 입력"
-    style="width:100%;max-width:280px;background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px 16px;color:#e2e8f0;font-size:15px;font-family:inherit;outline:none;text-align:center;margin-bottom:12px;"
-    onkeydown="if(event.key==='Enter')checkPW()">
+    style="width:100%;max-width:300px;background:#0d1525;border:1px solid #253550;border-radius:12px;padding:14px 18px;color:#f0f4ff;font-size:16px;font-family:inherit;outline:none;text-align:center;margin-bottom:10px;transition:border-color 0.2s;"
+    onkeydown="if(event.key==='Enter')checkPW()"
+    onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#253550'">
   <button onclick="checkPW()"
-    style="width:100%;max-width:280px;background:#1d4ed8;border:none;border-radius:10px;color:#e2e8f0;padding:12px;font-size:14px;cursor:pointer;font-family:inherit;">
+    style="width:100%;max-width:300px;background:#3b82f6;border:none;border-radius:12px;color:#fff;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(59,130,246,0.35);transition:all 0.2s;"
+    onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
     입력
   </button>
   <div id="pwErr" style="color:#f87171;font-size:12px;margin-top:10px;display:none;">비밀번호가 틀렸습니다</div>
+  <div style="margin-top:32px;text-align:center;">
+    <div style="font-size:9px;color:#334155;margin-bottom:8px;letter-spacing:0.08em;">추천 상품 · 쿠팡 파트너스</div>
+    <div style="display:flex;gap:12px;justify-content:center;align-items:flex-start;">
+      <iframe src="https://coupa.ng/cmhZGl" width="120" height="240" frameborder="0" scrolling="no" referrerpolicy="unsafe-url" browsingtopics style="border-radius:8px;"></iframe>
+      <iframe src="https://coupa.ng/cmi49F" width="120" height="240" frameborder="0" scrolling="no" referrerpolicy="unsafe-url" browsingtopics style="border-radius:8px;"></iframe>
+    </div>
+    <div style="font-size:8px;color:#334155;margin-top:8px;">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+  </div>
 </div>
 
 <div id="appWrap" style="display:none;">
@@ -182,7 +360,7 @@ body {
   <div id="errBox" class="err-box" style="display:none;"></div>
   <div id="modeCard" class="card">
     <div class="card-label">현재 모드</div>
-    <div id="modeName" style="font-size:20px;font-weight:700;color:#94a3b8;">—</div>
+    <div id="modeName" style="font-size:22px;font-weight:800;color:#94a3b8;letter-spacing:-0.02em;margin-top:2px;">—</div>
   </div>
   <div class="card" id="actionCard" style="display:none;">
     <div class="card-label">오늘의 액션</div>
@@ -228,12 +406,6 @@ body {
     <div id="rebuyRows"></div>
   </div>
 
-  <!-- 쿠팡 파트너스 -->
-  <div style="margin-top:4px;margin-bottom:10px;text-align:center;">
-    <div style="font-size:9px;color:#334155;margin-bottom:6px;letter-spacing:0.08em;">추천 상품 · 쿠팡 파트너스</div>
-    <iframe src="https://coupa.ng/cmhZGl" width="120" height="240" frameborder="0" scrolling="no" referrerpolicy="unsafe-url" browsingtopics style="border-radius:8px;"></iframe>
-    <div style="font-size:8px;color:#1e293b;margin-top:6px;">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
-  </div>
 </div>
 
 <!-- ── 매매원칙 패널 ── -->
@@ -404,6 +576,14 @@ const WAR_GRADES = {
 function getRULES() {
   const days = S.splitDays || 75;
   return [
+  {title:"왜 QLD+SSO인가 — 전략 근거",color:"#1e293b",items:[
+    ["QLD 10년 연평균","백테스트 기준 연 23~42% (적립식 기준). 출처: 유튜브 '일억은퇴' 채널 QLD 120일선 전략 영상"],
+    ["120일선 하회 매수 근거","QLD 10년간 120일선 하회 구간은 반드시 회복됨 (2015·2018·2020·2022 하락장 포함). 하회 시 분할매수 → 120일선 복귀 시 수익 실현 패턴 반복 확인"],
+    ["120일선 기준 선택 이유","단기(20·60일)는 휩소 多, 장기(200일)는 진입 타이밍 너무 늦음. 120일≈6개월이 추세 판단의 최적 균형점"],
+    ["QLD vs TQQQ","TQQQ(3배)는 MDD -90%+ 수준으로 멘탈 관리 불가. QLD(2배)는 MDD -70% 수준으로 장기 보유 현실적"],
+    ["SSO 병행 이유","QLD 70% + SSO(S&P500 2배) 30% → 나스닥 집중 리스크 분산. S&P500은 나스닥 대비 변동성 낮아 안정적 회복"],
+    ["참고 영상","유튜브 '일억은퇴' — QLD 120일선 전략 (https://youtu.be/Dk3CiyCvlSc)"],
+    ["⚠ 리스크 고지","레버리지 ETF는 단기 변동성 극심. 이 전략은 10년+ 장기 관점에서만 유효. 단기 손실 감내 필수"]]},
   {title:"탄환 구조",color:"#1e3a5f",items:[
     ["일일 균등액","(탄환 총액 + 월 투자금 × 12) ÷ " + days + "일 = 일일 매수금액"],
     ["재원 전환","SGOV 소진 후 월급으로 자연 전환"],

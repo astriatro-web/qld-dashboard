@@ -326,16 +326,7 @@ body {
     입력
   </button>
   <div id="pwErr" style="color:#f87171;font-size:12px;margin-top:10px;display:none;">비밀번호가 틀렸습니다</div>
-  <div style="margin-top:32px;width:100%;max-width:340px;">
-    <div style="font-size:9px;color:#253550;margin-bottom:8px;letter-spacing:0.08em;text-align:center;">추천 상품 · 쿠팡 파트너스</div>
-    <div style="border-radius:12px;overflow:hidden;background:#0d1525;border:1px solid #1e2d45;">
-      <script src="https://ads-partners.coupang.com/g.js"></script>
-      <script>
-        new PartnersCoupang.G({"id":979393,"template":"carousel","trackingCode":"AF8164365","width":"338","height":"140","tsource":""});
-      </script>
-    </div>
-    <div style="font-size:8px;color:#253550;margin-top:6px;text-align:center;">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
-  </div>
+
 </div>
 
 <div id="appWrap" style="display:none;">
@@ -549,6 +540,18 @@ body {
         style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;color:var(--text3);padding:8px;font-size:11px;cursor:pointer;font-family:inherit;margin-top:6px;transition:all 0.2s;">
         ↻ 새로고침
       </button>
+
+      <!-- 쿠팡 파트너스 배너 -->
+      <div style="margin-top:16px;">
+        <div style="font-size:9px;color:var(--text3);margin-bottom:6px;text-align:center;letter-spacing:0.08em;">추천 상품 · 쿠팡 파트너스</div>
+        <div style="border-radius:10px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);">
+          <script src="https://ads-partners.coupang.com/g.js"></script>
+          <script>
+            new PartnersCoupang.G({"id":979393,"template":"carousel","trackingCode":"AF8164365","width":"100%","height":"140","tsource":""});
+          </script>
+        </div>
+        <div style="font-size:8px;color:var(--text3);margin-top:5px;text-align:center;">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+      </div>
     </div>
 </div>
 
@@ -575,11 +578,13 @@ body {
     <div style="font-size:10px;color:#60a5fa;letter-spacing:0.1em;margin-bottom:10px;font-weight:700;">보유 수량</div>
     <div class="setting-group"><div class="setting-label">QLD 현재 보유 주수</div><input class="setting-input" type="number" id="s-qldHeld" placeholder="0" oninput="saveSettings()"></div>
     <div class="setting-group"><div class="setting-label">SSO 현재 보유 주수</div><input class="setting-input" type="number" id="s-ssoHeld" placeholder="0" oninput="saveSettings()"></div>
+    <div class="setting-group"><div class="setting-label">SPYM 현재 보유 주수 (대기모드)</div><input class="setting-input" type="number" id="s-spymHeld" placeholder="0" oninput="saveSettings()"></div>
   </div>
   <div style="border-top:1px solid #1e293b;margin:4px 0 12px;padding-top:12px;">
     <div style="font-size:10px;color:#f59e0b;letter-spacing:0.1em;margin-bottom:10px;font-weight:700;">익절 기준 평단가 (USD)</div>
     <div class="setting-group"><div class="setting-label">QLD 평단가 ($)</div><input class="setting-input" type="number" id="s-qldAvg" placeholder="예: 68.50" step="0.01" oninput="saveSettings()"></div>
     <div class="setting-group"><div class="setting-label">SSO 평단가 ($)</div><input class="setting-input" type="number" id="s-ssoAvg" placeholder="예: 80.20" step="0.01" oninput="saveSettings()"></div>
+    <div class="setting-group"><div class="setting-label">SPYM 평단가 ($) — 수익률 표시용</div><input class="setting-input" type="number" id="s-spymAvg" placeholder="예: 55.00" step="0.01" oninput="saveSettings()"></div>
     <div class="info-box" style="margin-top:0;margin-bottom:0;">평단가 입력 시 <b style="color:#f59e0b;">평단 대비 수익률</b>로 익절 트리거 계산. 미입력 시 52주 고가 대비 이격률 유지.</div>
   </div>
   <div class="setting-group" style="margin-bottom:16px;"><div class="setting-label">B-3 생존모드 플래그</div><button class="btn-toggle off" id="btnPlanb3" onclick="togglePlanb3()">⚪ B-3 비활성</button></div>
@@ -663,8 +668,10 @@ function loadSettings() {
   S.splitDays     = S.splitDays     || 75;
   S.qldHeld       = S.qldHeld       != null ? S.qldHeld : 0;
   S.ssoHeld       = S.ssoHeld       != null ? S.ssoHeld : 0;
+  S.spymHeld      = S.spymHeld      != null ? S.spymHeld : 0;
   S.qldAvg        = S.qldAvg        || null;
   S.ssoAvg        = S.ssoAvg        || null;
+  S.spymAvg       = S.spymAvg       || null;
   document.getElementById("s-entryDate").value     = S.entryDate;
   document.getElementById("s-totalBullet").value   = S.totalBullet;
   document.getElementById("s-monthlyBudget").value = S.monthlyBudget;
@@ -677,6 +684,8 @@ function loadSettings() {
   const _sh = document.getElementById("s-ssoHeld"); if(_sh) _sh.value = S.ssoHeld;
   const _qa = document.getElementById("s-qldAvg"); if(_qa) _qa.value = S.qldAvg || "";
   const _sa = document.getElementById("s-ssoAvg"); if(_sa) _sa.value = S.ssoAvg || "";
+  const _spa = document.getElementById("s-spymAvg"); if(_spa) _spa.value = S.spymAvg || "";
+  const _sph = document.getElementById("s-spymHeld"); if(_sph) _sph.value = S.spymHeld || 0;
   updatePlanb3Btn();
 }
 function saveSettings() {
@@ -693,6 +702,8 @@ function saveSettings() {
   const _sh = document.getElementById("s-ssoHeld"); S.ssoHeld = _sh ? parseInt(_sh.value)||7  : (S.ssoHeld||7);
   const _qa2 = document.getElementById("s-qldAvg"); S.qldAvg = _qa2 && _qa2.value ? parseFloat(_qa2.value) : null;
   const _sa2 = document.getElementById("s-ssoAvg"); S.ssoAvg = _sa2 && _sa2.value ? parseFloat(_sa2.value) : null;
+  const _spa2 = document.getElementById("s-spymAvg"); S.spymAvg = _spa2 && _spa2.value ? parseFloat(_spa2.value) : null;
+  const _sph2 = document.getElementById("s-spymHeld"); S.spymHeld = _sph2 ? parseInt(_sph2.value)||0 : (S.spymHeld||0);
   localStorage.setItem("qld_s10", JSON.stringify(S));
   renderStatic(null);
 }
@@ -720,19 +731,62 @@ const splitDays=()=>S.splitDays||75;
 function setText(id,text,color){const el=document.getElementById(id);if(!el)return;el.textContent=text;if(color)el.style.color=color;}
 
 // 보유 평가액
-function renderHoldings(qldPrice, ssoPrice, usdkrw) {
+function renderHoldings(qldPrice, ssoPrice, usdkrw, spymPrice) {
   const container = document.getElementById("holdingRows");
-  const qh = S.qldHeld || 0; const sh = S.ssoHeld || 0;
-  if (!qh && !sh) { container.innerHTML='<div style="font-size:12px;color:#475569;">설정탭에서 보유 주수를 입력하세요</div>'; return; }
-  if (!qldPrice || !ssoPrice || !usdkrw) { container.innerHTML='<div style="font-size:12px;color:#475569;">시세 조회 후 표시됩니다</div>'; return; }
-  const qldUsd=qh*qldPrice, ssoUsd=sh*ssoPrice, totalUsd=qldUsd+ssoUsd;
-  const qldKrw=Math.round(qldUsd*usdkrw), ssoKrw=Math.round(ssoUsd*usdkrw), totalKrw=Math.round(totalUsd*usdkrw);
-  const fw=n=>Math.round(n/10000).toLocaleString();
-  container.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:11px;margin-bottom:6px;"><div style="color:#64748b;"></div><div style="color:#64748b;text-align:right;">USD</div><div style="color:#64748b;text-align:right;">원화</div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid #1e293b;"><div style="color:#94a3b8;">QLD <span style="color:#475569;">${qh}주</span></div><div style="color:#e2e8f0;text-align:right;">$${Math.round(qldUsd).toLocaleString()}</div><div style="color:#e2e8f0;text-align:right;">${fw(qldKrw)}만</div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid #1e293b;"><div style="color:#94a3b8;">SSO <span style="color:#475569;">${sh}주</span></div><div style="color:#e2e8f0;text-align:right;">$${Math.round(ssoUsd).toLocaleString()}</div><div style="color:#e2e8f0;text-align:right;">${fw(ssoKrw)}만</div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;font-weight:700;padding:6px 0;"><div style="color:#60a5fa;">합계</div><div style="color:#60a5fa;text-align:right;">$${Math.round(totalUsd).toLocaleString()}</div><div style="color:#60a5fa;text-align:right;">${fw(totalKrw)}만</div></div>`;
+  const qh = S.qldHeld || 0;
+  const sh = S.ssoHeld || 0;
+  const sph = S.spymHeld || 0;
+  if (!qh && !sh && !sph) { container.innerHTML='<div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div>'; return; }
+  if (!qldPrice || !ssoPrice || !usdkrw) { container.innerHTML='<div style="font-size:12px;color:var(--text3);">시세 조회 후 표시됩니다</div>'; return; }
+
+  // 수익률 계산 헬퍼
+  const pnlTxt = (price, avg) => {
+    if (!avg || !price) return "";
+    const pct = ((price - avg) / avg * 100);
+    const c = pct >= 0 ? "#4ade80" : "#f87171";
+    return `<span style="font-size:10px;color:${c};margin-left:4px;">${pct>=0?"+":""}${pct.toFixed(1)}%</span>`;
+  };
+
+  const qldUsd = qh * qldPrice;
+  const ssoUsd = sh * ssoPrice;
+  const spymUsd = sph * (spymPrice || 0);
+  const totalUsd = qldUsd + ssoUsd + spymUsd;
+  const fw = n => Math.round(n/10000).toLocaleString();
+
+  let rows = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.06em;margin-bottom:6px;">
+      <div></div><div style="text-align:right;">USD</div><div style="text-align:right;">원화</div>
+    </div>`;
+
+  if (qh > 0) rows += `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <div style="color:var(--text2);">QLD <span style="color:var(--text3);font-size:11px;">${qh}주</span>${pnlTxt(qldPrice, S.qldAvg)}</div>
+      <div style="color:var(--text1);text-align:right;font-weight:600;">$${Math.round(qldUsd).toLocaleString()}</div>
+      <div style="color:var(--text1);text-align:right;font-weight:600;">${fw(Math.round(qldUsd*usdkrw))}만</div>
+    </div>`;
+
+  if (sh > 0) rows += `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <div style="color:var(--text2);">SSO <span style="color:var(--text3);font-size:11px;">${sh}주</span>${pnlTxt(ssoPrice, S.ssoAvg)}</div>
+      <div style="color:var(--text1);text-align:right;font-weight:600;">$${Math.round(ssoUsd).toLocaleString()}</div>
+      <div style="color:var(--text1);text-align:right;font-weight:600;">${fw(Math.round(ssoUsd*usdkrw))}만</div>
+    </div>`;
+
+  if (sph > 0 && spymPrice) rows += `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <div style="color:var(--text2);">SPYM <span style="color:var(--text3);font-size:11px;">${sph}주</span>${pnlTxt(spymPrice, S.spymAvg)}</div>
+      <div style="color:var(--text1);text-align:right;font-weight:600;">$${Math.round(spymUsd).toLocaleString()}</div>
+      <div style="color:var(--text1);text-align:right;font-weight:600;">${fw(Math.round(spymUsd*usdkrw))}만</div>
+    </div>`;
+
+  rows += `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:14px;font-weight:800;padding:8px 0;">
+      <div style="color:var(--blue);">합계</div>
+      <div style="color:var(--blue);text-align:right;">$${Math.round(totalUsd).toLocaleString()}</div>
+      <div style="color:var(--blue);text-align:right;">${fw(Math.round(totalUsd*usdkrw))}만</div>
+    </div>`;
+
+  container.innerHTML = rows;
 }
 
 // LOC 계산기 (기본)
@@ -758,7 +812,45 @@ function renderLOC(qldPrice, ssoPrice, usdkrw, mult) {
     <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; A ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B ×0.990 눌릴 때 유리</div>`;
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxhPwxDk-SoKCmd0_Hhh2zja4hjHqbUr3TFzUurc6I9WMHU6dHuXqgYqp37uwLMnl5iUg/exec";
+// ── SPYM LOC 계산기 (대기모드 전용) ──
+function renderSPYMLOC(spymPrice, usdkrw, containerId) {
+  const cid = containerId || "loc-body";
+  const container = document.getElementById(cid);
+  if (!container) return;
+  if (!spymPrice || !usdkrw) {
+    container.innerHTML = '<div class="loc-na">SPYM 시세 없음 — 스프레드시트 B9에 =GOOGLEFINANCE("SPYM") 입력 필요</div>';
+    return;
+  }
+  // 일일 SPYM 매수금 = 월투자금 × 12 × 0.3 ÷ 252 (연간영업일)
+  const dailySpym = Math.round(S.monthlyBudget * 12 * 0.3 / 252);
+  const spymTotal = Math.floor(dailySpym / (spymPrice * usdkrw));
+  const spymA = Math.round(spymTotal * 0.6);
+  const spymB = spymTotal - spymA;
+  const f2 = n => n.toFixed(2);
+  const locCard = document.querySelector(".loc-card");
+  if(locCard) locCard.style.borderColor = "rgba(99,102,241,0.4)";
+  container.innerHTML = `
+    <div style="font-size:10px;color:#818cf8;letter-spacing:0.08em;font-weight:700;margin-bottom:8px;">
+      📋 SPYM LOC 가이드 (대기모드 · 매일 적립)
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.6;">
+      일일 SPYM 매수금: <b style="color:var(--text2);">약 ${Math.round(dailySpym/10000)}만원</b>
+      <span style="color:var(--text3);"> = 월투자금×12×30% ÷ 252일</span><br>
+      <span style="color:#818cf8;font-size:9px;">※ SPYM은 거시 리스크 등급에 관계없이 매수량 고정</span>
+    </div>
+    <div class="loc-ticker">SPYM <span style="color:var(--text3);font-weight:400;">종가 $${f2(spymPrice)} → 오늘 매수 ${spymTotal}주</span></div>
+    <div class="loc-row type-a">
+      <div class="loc-row-label"><span class="tag a">A</span>확실체결 LOC</div>
+      <div class="loc-row-right"><div class="loc-price a">$${f2(spymPrice*1.025)}</div><div class="loc-shares">${spymA}주 &nbsp;·&nbsp; ×1.025</div></div>
+    </div>
+    <div class="loc-row type-b">
+      <div class="loc-row-label"><span class="tag b">B</span>유리한가격 LOC</div>
+      <div class="loc-row-right"><div class="loc-price b">$${f2(spymPrice*0.990)}</div><div class="loc-shares">${spymB}주 &nbsp;·&nbsp; ×0.990</div></div>
+    </div>
+    <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; SGOV 70% 별도 적립 병행</div>`;
+}
+
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzO71kzixBo23y0XHssgjtSBczblBrOwR26ZS_Oj8NQ-rM8HvC06Gi8RkpJ8IxGvaFGbA/exec";
 let MD = null;
 
 async function fetchAll() {
@@ -770,7 +862,7 @@ async function fetchAll() {
     if(!res.ok) throw new Error("서버 응답 오류: "+res.status);
     const d=await res.json();
     if(!d.qld||d.qld===0) throw new Error("QLD 데이터 없음 — 스프레드시트 B1 수식을 확인해주세요");
-    MD={qld:d.qld,qldHigh:d.high52||d.qld,sso:d.sso,spy:d.spy,sgov:d.sgov,vix:d.vix,usdkrw:d.usdkrw||1350,fg:d.fg||S.fg||null,ma20:d.ma20,ma60:d.ma60,ma120:d.ma120,ma200spy:d.ma200spy};
+    MD={qld:d.qld,qldHigh:d.high52||d.qld,sso:d.sso,spy:d.spy,sgov:d.sgov,vix:d.vix,usdkrw:d.usdkrw||1350,fg:d.fg||S.fg||null,ma20:d.ma20,ma60:d.ma60,ma120:d.ma120,ma200spy:d.ma200spy,spym:d.spym||null};
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent=new Date().toLocaleTimeString("ko-KR")+" 업데이트";
   } catch(e) {
@@ -914,21 +1006,27 @@ function renderDashboard(d){
   gcEl.textContent=gc===true?"20 > 60  골든크로스 ✓":gc===false?"20 < 60  데드크로스 ✗":"데이터 수집 중 (20일 후 자동)";
   gcEl.style.color=gc===true?"#4ade80":gc===false?"#f87171":"#94a3b8";
   document.getElementById("v-ma2060").textContent=`${d.ma20?"$"+f(d.ma20,1):"—"} / ${d.ma60?"$"+f(d.ma60,1):"—"}`;
-  renderStatic(d); renderHoldings(d.qld,d.sso,d.usdkrw);
+  renderStatic(d); renderHoldings(d.qld,d.sso,d.usdkrw,d.spym);
   // 홀드/익절 모드면 LOC 대신 대기모드 안내 표시
   const locMode = mode.phase;
   if(locMode==="hold"||locMode==="sell1"||locMode==="sell2"||locMode==="sell3"){
     const spyAbove200 = d.spy && d.ma200spy ? d.spy > d.ma200spy : false;
-    const spymTxt = spyAbove200
-      ? `SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만`
-      : `SGOV 100% ${Math.round(S.monthlyBudget/10000)}만 (SPY 200일선 아래)`;
-    document.getElementById("loc-body").innerHTML =
-      '<div style="font-size:12px;color:#475569;padding:8px 0;line-height:1.8;">' +
-      '📋 <b style="color:#94a3b8;">대기모드 — 매수 없음</b><br>' +
-      '월 적립: ' + spymTxt + '<br>' +
-      '<span style="font-size:10px;color:#334155;">120일선 하회 시 매수 재개</span></div>';
-    const locCard = document.querySelector(".loc-card");
-    if(locCard) locCard.style.borderColor = "#1e293b";
+    if (spyAbove200 && d.spym) {
+      // SPYM LOC 표시
+      renderSPYMLOC(d.spym, d.usdkrw);
+    } else {
+      const spymTxt = spyAbove200
+        ? `SGOV ${Math.round(S.monthlyBudget*0.7/10000)}만 + SPYM ${Math.round(S.monthlyBudget*0.3/10000)}만 (SPYM 시세 없음)`
+        : `SGOV 100% ${Math.round(S.monthlyBudget/10000)}만 (SPY 200일선 아래 — SPYM 매수 불가)`;
+      document.getElementById("loc-body").innerHTML =
+        `<div style="font-size:12px;color:var(--text3);padding:8px 0;line-height:1.9;">
+          📋 <b style="color:var(--text2);">대기모드</b><br>
+          ${spymTxt}<br>
+          <span style="font-size:10px;color:var(--text3);">120일선 하회 시 QLD+SSO 매수 재개</span>
+        </div>`;
+      const locCard = document.querySelector(".loc-card");
+      if(locCard) locCard.style.borderColor = "var(--border)";
+    }
   } else {
     renderLOC(d.qld,d.sso,d.usdkrw,1.0);
   }
@@ -1120,9 +1218,22 @@ function renderWarResult(r, dailyBase, qldPrice, ssoPrice, usdkrw) {
     warn.style.display = "none";
   }
 
-  // 조율된 LOC 렌더링
+  // 조율된 LOC 렌더링 — 홀드모드면 SPYM, 매수모드면 QLD+SSO
   const warLocBody = document.getElementById("warLocBody");
-  if (!qldPrice || !ssoPrice || !usdkrw) {
+  const curPhaseWar = MD ? determineMode(MD).phase : null;
+  const isHoldModeWar = curPhaseWar === "hold" || curPhaseWar === "sell1" || curPhaseWar === "sell2" || curPhaseWar === "sell3";
+
+  if (isHoldModeWar && MD && MD.spym) {
+    // 대기모드 → SPYM LOC 표시 (거시 리스크 adj_mult 미적용)
+    const locAdjCard = document.querySelector(".loc-adj-card");
+    if(locAdjCard) locAdjCard.style.borderColor = "rgba(99,102,241,0.4)";
+    document.getElementById("warLocWarn").style.display = "block";
+    document.getElementById("warLocWarn").textContent = "ℹ SPYM은 거시 리스크 등급에 관계없이 매수량 고정 (레버리지 아님)";
+    document.getElementById("warLocWarn").style.color = "#818cf8";
+    document.getElementById("warLocWarn").style.borderColor = "rgba(99,102,241,0.3)";
+    document.getElementById("warLocWarn").style.background = "rgba(99,102,241,0.08)";
+    renderSPYMLOC(MD.spym, MD.usdkrw, "warLocBody");
+  } else if (!qldPrice || !ssoPrice || !usdkrw) {
     warLocBody.innerHTML = '<div class="loc-na">대시보드에서 새로고침 후 재분석하세요</div>';
   } else {
     const daily = Math.round(dailyBase * adjMultiplier);

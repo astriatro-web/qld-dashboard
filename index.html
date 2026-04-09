@@ -316,7 +316,8 @@ body {
   <div style="font-size:10px;color:#4a5a78;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;">QLD + SSO</div>
   <div style="font-size:26px;font-weight:800;color:#f0f4ff;margin-bottom:4px;letter-spacing:-0.03em;">전략 대시보드</div>
   <div style="font-size:12px;color:#4a5a78;margin-bottom:36px;">레버리지 ETF 전략 관리 시스템</div>
-  <input id="pwInput" type="password" placeholder="비밀번호 입력"
+  <div style="font-size:11px;color:#253550;margin-top:-28px;margin-bottom:28px;letter-spacing:0.05em;">💡 힌트: 투자자의 적은 본인</div>
+  <input id="pwInput" type="password" placeholder="오늘의 다짐을 입력하세요"
     style="width:100%;max-width:300px;background:#0d1525;border:1px solid #253550;border-radius:12px;padding:14px 18px;color:#f0f4ff;font-size:16px;font-family:inherit;outline:none;text-align:center;margin-bottom:10px;transition:border-color 0.2s;"
     onkeydown="if(event.key==='Enter')checkPW()"
     onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#253550'">
@@ -326,13 +327,15 @@ body {
     입력
   </button>
   <div id="pwErr" style="color:#f87171;font-size:12px;margin-top:10px;display:none;">비밀번호가 틀렸습니다</div>
-  <div style="margin-top:32px;text-align:center;">
-    <div style="font-size:9px;color:#334155;margin-bottom:8px;letter-spacing:0.08em;">추천 상품 · 쿠팡 파트너스</div>
-    <div style="display:flex;gap:12px;justify-content:center;align-items:flex-start;">
-      <iframe src="https://coupa.ng/cmhZGl" width="120" height="240" frameborder="0" scrolling="no" referrerpolicy="unsafe-url" browsingtopics style="border-radius:8px;"></iframe>
-      <iframe src="https://coupa.ng/cmi49F" width="120" height="240" frameborder="0" scrolling="no" referrerpolicy="unsafe-url" browsingtopics style="border-radius:8px;"></iframe>
+  <div style="margin-top:32px;width:100%;max-width:340px;">
+    <div style="font-size:9px;color:#253550;margin-bottom:8px;letter-spacing:0.08em;text-align:center;">추천 상품 · 쿠팡 파트너스</div>
+    <div style="border-radius:12px;overflow:hidden;background:#0d1525;border:1px solid #1e2d45;">
+      <script src="https://ads-partners.coupang.com/g.js"></script>
+      <script>
+        new PartnersCoupang.G({"id":979393,"template":"carousel","trackingCode":"AF8164365","width":"338","height":"140","tsource":""});
+      </script>
     </div>
-    <div style="font-size:8px;color:#334155;margin-top:8px;">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+    <div style="font-size:8px;color:#253550;margin-top:6px;text-align:center;">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
   </div>
 </div>
 
@@ -1139,7 +1142,7 @@ function applySplitAdvice() {
 }
 
 // ── 비밀번호 체크 ──
-const PW_HASH = "9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0";
+const PW_HASH = "a7cfd7fc948e80c0045c4dbc9c1320d97caa98d6e5b76a6a6a740c18b334a30e";
 async function sha256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");

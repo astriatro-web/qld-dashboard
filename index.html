@@ -758,7 +758,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw, mult) {
     <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; A ×1.025 거의 무조건 체결 &nbsp;|&nbsp; B ×0.990 눌릴 때 유리</div>`;
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzaonkCVHFH8kqZP35noHw0chnEQmrZDwM4od3hz2GZGcdXpvwGIU5_57U1N-p3kSqCRA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxhPwxDk-SoKCmd0_Hhh2zja4hjHqbUr3TFzUurc6I9WMHU6dHuXqgYqp37uwLMnl5iUg/exec";
 let MD = null;
 
 async function fetchAll() {
@@ -1194,12 +1194,10 @@ async function loadComments() {
   if (!list) return;
   list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 0;">불러오는 중...</div>';
   try {
-    const res = await fetch(GAS_URL, {
-      method: "POST",
+    const res = await fetch(GAS_URL + "?action=read_comments", {
+      method: "GET",
       mode: "cors",
-      redirect: "follow",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "read" })
+      redirect: "follow"
     });
     const data = await res.json();
     if (!data.ok || !data.comments || data.comments.length === 0) {
@@ -1238,12 +1236,11 @@ async function submitComment() {
   const grade = badgeEl ? (badgeEl.textContent.match(/RED|ORANGE|YELLOW|GREEN|GRAY/) || [""])[0] : "";
 
   try {
-    const res = await fetch(GAS_URL, {
-      method: "POST",
+    const params = new URLSearchParams({ action: "write_comment", nick, text, grade });
+    const res = await fetch(GAS_URL + "?" + params.toString(), {
+      method: "GET",
       mode: "cors",
-      redirect: "follow",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "write", nick, text, grade })
+      redirect: "follow"
     });
     const data = await res.json();
     if (data.ok) {

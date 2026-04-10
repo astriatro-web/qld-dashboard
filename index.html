@@ -553,12 +553,36 @@ body {
 <script src="simulator.js"></script>
 <script src="comment.js"></script>
 <script>
+// ── 비밀번호 (인라인 — 로드 순서 보장) ──
+const PW_HASH = "a7cfd7fc948e80c0045c4dbc9c1320d97caa98d6e5b76a6a6a740c18b334a30e";
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+async function checkPW() {
+  const val = document.getElementById("pwInput").value;
+  const hash = await sha256(val);
+  const stored = localStorage.getItem("qld_pw_hash") || PW_HASH;
+  if (hash === stored) {
+    sessionStorage.setItem("qld_auth", "1");
+    document.getElementById("pwModal").style.display = "none";
+    document.getElementById("appWrap").style.display = "block";
+    fetchAll();
+  } else {
+    const err = document.getElementById("pwErr");
+    err.style.display = "block";
+    document.getElementById("pwInput").value = "";
+    setTimeout(() => { err.style.display = "none"; }, 2000);
+  }
+}
+
 // ── 초기화 ──
 document.addEventListener("DOMContentLoaded", function() {
   loadSettings();
   renderStatic(null);
   renderRules();
-  // 세션 유지 확인
   if (sessionStorage.getItem("qld_auth") === "1") {
     document.getElementById("pwModal").style.display = "none";
     document.getElementById("appWrap").style.display = "block";

@@ -35,7 +35,6 @@ const WAR_GRADES = {
 };
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzO71kzixBo23y0XHssgjtSBczblBrOwR26ZS_Oj8NQ-rM8HvC06Gi8RkpJ8IxGvaFGbA/exec";
-const PW_HASH  = "a7cfd7fc948e80c0045c4dbc9c1320d97caa98d6e5b76a6a6a740c18b334a30e";
 
 // 유틸 함수
 const f      = (n,d=1) => (n!=null&&!isNaN(n)) ? parseFloat(n).toFixed(d) : "N/A";

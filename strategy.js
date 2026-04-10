@@ -65,14 +65,6 @@ function switchTab(id) {
   if (id === "war") loadComments();
 }
 
-const f=(n,d=1)=>(n!=null&&!isNaN(n))?parseFloat(n).toFixed(d):"N/A";
-const fKRW=n=>n?`₩${Math.round(n/10000).toLocaleString()}만`:"₩0";
-const fgLbl=v=>v<=20?"극단공포":v<=40?"공포":v<=60?"중립":v<=80?"탐욕":"극단탐욕";
-const vixLbl=v=>!v?"N/A":v>=40?"극단공포":v>=30?"높은공포":v>=20?"주의":"안정";
-const fgClr=v=>v<=25?"#f87171":v<=45?"#fbbf24":v<=60?"#94a3b8":"#4ade80";
-const vixClr=v=>v>=30?"#f87171":v>=20?"#fbbf24":"#4ade80";
-const elapsed=()=>!S.entryDate?0:Math.max(0,Math.floor((new Date()-new Date(S.entryDate))/86400000));
-const splitDays=()=>S.splitDays||75;
 function setText(id,text,color){const el=document.getElementById(id);if(!el)return;el.textContent=text;if(color)el.style.color=color;}
 
 // 보유 평가액
@@ -195,7 +187,6 @@ function renderSPYMLOC(spymPrice, usdkrw, containerId) {
     <div class="loc-base">A:B = 6:4 &nbsp;|&nbsp; SGOV 70% 별도 적립 병행</div>`;
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzO71kzixBo23y0XHssgjtSBczblBrOwR26ZS_Oj8NQ-rM8HvC06Gi8RkpJ8IxGvaFGbA/exec";
 let MD = null;
 
 async function fetchAll() {

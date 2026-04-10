@@ -308,6 +308,32 @@ body {
 .war-updated { font-size: 10px; color: var(--text3); text-align: right; margin-bottom: 10px; }
 .war-empty { font-size: 13px; color: var(--text3); text-align: center; padding: 40px 0; line-height: 2.0; }
 </style>
+<script>
+// ── 비밀번호 — head에서 즉시 로드 ──
+const PW_HASH = "a7cfd7fc948e80c0045c4dbc9c1320d97caa98d6e5b76a6a6a740c18b334a30e";
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+async function checkPW() {
+  const val = document.getElementById("pwInput").value;
+  const hash = await sha256(val);
+  const stored = localStorage.getItem("qld_pw_hash") || PW_HASH;
+  if (hash === stored) {
+    sessionStorage.setItem("qld_auth","1");
+    document.getElementById("pwModal").style.display="none";
+    document.getElementById("appWrap").style.display="block";
+    if(typeof fetchAll==="function") fetchAll();
+  } else {
+    const err = document.getElementById("pwErr");
+    err.style.display="block";
+    document.getElementById("pwInput").value="";
+    setTimeout(()=>{ err.style.display="none"; }, 2000);
+  }
+}
+</script>
 </head>
 <body>
 

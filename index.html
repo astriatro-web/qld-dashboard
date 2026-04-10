@@ -391,7 +391,7 @@ body {
     <div id="holdingRows"><div style="font-size:12px;color:#475569;">설정탭에서 보유 주수를 입력하세요</div></div>
   </div>
   <div class="loc-card">
-    <div class="loc-title">📋 LOC 주문 가이드 (전날 종가 기준 · 매일 새로고침 후 사용)</div>
+    <div class="loc-title">📋 LOC 주문 가이드 (전날 종가 기준 권고· 새로고침 후 사용)</div>
     <div id="loc-body"><div class="loc-na">새로고침 후 표시됩니다</div></div>
   </div>
   <div class="card">
@@ -650,7 +650,7 @@ function getRULES() {
   {title:"대기 모드",color:"#1e3a5f",items:[["기본","SGOV 70% + SPYM 30%"],["SPYM 조건","QLD 120일선 AND SPY 200일선 동시 위일 때만"],["SPYM 청산","120일선 하회 즉시 전량 청산"]]},
   {title:"익절",color:"#7c2d12",items:[["1단계","+25% → 포지션 8% 매도 (QLD 우선) → 익절현금 SGOV 보관"],["2단계","+45% → 추가 8% 매도"],["3단계","+65% → 추가 9% 매도"],["한도","최대 25% 현금화. 75% 절대 유지"]]},
   {title:"재투입 (3중 AND)",color:"#14532d",items:[["1차","고점 -20% AND F&G≤45 AND VIX≥20 → 2일 연속 → 30%"],["2차","고점 -35% AND F&G≤30 AND VIX≥20 → 2일 연속 → 35%"],["3차","고점 -50% AND F&G≤20 AND VIX≥20 → 2일 연속 → 35%"],["18개월 룰","18개월 내 미충족 시 F&G/VIX 무시 강제 투입"]]},
-  {title:"휩소 방지",color:"#374151",items:[["신규 진입","120일선 하회 3일 연속 확인 후 매수 시작"],["B-3 재개","골든크로스 2일 연속 확인 후 재개"],["재투입","F&G AND VIX 조건 2일 연속 충족 후 실행"]]},
+  {title:"휩소 방지",color:"#374151",items:[["신규 진입","120일선 하회시 바로 매수 시작"],["B-3 재개","골든크로스 2일 연속 확인 후 재개"],["재투입","F&G AND VIX 조건 2일 연속 충족 후 실행"]]},
   {title:"리밸런싱 & 리셋",color:"#374151",items:[["리밸런싱","분기 말 or QLD:SSO ±5% 이탈. 매수모드 중엔 비율 조정만"],["연간 리셋","매년 1월: 7:3 원복 / 잔여 익절현금→SGOV / 탄환 점검"]]},
   ];
 }

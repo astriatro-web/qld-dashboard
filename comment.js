@@ -1,7 +1,6 @@
 // ════════════════════════════════════════
 // 댓글 기능
 // ════════════════════════════════════════
-const GRADE_COLOR = { RED:"#f87171", ORANGE:"#fb923c", YELLOW:"#fbbf24", GREEN:"#4ade80", GRAY:"#4a5a78" };
 
 async function loadComments() {
   const list = document.getElementById("cmtList");
@@ -74,12 +73,9 @@ async function submitComment() {
 const _origSwitchTab = switchTab;
 
 // ── 비밀번호 체크 ──
-const PW_HASH = "a7cfd7fc948e80c0045c4dbc9c1320d97caa98d6e5b76a6a6a740c18b334a30e";
-async function sha256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
-window.checkPW = async function() {
   const val = document.getElementById("pwInput").value;
   const hash = await sha256(val);
   const stored = localStorage.getItem("qld_pw_hash") || PW_HASH;

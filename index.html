@@ -554,9 +554,16 @@ body {
 <script src="comment.js"></script>
 <script>
 // ── 초기화 ──
-loadSettings();
-renderStatic(null);
-renderRules();
+document.addEventListener("DOMContentLoaded", function() {
+  loadSettings();
+  renderStatic(null);
+  renderRules();
+  // 세션 유지 확인
+  if (sessionStorage.getItem("qld_auth") === "1") {
+    document.getElementById("pwModal").style.display = "none";
+    document.getElementById("appWrap").style.display = "block";
+  }
+});
 </script>
 </body>
 </html>

@@ -524,6 +524,12 @@ body {
     <div class="card-label">재투입 조건 (DD / F&amp;G / VIX)</div>
     <div id="rebuyRows"></div>
   </div>
+
+  <!-- 히든전략 진입 알림 -->
+  <div id="hiddenAlertCard" style="display:none;" class="card">
+    <div class="card-label">⚡ 히든전략 진입 알림</div>
+    <div id="hiddenAlertRows"></div>
+  </div>
 </div>
 
 <!-- ── 전략원칙 패널 ── -->
@@ -538,8 +544,9 @@ body {
       <b style="color:var(--text1);">① 설정 탭</b> 먼저 입력<br>
       &nbsp;&nbsp;· 매수 시작일 / 탄환 총액 / 월 투자금 / 평단가 / 보유 주수<br><br>
       <b style="color:var(--text1);">② 대시보드 탭</b> — 매일 아침 새로고침<br>
-      &nbsp;&nbsp;· 현재 모드(매수/홀드/익절) 자동 판단<br>
-      &nbsp;&nbsp;· LOC 주문 가이드: A(×1.025) + B(×0.990) 6:4 분할<br><br>
+      &nbsp;&nbsp;· 현재 모드(매수♾️ / 홀드 / 익절) 자동 판단<br>
+      &nbsp;&nbsp;· LOC 주문 가이드: A(×1.025) + B(×0.990) 6:4 분할<br>
+      &nbsp;&nbsp;· 히든전략(TQQQ/SOXL) 조건 충족 시 자동 알림<br><br>
       <b style="color:var(--text1);">③ 히든전략 탭</b> — TQQQ/SOXL 특공대<br>
       &nbsp;&nbsp;· TQQQ: 200일선 하단 시 주별 증가 매수<br>
       &nbsp;&nbsp;· SOXL: 300일선 하단 시 주별 증가 매수<br><br>
@@ -562,17 +569,13 @@ body {
     <div style="overflow-x:auto;">
       <table class="bt-table">
         <thead>
-          <tr><th>상품</th><th>전략</th><th>기준선</th><th class="num">ROI</th><th class="cagr">CAGR</th></tr>
+          <tr><th>상품</th><th>전략</th><th>기준선</th><th class="num">총수익(ROI/$)</th><th class="cagr">CAGR</th></tr>
         </thead>
         <tbody>
           <tr class="highlight"><td>SSO</td><td>웅덩이 5주</td><td>120일</td><td class="num">150.95%</td><td class="cagr">9.6%</td></tr>
-          <tr class="highlight"><td>QLD</td><td>웅덩이 5주</td><td>120일</td><td class="num">191.27%</td><td class="cagr">11.3%</td></tr>
-          <tr><td>QLD</td><td>웅덩 10 8 6 5</td><td>120일</td><td class="num">184.50%</td><td class="cagr">11.0%</td></tr>
-          <tr><td>QLD</td><td>웅덩 5 7 9 11</td><td>120일</td><td class="num">197.38%</td><td class="cagr">11.5%</td></tr>
-          <tr><td>QLD</td><td>웅덩 듀얼 120-300</td><td>혼합</td><td class="num">224.70%</td><td class="cagr">12.5%</td></tr>
-          <tr><td>TQQQ</td><td>웅덩이 5주</td><td>120일</td><td class="num">215.00%</td><td class="cagr">12.2%</td></tr>
-          <tr class="highlight-blue"><td>TQQQ</td><td>웅덩이 5주</td><td>200일</td><td class="num">—</td><td class="cagr">↑</td></tr>
-          <tr class="highlight-blue"><td>SOXL</td><td>웅덩 5 6 7 8…</td><td>300일</td><td class="num">408.84%</td><td class="cagr">17.7%</td></tr>
+          <tr class="highlight"><td>QLD</td><td>웅덩이 10주</td><td>120일</td><td class="num">191.27%</td><td class="cagr">11.3%</td></tr>
+          <tr class="highlight-blue"><td>TQQQ</td><td>웅덩 5→6→7→8… (주별+1주)</td><td>200일</td><td class="num">147,847달러</td><td class="cagr">14.7%</td></tr>
+          <tr class="highlight-blue"><td>SOXL</td><td>웅덩 5→6→7→8… (주별+1주)</td><td>300일</td><td class="num">292,329달러</td><td class="cagr">17.7%</td></tr>
         </tbody>
       </table>
     </div>
@@ -599,8 +602,12 @@ body {
       <div class="s-desc">주 1회 (예: 매주 월요일 LOC)</div>
     </div>
     <div class="strategy-row">
+      <div class="s-label">백테스트 근거</div>
+      <div class="s-desc">200일선 기준 TQQQ 증액 매수 전략 CAGR <b style="color:var(--purple);">14.7%</b> (10년 기준, 누적 $147,847 / 원화 약 2.14억). TQQQ 3배 레버리지 특성상 200일 장기선이 안전 진입 기준.</div>
+    </div>
+    <div class="strategy-row">
       <div class="s-label">익절 기준</div>
-      <div class="s-desc">200일선 위 복귀 시 전량 or 분할 매도. 평단 대비 +25%/+50%/+100% 단계별 익절</div>
+      <div class="s-desc">200일선 위 복귀 시 전량 or 분할 매도. 평단 대비 +25%/+50%/+100% 단계별 각 10% 익절</div>
     </div>
     <div class="strategy-row">
       <div class="s-label">주의</div>
@@ -637,11 +644,11 @@ body {
     </div>
     <div class="strategy-row">
       <div class="s-label">백테스트 근거</div>
-      <div class="s-desc">300일선 기준 SOXL 웅덩이 전략 CAGR <b style="color:var(--teal);">17.7%</b> (10년 기준, ROI 408.84%). 반도체 섹터 집중으로 변동성 극심하나 장기 수익 최고.</div>
+      <div class="s-desc">300일선 기준 SOXL 증액 매수 전략 CAGR <b style="color:var(--teal);">17.7%</b> (10년 기준, 누적 $292,329 / 원화 약 4.24억). 반도체 섹터 집중으로 변동성 극심하나 레버리지 ETF 중 장기 수익 최고.</div>
     </div>
     <div class="strategy-row">
       <div class="s-label">익절 기준</div>
-      <div class="s-desc">300일선 위 복귀 시 전량 or 분할 매도. 평단 대비 +25%/+50%/+100% 단계별 익절</div>
+      <div class="s-desc">300일선 위 복귀 시 전량 or 분할 매도. 평단 대비 +25%/+50%/+100% 단계별 각 10% 익절</div>
     </div>
     <div class="strategy-row">
       <div class="s-label">주의</div>
@@ -813,14 +820,10 @@ body {
     </div>
   </div>
 
-  <div class="setting-group" style="margin-bottom:16px;">
-    <div class="setting-label">B-3 생존모드 플래그</div>
-    <button class="btn-toggle off" id="btnPlanb3" onclick="togglePlanb3()">⚪ B-3 비활성</button>
-  </div>
   <div class="info-box">
-    <b style="color:var(--text2);">B-3 생존모드</b><br>
-    매수 동결 / SGOV 100% 전환.<br>
-    골든크로스 2일 연속 + F&G≥35 충족 시 해제.<br><br>
+    <b style="color:var(--text2);">무한매수 원칙</b><br>
+    120일선 하방 시 기간 제한 없이 QLD 10주 + SSO 5주 무한 매수 지속.<br>
+    탄환(SGOV) 소진 후 월 투자금으로 자연 전환. B-3(매수 동결) 없음.<br><br>
     <b style="color:var(--text2);">익절 원칙</b><br>
     평단 대비 <b style="color:var(--green);">+25%</b> → 10% 매도<br>
     평단 대비 <b style="color:var(--amber);">+50%</b> → 10% 매도<br>
@@ -834,13 +837,13 @@ body {
 <script>
 // ── 전략 상수 ──
 const CFG = {
-  SPLIT_DAYS: 75, PLANB3_DAYS: 120,
+  SPLIT_DAYS: 75,
   QLD_RATIO: 0.70, SSO_RATIO: 0.30,
   // 익절: +25%, +50%, +100% 각 10%
   SELL_GAP: [0.25, 0.50, 1.00], SELL_PCT: [0.10, 0.10, 0.10],
   REBUY_DD: [0.20, 0.35, 0.50], REBUY_FG: [45, 30, 20],
   REBUY_VIX: [20, 20, 20], REBUY_PCT: [0.30, 0.35, 0.35],
-  RESUME_FG: 35, WS_RESUME: 2, WS_REBUY: 2,
+  WS_REBUY: 2,
 };
 
 const WAR_GRADES = {
@@ -878,18 +881,19 @@ function getRULES() {
         ["18개월 룰","18개월 내 미충족 시 F&G/VIX 무시 강제 투입"],
       ]
     },
-    { title:"🛡 B-3 생존모드", color:"#7f1d1d", bg:"#fef2f2",
+    { title:"♾️ 무한매수 원칙 — B-3 없음", color:"#0c4a6e", bg:"#f0f9ff",
       items:[
-        ["진입 조건","매수 120일 경과 OR 수동 활성화"],
-        ["행동","매수 완전 동결 / SGOV 100% 적립 / QLD:SSO = 5:5 유지"],
-        ["해제 조건","골든크로스(MA20>MA60) 2일 연속 AND F&G≥35"],
-        ["휩소 방지","2일 연속 확인 후 재개 (단 1일은 무시)"],
+        ["핵심 철학","120일선 하방 시 기간·일수 제한 없이 무한 매수 지속. B-3(매수 동결) 없음."],
+        ["장기 하락장","QLD 10주 + SSO 5주 고정 수량 매수 계속. 탄환(SGOV) 소진 후 월 투자금으로 자연 전환."],
+        ["근거","QLD 10년 백테스트: 120일선 하회 구간은 반드시 회복 (2015·2018·2020·2022 전량 회복 확인). 무한매수는 평단 낮추기의 최강 전략."],
+        ["멘탈 관리","QLD 2배 레버리지 MDD -70% 수준. 추가 하락 시 추가 매수 기회로 인식. 타임라인: 10년 이상 보유 관점."],
       ]
     },
     { title:"⚡ 히든전략 — TQQQ/SOXL 특공대", color:"#5b21b6", bg:"#f5f3ff",
       items:[
-        ["TQQQ","200일선 하단 시 5주→6주→7주… 매주 1주씩 무한 증가. 200일선 복귀 시 익절."],
-        ["SOXL","300일선 하단 시 5주→6주→7주… 매주 1주씩 무한 증가. 백테스트 CAGR 17.7%."],
+        ["TQQQ 특공대","200일선 하단 진입 시 1주차 5주→2주차 6주→3주차 7주… 매주 1주씩 무한 증가. 백테스트 CAGR 14.7% (200일선 기준). 200일선 복귀 시 익절."],
+        ["SOXL 특공대","300일선 하단 진입 시 1주차 5주→2주차 6주→3주차 7주… 매주 1주씩 무한 증가. 백테스트 CAGR 17.7% (300일선 기준). 반도체 섹터 최강 수익률."],
+        ["대시보드 알림","조건 충족(하방 돌파) 시 대시보드 탭 하단에 자동 알림 표시. 히든전략 탭에서 이번 주 매수량 계산."],
         ["운용 원칙","메인 전략(QLD+SSO) 대비 소규모. 포트폴리오 5~10% 이하 배분 권장."],
         ["익절 기준","평단 대비 +25%/+50%/+100% 각 10% 단계별 익절"],
       ]
@@ -910,7 +914,6 @@ function loadSettings() {
   S.fg            = S.fg            != null ? S.fg : null;
   S.gcCount       = S.gcCount       || 0;
   S.rebuyCount    = S.rebuyCount    || 0;
-  S.planb3Active  = S.planb3Active  || false;
   S.qldHeld       = S.qldHeld       || 0;
   S.ssoHeld       = S.ssoHeld       || 0;
   S.sgovHeld      = S.sgovHeld      || 0;
@@ -941,7 +944,6 @@ function loadSettings() {
   document.getElementById("s-soxlAvg").value       = S.soxlAvg || "";
   document.getElementById("s-qldDaily").value      = S.qldDailyShares;
   document.getElementById("s-ssoDaily").value      = S.ssoDailyShares;
-  updatePlanb3Btn();
 }
 
 function saveSettings() {
@@ -970,17 +972,6 @@ function saveSettings() {
   S.soxlAvg = soa ? parseFloat(soa) : null;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   renderStatic(null);
-}
-
-function togglePlanb3() {
-  S.planb3Active = !S.planb3Active;
-  localStorage.setItem("qld_s11", JSON.stringify(S));
-  updatePlanb3Btn();
-}
-function updatePlanb3Btn() {
-  const btn = document.getElementById("btnPlanb3");
-  btn.className = S.planb3Active ? "btn-toggle on" : "btn-toggle off";
-  btn.textContent = S.planb3Active ? "🔴 B-3 활성 (탭하여 해제)" : "⚪ B-3 비활성";
 }
 
 function switchTab(id) {
@@ -1154,7 +1145,8 @@ async function fetchAll() {
       sgov:d.sgov, vix:d.vix, usdkrw:d.usdkrw||1380,
       fg:d.fg||S.fg||null, ma20:d.ma20, ma60:d.ma60, ma120:d.ma120,
       ma200spy:d.ma200spy, spym:d.spym||null,
-      tqqq:d.tqqq||null, soxl:d.soxl||null
+      tqqq:d.tqqq||null, soxl:d.soxl||null,
+      ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null
     };
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
@@ -1205,9 +1197,6 @@ function determineMode(d) {
 
   const MODES = {
     buy:    { bg:"#f0fdf4", bd:"#86efac", tx:"#15803d" },
-    planb2: { bg:"#fff7ed", bd:"#fdba74", tx:"#c2410c" },
-    planb3: { bg:"#fef2f2", bd:"#fca5a5", tx:"#dc2626" },
-    resume: { bg:"#f0fdf4", bd:"#86efac", tx:"#15803d" },
     hold:   { bg:"#f8fafc", bd:"#cbd5e1", tx:"#475569" },
     sell1:  { bg:"#fffbeb", bd:"#fcd34d", tx:"#92400e" },
     sell2:  { bg:"#fff7ed", bd:"#fdba74", tx:"#c2410c" },
@@ -1217,20 +1206,8 @@ function determineMode(d) {
 
   let name, phase, actions = [];
 
-  if (S.planb3Active || el >= CFG.PLANB3_DAYS) {
-    const canResume = gc && S.gcCount >= CFG.WS_RESUME && d.fg != null && d.fg >= CFG.RESUME_FG;
-    if (canResume) {
-      name="B-3 해제 — 재개"; phase="resume";
-      actions=["골든크로스 "+S.gcCount+"일 연속 ✓  F&G "+d.fg+" ≥ 35 ✓","QLD:SSO 5:5 → 7:3 원복","설정: B-3 플래그 OFF / 진입일 리셋"];
-    } else {
-      name="B-3 생존모드"; phase="planb3";
-      const miss=[];
-      if(!gc) miss.push("골든크로스 미발생");
-      else if(S.gcCount<CFG.WS_RESUME) miss.push(`골든크로스 ${S.gcCount}일 (2일 필요)`);
-      if(d.fg!=null && d.fg<CFG.RESUME_FG) miss.push(`F&G ${d.fg} < 35`);
-      actions=["매수 완전 동결","SGOV 100% 적립", ...miss.map(m=>"미충족: "+m)];
-    }
-  } else if (belowMA === false) {
+  if (belowMA === false) {
+    // 120일선 위 → 홀드/익절
     if (sellGap != null && sellGap >= CFG.SELL_GAP[2]) {
       name="익절 3단계 (+100%)"; phase="sell3";
       actions=[`QLD 평단 대비 +${(sellGap*100).toFixed(1)}% ✓  →  포지션 10% 매도`, "익절현금 → SGOV 보관", "누적 익절 한도: 30%"];
@@ -1253,14 +1230,15 @@ function determineMode(d) {
       }
     }
   } else if (belowMA === true) {
-    if (el >= splitDays() && el < CFG.PLANB3_DAYS) {
-      name="B-2 연장 매수"; phase="planb2";
-      actions=[`QLD ${S.qldDailyShares||10}주 + SSO ${S.ssoDailyShares||5}주 (B-2 연속)`, `MA120 $${d.ma120 ? f(d.ma120,1):"—"} 하회 중 ✓`, `B-3 전환까지 ${CFG.PLANB3_DAYS-el}일`];
-    } else {
-      name="매수 진행 중"; phase="buy";
-      const rem = Math.max(0, splitDays()-el);
-      actions=[`QLD ${S.qldDailyShares||10}주 + SSO ${S.ssoDailyShares||5}주 매수`, `${el+1}일차 / ${splitDays()}일  ·  잔여 ${rem}일`, `MA120 $${d.ma120?f(d.ma120,1):"—"} 하회 ✓`];
-    }
+    // 120일선 하방 → 무한매수 (기간 제한 없음)
+    name="매수 진행 중 ♾️"; phase="buy";
+    const rem = Math.max(0, splitDays()-el);
+    const remTxt = rem > 0 ? `잔여 ${rem}일` : `${el-splitDays()+1}일 연장 매수 중`;
+    actions=[
+      `QLD ${S.qldDailyShares||10}주 + SSO ${S.ssoDailyShares||5}주 매수`,
+      `${el+1}일차  ·  ${remTxt}  ·  무한매수 원칙`,
+      `MA120 $${d.ma120?f(d.ma120,1):"—"} 하회 ✓ — 탄환 소진 후 월 투자금으로 지속`
+    ];
   } else {
     name="데이터 조회 중"; phase="loading"; actions=["새로고침을 눌러주세요"];
   }
@@ -1304,7 +1282,7 @@ function renderDashboard(d) {
   renderHoldings(d.qld, d.sso, d.usdkrw, d.sgov);
 
   // LOC 가이드: 매수모드만
-  if (mode.phase==="buy"||mode.phase==="planb2") {
+  if (mode.phase==="buy") {
     renderLOC(d.qld, d.sso, d.usdkrw);
   } else {
     document.getElementById("loc-body").innerHTML =
@@ -1314,8 +1292,75 @@ function renderDashboard(d) {
       </div>`;
   }
 
-  // 재투입 조건
-  const rebuyCard = document.getElementById("rebuyCard");
+  // 히든전략 진입 알림 (대시보드)
+  renderHiddenAlerts(d);
+}
+
+function renderHiddenAlerts(d) {
+  const alertCard = document.getElementById("hiddenAlertCard");
+  const alertRows = document.getElementById("hiddenAlertRows");
+  if (!alertCard || !alertRows) return;
+
+  const alerts = [];
+
+  // TQQQ: 200일 이평선 필요 (ma200tqqq 없으면 TQQQ 가격과 비교 불가 → 표시만)
+  if (d.tqqq) {
+    const tqqq200 = d.ma200tqqq || null;
+    if (tqqq200 && d.tqqq < tqqq200) {
+      alerts.push({
+        color: "var(--purple)", bg: "var(--purple-lt)",
+        icon: "⚡", ticker: "TQQQ",
+        msg: `$${d.tqqq.toFixed(2)} < MA200 $${tqqq200.toFixed(2)} — 200일선 하방 ✓`,
+        action: "특공대 진입 조건 충족! 히든전략 탭에서 이번 주 매수량 확인"
+      });
+    } else if (!tqqq200 && d.tqqq) {
+      // MA200 데이터 없을 때 — 단순 가격 표시
+      alerts.push({
+        color: "var(--purple)", bg: "var(--purple-lt)",
+        icon: "⚡", ticker: "TQQQ",
+        msg: `현재가 $${d.tqqq.toFixed(2)} (GAS에서 TQQQ MA200 추가 시 자동 판단)`,
+        action: "히든전략 탭에서 200일선 여부 수동 확인"
+      });
+    }
+  }
+
+  // SOXL: 300일 이평선 필요
+  if (d.soxl) {
+    const soxl300 = d.ma300soxl || null;
+    if (soxl300 && d.soxl < soxl300) {
+      alerts.push({
+        color: "var(--teal)", bg: "var(--teal-lt)",
+        icon: "💎", ticker: "SOXL",
+        msg: `$${d.soxl.toFixed(2)} < MA300 $${soxl300.toFixed(2)} — 300일선 하방 ✓`,
+        action: "특공대 진입 조건 충족! 히든전략 탭에서 이번 주 매수량 확인"
+      });
+    } else if (!soxl300 && d.soxl) {
+      alerts.push({
+        color: "var(--teal)", bg: "var(--teal-lt)",
+        icon: "💎", ticker: "SOXL",
+        msg: `현재가 $${d.soxl.toFixed(2)} (GAS에서 SOXL MA300 추가 시 자동 판단)`,
+        action: "히든전략 탭에서 300일선 여부 수동 확인"
+      });
+    }
+  }
+
+  if (alerts.length === 0) {
+    alertCard.style.display = "none";
+    return;
+  }
+
+  alertCard.style.display = "block";
+  alertCard.style.borderColor = alerts[0].color;
+  alertRows.innerHTML = alerts.map(a => `
+    <div style="background:${a.bg};border-radius:10px;padding:10px 12px;margin-bottom:7px;border:1px solid ${a.color}30;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <span style="font-size:14px;">${a.icon}</span>
+        <span style="font-size:12px;font-weight:800;color:${a.color};">${a.ticker}</span>
+        <span style="font-size:11px;color:var(--text2);">${a.msg}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);padding-left:20px;">→ ${a.action}</div>
+    </div>`).join("");
+}
   const rebuyContainer = document.getElementById("rebuyRows");
   if (mode.phase==="hold"||mode.phase.startsWith("sell")) {
     const ddBasisTxt = (S.qldAvg && S.qldAvg>0) ? "평단기준" : "52주고가기준";
@@ -1349,7 +1394,6 @@ function renderStatic(d) {
     setText("v-daily", `약 ${Math.round(daily/10000)}만원`);
     const mode = determineMode(d);
     if (mode.phase==="hold"||mode.phase.startsWith("sell")) setText("v-shares","대기중 — 매수 없음","var(--text3)");
-    else if (mode.phase==="planb3") setText("v-shares","동결 — B-3 생존모드","var(--red)");
     else setText("v-shares",`QLD ${qShares}주 + SSO ${sShares}주`);
   } else {
     setText("v-daily", `QLD ${qShares}주 + SSO ${sShares}주`);

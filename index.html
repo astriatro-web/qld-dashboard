@@ -1226,7 +1226,7 @@ function determineMode(d) {
     const rem = Math.max(0, splitDays()-el);
     actions=[
       `QLD ${S.qldDailyShares||10}주 + SSO ${S.ssoDailyShares||5}주 매수`,
-      `${el+1}일차  ·  ${remTxt}  ·  무한매수 원칙`,
+      `${el+1}일차 ·  무한매수 원칙`,
       `MA120 $${d.ma120?f(d.ma120,1):"—"} 하회 ✓ — 탄환 소진 후 월 투자금으로 지속`
     ];
   } else {

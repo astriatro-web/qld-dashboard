@@ -1224,7 +1224,6 @@ function determineMode(d) {
     // 120일선 하방 → 무한매수 (기간 제한 없음)
     name="매수 진행 중 ♾️"; phase="buy";
     const rem = Math.max(0, splitDays()-el);
-    const remTxt = rem > 0 ? `잔여 ${rem}일` : `${el-splitDays()+1}일 연장 매수 중`;
     actions=[
       `QLD ${S.qldDailyShares||10}주 + SSO ${S.ssoDailyShares||5}주 매수`,
       `${el+1}일차  ·  ${remTxt}  ·  무한매수 원칙`,

@@ -561,19 +561,18 @@ body {
   <div class="card">
     <div class="card-label">📊 10년 백테스트 결과 요약 (직접 검증)</div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6;">
-      기간: 2014~2024 · 출처: 주식백테스터 유튜브 / 직접 계산<br>
-      <b style="color:var(--amber);">■ 노란색</b> = 핵심 채택 전략
+      기간: 2016~2026 · 출처: 10년 백테스팅 직접 계산<br>
     </div>
     <div style="overflow-x:auto;">
       <table class="bt-table">
         <thead>
-          <tr><th>상품</th><th>전략</th><th>기준선</th><th class="num">총수익(ROI/$)</th><th class="cagr">CAGR</th></tr>
+          <tr><th>상품</th><th>전략</th><th>기준선</th><th class="num">총수익(ROI%)</th><th class="cagr">CAGR</th></tr>
         </thead>
         <tbody>
-          <tr class="highlight"><td>SSO</td><td>웅덩이 5주</td><td>120일</td><td class="num">150.95%</td><td class="cagr">9.6%</td></tr>
-          <tr class="highlight"><td>QLD</td><td>웅덩이 10주</td><td>120일</td><td class="num">191.27%</td><td class="cagr">11.3%</td></tr>
-          <tr class="highlight-blue"><td>TQQQ</td><td>웅덩 5→6→7→8… (주별+1주)</td><td>200일</td><td class="num">147,847달러</td><td class="cagr">14.7%</td></tr>
-          <tr class="highlight-blue"><td>SOXL</td><td>웅덩 5→6→7→8… (주별+1주)</td><td>300일</td><td class="num">292,329달러</td><td class="cagr">17.7%</td></tr>
+          <tr class="highlight"><td>SSO</td><td>웅덩(120) 5주</td><td>120일</td><td class="num">150.95%</td><td class="cagr">9.6%</td></tr>
+          <tr class="highlight"><td>QLD</td><td>웅덩(120) 10주</td><td>120일</td><td class="num">191.27%</td><td class="cagr">11.3%</td></tr>
+          <tr class="highlight-blue"><td>TQQQ</td><td>웅덩(200) 5→6→7→8… (주별+1주)</td><td>200일</td><td class="num">294.01%</td><td class="cagr">14.7%</td></tr>
+          <tr class="highlight-blue"><td>SOXL</td><td>웅덩(300) 5→6→7→8… (주별+1주)</td><td>300일</td><td class="num">408.84%</td><td class="cagr">17.7%</td></tr>
         </tbody>
       </table>
     </div>
@@ -591,17 +590,12 @@ body {
     <div class="strategy-row">
       <div class="s-label">매수 방식</div>
       <div class="s-desc">
-        1주차: <b style="color:var(--purple);">5주</b> → 2주차: <b style="color:var(--purple);">6주</b> → 3주차: <b style="color:var(--purple);">7주</b> → … 매주 1주씩 무한 증가<br>
-        <span style="font-size:11px;color:var(--text3);">N주차 매수량 = (4 + N)주</span>
+        1주차: <b style="color:var(--purple);">5주</b> → 2주차: <b style="color:var(--purple);">6주</b> → 3주차: <b style="color:var(--purple);">7주</b> → … 매주 1주씩 무한 증가 매일 매수<br>
       </div>
     </div>
     <div class="strategy-row">
-      <div class="s-label">매수 주기</div>
-      <div class="s-desc">주 1회 (예: 매주 월요일 LOC)</div>
-    </div>
-    <div class="strategy-row">
       <div class="s-label">백테스트 근거</div>
-      <div class="s-desc">200일선 기준 TQQQ 증액 매수 전략 CAGR <b style="color:var(--purple);">14.7%</b> (10년 기준, 누적 $147,847 / 원화 약 2.14억). TQQQ 3배 레버리지 특성상 200일 장기선이 안전 진입 기준.</div>
+      <div class="s-desc">200일선 기준 TQQQ 증액 매수 전략 CAGR <b style="color:var(--purple);">14.7%</b> TQQQ 3배 레버리지 특성상 200일 장기선이 안전 진입 기준.</div>
     </div>
     <div class="strategy-row">
       <div class="s-label">익절 기준</div>
@@ -620,7 +614,7 @@ body {
           style="width:60px;background:#fff;border:1.5px solid rgba(124,58,237,0.3);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;color:var(--purple);font-family:inherit;outline:none;text-align:center;">
         <div style="font-size:12px;color:var(--text2);">주차</div>
       </div>
-      <div id="tqqq-loc-result" style="font-size:13px;font-weight:700;color:var(--purple);">→ 이번 주 매수: 5주</div>
+      <div id="tqqq-loc-result" style="font-size:13px;font-weight:700;color:var(--purple);">→ 이번 주 매수: 5주 매일</div>
     </div>
   </div>
 
@@ -636,13 +630,12 @@ body {
     <div class="strategy-row">
       <div class="s-label">매수 방식</div>
       <div class="s-desc">
-        1주차: <b style="color:var(--teal);">5주</b> → 2주차: <b style="color:var(--teal);">6주</b> → 3주차: <b style="color:var(--teal);">7주</b> → … 매주 1주씩 무한 증가<br>
-        <span style="font-size:11px;color:var(--text3);">N주차 매수량 = (4 + N)주</span>
+        1주차: <b style="color:var(--teal);">5주</b> → 2주차: <b style="color:var(--teal);">6주</b> → 3주차: <b style="color:var(--teal);">7주</b> → … 매주 1주씩 무한 증가 매일 매수<br>
       </div>
     </div>
     <div class="strategy-row">
       <div class="s-label">백테스트 근거</div>
-      <div class="s-desc">300일선 기준 SOXL 증액 매수 전략 CAGR <b style="color:var(--teal);">17.7%</b> (10년 기준, 누적 $292,329 / 원화 약 4.24억). 반도체 섹터 집중으로 변동성 극심하나 레버리지 ETF 중 장기 수익 최고.</div>
+      <div class="s-desc">300일선 기준 SOXL 증액 매수 전략 CAGR <b style="color:var(--teal);">17.7%</b> 반도체 섹터 집중으로 변동성 극심하나 레버리지 ETF 중 장기 수익 최고.</div>
     </div>
     <div class="strategy-row">
       <div class="s-label">익절 기준</div>
@@ -661,7 +654,7 @@ body {
           style="width:60px;background:#fff;border:1.5px solid rgba(8,145,178,0.3);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;color:var(--teal);font-family:inherit;outline:none;text-align:center;">
         <div style="font-size:12px;color:var(--text2);">주차</div>
       </div>
-      <div id="soxl-loc-result" style="font-size:13px;font-weight:700;color:var(--teal);">→ 이번 주 매수: 5주</div>
+      <div id="soxl-loc-result" style="font-size:13px;font-weight:700;color:var(--teal);">→ 이번 주 매수: 5주 매일</div>
     </div>
   </div>
 

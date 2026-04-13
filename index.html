@@ -1294,6 +1294,9 @@ function renderDashboard(d) {
 
   // 히든전략 진입 알림 (대시보드)
   renderHiddenAlerts(d);
+
+  // 재투입 조건
+  renderRebuy(d, dd, mode);
 }
 
 function renderHiddenAlerts(d) {
@@ -1361,7 +1364,11 @@ function renderHiddenAlerts(d) {
       <div style="font-size:11px;color:var(--text3);padding-left:20px;">→ ${a.action}</div>
     </div>`).join("");
 }
+
+function renderRebuy(d, dd, mode) {
+  const rebuyCard      = document.getElementById("rebuyCard");
   const rebuyContainer = document.getElementById("rebuyRows");
+  if (!rebuyCard || !rebuyContainer) return;
   if (mode.phase==="hold"||mode.phase.startsWith("sell")) {
     const ddBasisTxt = (S.qldAvg && S.qldAvg>0) ? "평단기준" : "52주고가기준";
     rebuyContainer.innerHTML =

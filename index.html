@@ -427,7 +427,63 @@ body {
 }
 .pnl-chip.up { background: var(--green-lt); color: var(--green); }
 .pnl-chip.dn { background: var(--red-lt); color: var(--red); }
+
+.sw-signal-box{border-radius:16px;padding:16px 18px;margin-bottom:12px;border:2px solid;box-shadow:var(--shadow2);}
+.sw-signal-box.buy{background:#f0fdf4;border-color:#86efac;}
+.sw-signal-box.wait{background:var(--bg3);border-color:var(--border2);}
+.sw-signal-box.pass{background:var(--amber-lt);border-color:#fcd34d;}
+.sw-sig-label{font-size:22px;font-weight:900;letter-spacing:-0.04em;margin-bottom:4px;}
+.sw-signal-box.buy .sw-sig-label{color:#15803d;}
+.sw-signal-box.wait .sw-sig-label{color:var(--text2);}
+.sw-signal-box.pass .sw-sig-label{color:#92400e;}
+.sw-mode-pill{display:inline-block;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:0.06em;margin-bottom:8px;}
+.sw-mode-pill.a{background:var(--blue-lt);color:var(--blue);border:1px solid rgba(37,99,235,0.3);}
+.sw-mode-pill.b{background:var(--green-lt);color:var(--green);border:1px solid #86efac;}
+.sw-mode-pill.ab{background:var(--purple-lt);color:var(--purple);border:1px solid rgba(124,58,237,0.3);}
+.sw-mode-pill.wait{background:var(--bg3);color:var(--text3);border:1px solid var(--border2);}
+.sw-mode-pill.pass{background:var(--amber-lt);color:var(--amber);border:1px solid #fcd34d;}
+.sw-target-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.sw-tc{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:11px 10px;text-align:center;}
+.sw-tc-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;}
+.sw-tc.entry .sw-tc-label{color:var(--blue);}
+.sw-tc.tp .sw-tc-label{color:var(--green);}
+.sw-tc.sl .sw-tc-label{color:var(--red);}
+.sw-tc-val{font-size:15px;font-weight:800;color:var(--text1);font-family:'JetBrains Mono',monospace;}
+.sw-tc-sub{font-size:10px;color:var(--text3);margin-top:3px;}
+.sw-cond-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);}
+.sw-cond-row:last-child{border-bottom:none;}
+.sw-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.sw-dot.ok{background:var(--green);box-shadow:0 0 5px rgba(22,163,74,0.4);}
+.sw-dot.no{background:#fca5a5;}
+.sw-dot.neu{background:var(--border2);}
+.sw-cond-val{margin-left:auto;font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+.sw-inp-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.sw-inp-group{display:flex;flex-direction:column;gap:4px;}
+.sw-inp-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;}
+.sw-section-title{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+.sw-log-row{font-size:11px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:6px;}
+.sw-log-row:last-child{border-bottom:none;}
+.sw-tip-box{background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:10px;}
+.sw-tip-label{font-size:9px;font-weight:800;color:var(--blue);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;}
+
 </style>
+<script>
+async function checkPW() {
+  const H = "79d9d8f002c1c955fa0d21eeaaf2ebf03c3a878d2fdcb6e78d915b3ed81cc886";
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(document.getElementById("pwInput").value));
+  const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  if (hash === (localStorage.getItem("qld_pw_hash") || H)) {
+    sessionStorage.setItem("qld_auth","1");
+    document.getElementById("pwModal").style.display="none";
+    document.getElementById("appWrap").style.display="block";
+    fetchAll();
+  } else {
+    document.getElementById("pwErr").style.display="block";
+    document.getElementById("pwInput").value="";
+    document.getElementById("pwInput").focus();
+  }
+}
+</script>
 </head>
 <body>
 
@@ -464,6 +520,7 @@ body {
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
+  <button class="tab" onclick="switchTab('swing')">데이스윙</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
   <button class="tab" onclick="switchTab('hidden')">히든전략</button>
   <button class="tab" onclick="switchTab('war')">거시모니터</button>
@@ -527,6 +584,61 @@ body {
   <div id="hiddenAlertCard" style="display:none;" class="card">
     <div class="card-label">⚡ 히든전략 진입 알림</div>
     <div id="hiddenAlertRows"></div>
+  </div>
+</div>
+<!-- ── 데이스윙 패널 ── -->
+<div class="panel" id="panel-swing">
+  <div class="sw-tip-box"><div class="sw-tip-label">📋 밤 11시 루틴 — TQQQ 데이스윙</div>TradingView에서 TQQQ · QQQ · VIX 확인 후 입력하세요.<br>모드A(모멘텀) + 모드B(눌림목) 조건을 자동 판단합니다.</div>
+  <div class="card"><div class="card-label">📥 지표 입력</div>
+    <div class="sw-inp-row"><div class="sw-inp-group"><span class="sw-inp-label">TQQQ 현재가 ($)</span><input type="number" id="sw-tqqq" step="0.01" placeholder="예: 52.30" class="setting-input" style="padding:9px 11px;" oninput="swCalc()"></div><div class="sw-inp-group"><span class="sw-inp-label">QQQ 전일 등락 (%)</span><input type="number" id="sw-qqq" step="0.01" placeholder="예: 1.8" class="setting-input" style="padding:9px 11px;" oninput="swCalc()"></div></div>
+    <div class="sw-inp-row"><div class="sw-inp-group"><span class="sw-inp-label">VIX</span><input type="number" id="sw-vix" step="0.1" placeholder="예: 18.5" class="setting-input" style="padding:9px 11px;" oninput="swCalc()"></div><div class="sw-inp-group"><span class="sw-inp-label">TQQQ RSI(14)</span><input type="number" id="sw-rsi" step="0.1" placeholder="예: 38" class="setting-input" style="padding:9px 11px;" oninput="swCalc()"></div></div>
+    <div class="sw-inp-row"><div class="sw-inp-group"><span class="sw-inp-label">연속 하락일수</span><input type="number" id="sw-down" step="1" min="0" placeholder="예: 2" class="setting-input" style="padding:9px 11px;" oninput="swCalc()"></div><div class="sw-inp-group"><span class="sw-inp-label">투입금 ($)</span><input type="number" id="sw-budget" step="100" value="3000" class="setting-input" style="padding:9px 11px;" oninput="swCalc()"></div></div>
+    <button onclick="swAutoFill()" style="width:100%;background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.3);border-radius:10px;color:var(--blue);padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">↻ 대시보드 VIX 자동 불러오기</button>
+  </div>
+  <div class="sw-signal-box wait" id="sw-signal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div><div id="sw-mode-pill" class="sw-mode-pill wait">조건 미입력</div><div class="sw-sig-label" id="sw-sig-label">—</div><div style="font-size:12px;color:var(--text2);margin-top:4px;" id="sw-sig-reason">지표를 입력하면 자동 판단됩니다</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;color:var(--text3);">신뢰도</div><div style="font-size:20px;font-weight:900;color:var(--text1);font-family:'JetBrains Mono',monospace;" id="sw-conf">—</div></div>
+    </div>
+  </div>
+  <div class="sw-target-grid">
+    <div class="sw-tc entry"><div class="sw-tc-label">진입가</div><div class="sw-tc-val" id="sw-entry">—</div><div class="sw-tc-sub">현재가</div></div>
+    <div class="sw-tc tp"><div class="sw-tc-label">목표가</div><div class="sw-tc-val" id="sw-tp">—</div><div class="sw-tc-sub" id="sw-tp-pct">—</div></div>
+    <div class="sw-tc sl"><div class="sw-tc-label">손절가</div><div class="sw-tc-val" id="sw-sl">—</div><div class="sw-tc-sub" id="sw-sl-pct">—</div></div>
+  </div>
+  <div class="card" id="sw-qty-card" style="display:none;"><div class="card-label">💰 매수 수량 계산</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="sw-qty-rows"></div></div>
+  <div class="card">
+    <div class="sw-section-title">모드A — 모멘텀 조건</div>
+    <div class="sw-cond-row"><span class="sw-dot neu" id="sca1"></span><span>QQQ 전일 +1.5% 이상</span><span class="sw-cond-val" id="scv1">—</span></div>
+    <div class="sw-cond-row"><span class="sw-dot neu" id="sca2"></span><span>VIX &lt; 20</span><span class="sw-cond-val" id="scv2">—</span></div>
+    <div class="sw-cond-row"><span class="sw-dot neu" id="sca3"></span><span>RSI &lt; 70</span><span class="sw-cond-val" id="scv3">—</span></div>
+    <div style="border-top:1px dashed var(--border2);margin:10px 0;"></div>
+    <div class="sw-section-title">모드B — 눌림목 조건</div>
+    <div class="sw-cond-row"><span class="sw-dot neu" id="scb1"></span><span>연속 하락 2일 이상</span><span class="sw-cond-val" id="scv4">—</span></div>
+    <div class="sw-cond-row"><span class="sw-dot neu" id="scb2"></span><span>RSI &lt; 40</span><span class="sw-cond-val" id="scv5">—</span></div>
+    <div class="sw-cond-row"><span class="sw-dot neu" id="scb3"></span><span>VIX &lt; 25</span><span class="sw-cond-val" id="scv6">—</span></div>
+    <div style="border-top:1px dashed var(--border2);margin:10px 0;"></div>
+    <div class="sw-section-title">패스 조건</div>
+    <div class="sw-cond-row"><span class="sw-dot neu" id="scp1"></span><span>VIX &gt; 25 → 무조건 패스</span><span class="sw-cond-val" id="scvp">—</span></div>
+  </div>
+  <div class="card"><div class="card-label">RSI(14) 게이지</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <div style="font-size:11px;color:var(--text3);width:52px;">과매도&lt;30</div>
+      <div style="flex:1;height:8px;background:linear-gradient(90deg,#dc2626,#d97706,#16a34a,#d97706,#dc2626);border-radius:4px;position:relative;"><div id="sw-rsi-marker" style="position:absolute;top:-3px;width:14px;height:14px;background:#1a2340;border-radius:50%;transform:translateX(-7px);transition:left 0.4s;left:50%;"></div></div>
+      <div style="font-size:11px;color:var(--text3);width:52px;text-align:right;">과매수&gt;70</div>
+    </div>
+    <div style="font-size:13px;font-weight:700;text-align:center;margin-top:6px;" id="sw-rsi-disp">RSI: —</div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><div class="card-label" style="margin-bottom:0;">📒 매매 일지</div><button onclick="swClearLog()" style="font-size:10px;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;">전체 삭제</button></div>
+    <div style="display:flex;gap:7px;margin-bottom:10px;">
+      <select id="sw-log-type" class="setting-input" style="padding:7px 9px;font-size:12px;flex:0 0 60px;"><option value="매수">매수</option><option value="매도">매도</option><option value="패스">패스</option></select>
+      <input type="number" id="sw-log-price" placeholder="체결가 $" step="0.01" class="setting-input" style="padding:7px 9px;font-size:12px;flex:1;">
+      <input type="number" id="sw-log-qty" placeholder="수량" step="1" class="setting-input" style="padding:7px 9px;font-size:12px;flex:0 0 55px;">
+      <button onclick="swAddLog()" style="background:var(--blue);border:none;border-radius:10px;color:#fff;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">추가</button>
+    </div>
+    <div id="sw-log-list"><div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">아직 기록이 없어요</div></div>
+    <div id="sw-log-summary" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;"><span>누적 손익</span><span id="sw-log-pnl" style="font-family:'JetBrains Mono',monospace;">$0.00</span></div></div>
   </div>
 </div>
 
@@ -967,7 +1079,7 @@ function saveSettings() {
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","hidden","war","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","swing","rules","hidden","war","settings"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
@@ -1142,6 +1254,8 @@ async function fetchAll() {
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
     autoCountStreak(MD);
+if (MD.vix) { const el = document.getElementById("sw-vix"); if (el && !el.value) { el.value = MD.vix.toFixed(1); swCalc(); } }
+
   } catch(e) {
     console.error(e);
     const eb = document.getElementById("errBox");
@@ -1413,7 +1527,91 @@ function renderRules() {
   if (!container) { container=document.createElement("div"); container.id="rules-content"; document.getElementById("panel-rules").appendChild(container); }
   container.innerHTML = html;
 }
-
+function swDot(id,s){const el=document.getElementById(id);if(el)el.className="sw-dot "+(s==="ok"?"ok":s==="no"?"no":"neu");}
+function swAutoFill(){if(MD&&MD.vix){document.getElementById("sw-vix").value=MD.vix.toFixed(1);swCalc();}else alert("대시보드 새로고침 후 사용하세요.");}
+function swCalc(){
+  const tqqq=parseFloat(document.getElementById("sw-tqqq").value);
+  const qqqChg=parseFloat(document.getElementById("sw-qqq").value);
+  const vix=parseFloat(document.getElementById("sw-vix").value);
+  const rsi=parseFloat(document.getElementById("sw-rsi").value);
+  const down=parseInt(document.getElementById("sw-down").value)||0;
+  const budget=parseFloat(document.getElementById("sw-budget").value)||3000;
+  const rd=document.getElementById("sw-rsi-disp"),rm=document.getElementById("sw-rsi-marker");
+  if(!isNaN(rsi)){rd.textContent="RSI: "+rsi.toFixed(1);rm.style.left=Math.min(100,Math.max(0,rsi))+"%";rd.style.color=rsi>70||rsi<30?"var(--red)":rsi>=45&&rsi<=65?"var(--green)":"var(--amber)";}
+  else{rd.textContent="RSI: —";rm.style.left="50%";}
+  if(isNaN(tqqq)||isNaN(qqqChg)||isNaN(vix)||isNaN(rsi)){
+    document.getElementById("sw-signal-box").className="sw-signal-box wait";
+    document.getElementById("sw-mode-pill").className="sw-mode-pill wait";
+    document.getElementById("sw-mode-pill").textContent="조건 미입력";
+    document.getElementById("sw-sig-label").textContent="—";
+    document.getElementById("sw-sig-reason").textContent="지표를 모두 입력하면 자동 판단됩니다";
+    document.getElementById("sw-conf").textContent="—";
+    ["sw-entry","sw-tp","sw-sl","sw-tp-pct","sw-sl-pct"].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent="—";});
+    document.getElementById("sw-qty-card").style.display="none";
+    ["sca1","sca2","sca3","scb1","scb2","scb3","scp1"].forEach(id=>swDot(id,"neu"));
+    ["scv1","scv2","scv3","scv4","scv5","scv6","scvp"].forEach(id=>setText(id,"—"));
+    return;
+  }
+  const passVix=vix>25,modeA=qqqChg>=1.5&&vix<20&&rsi<70,modeB=down>=2&&rsi<40&&vix<25;
+  swDot("sca1",qqqChg>=1.5?"ok":"no");swDot("sca2",vix<20?"ok":"no");swDot("sca3",rsi<70?"ok":"no");
+  swDot("scb1",down>=2?"ok":"no");swDot("scb2",rsi<40?"ok":"no");swDot("scb3",vix<25?"ok":"no");
+  swDot("scp1",passVix?"no":"ok");
+  setText("scv1",(qqqChg>=0?"+":"")+qqqChg.toFixed(2)+"%");
+  setText("scv2",vix.toFixed(1));setText("scv3",rsi.toFixed(1));
+  setText("scv4",down+"일");setText("scv5",rsi.toFixed(1));setText("scv6",vix.toFixed(1));setText("scvp",passVix?"위반":"통과");
+  const box=document.getElementById("sw-signal-box"),pill=document.getElementById("sw-mode-pill");
+  const lbl=document.getElementById("sw-sig-label"),rsn=document.getElementById("sw-sig-reason"),conf=document.getElementById("sw-conf");
+  let tpPct=0,slPct=0,sig="wait";
+  if(passVix){sig="pass";pill.className="sw-mode-pill pass";pill.textContent="VIX 위험";lbl.textContent="오늘 패스";rsn.textContent="VIX "+vix.toFixed(1)+" > 25. 오늘은 관망.";conf.textContent="위험";}
+  else if(modeA&&modeB){sig="buy";pill.className="sw-mode-pill ab";pill.textContent="모드A+B 복합";lbl.textContent="매수 신호 (강)";rsn.textContent="모멘텀+눌림목 동시 충족.";conf.textContent="강";tpPct=3.0;slPct=1.5;}
+  else if(modeA){sig="buy";pill.className="sw-mode-pill a";pill.textContent="모드A 모멘텀";lbl.textContent="매수 신호 (A)";rsn.textContent="QQQ +"+qqqChg.toFixed(2)+"% 강세 + VIX 안정.";conf.textContent="보통";tpPct=2.5;slPct=1.5;}
+  else if(modeB){sig="buy";pill.className="sw-mode-pill b";pill.textContent="모드B 눌림목";lbl.textContent="매수 신호 (B)";rsn.textContent=down+"일 하락 + RSI "+rsi.toFixed(1)+" 과매도.";conf.textContent="보통";tpPct=3.0;slPct=2.0;}
+  else{sig="wait";pill.className="sw-mode-pill wait";pill.textContent="조건 미충족";lbl.textContent="대기";rsn.textContent="A/B 조건 미충족. 억지 진입 금지.";conf.textContent="대기";}
+  box.className="sw-signal-box "+sig;
+  document.getElementById("sw-entry").textContent="$"+tqqq.toFixed(2);
+  if(tpPct>0){
+    document.getElementById("sw-tp").textContent="$"+(tqqq*(1+tpPct/100)).toFixed(2);
+    document.getElementById("sw-tp-pct").textContent="+"+tpPct.toFixed(1)+"%";
+    document.getElementById("sw-sl").textContent="$"+(tqqq*(1-slPct/100)).toFixed(2);
+    document.getElementById("sw-sl-pct").textContent="-"+slPct.toFixed(1)+"%";
+    const qty=Math.floor(budget/tqqq);
+    document.getElementById("sw-qty-card").style.display="block";
+    document.getElementById("sw-qty-rows").innerHTML=
+      `<div style="text-align:center;"><div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:4px;">매수 수량</div><div style="font-size:22px;font-weight:900;color:var(--blue);font-family:'JetBrains Mono',monospace;">${qty}주</div><div style="font-size:11px;color:var(--text3);">$${(qty*tqqq).toFixed(2)} 투입</div></div>`+
+      `<div style="text-align:center;"><div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:4px;">예상 손익</div><div style="font-size:14px;font-weight:800;color:var(--green);font-family:'JetBrains Mono',monospace;">+$${(qty*tqqq*tpPct/100).toFixed(2)}</div><div style="font-size:12px;font-weight:700;color:var(--red);font-family:'JetBrains Mono',monospace;">-$${(qty*tqqq*slPct/100).toFixed(2)}</div></div>`;
+  } else {
+    document.getElementById("sw-tp").textContent="—";document.getElementById("sw-tp-pct").textContent="진입 없음";
+    document.getElementById("sw-sl").textContent="—";document.getElementById("sw-sl-pct").textContent="진입 없음";
+    document.getElementById("sw-qty-card").style.display="none";
+  }
+}
+let swLog=[];try{swLog=JSON.parse(localStorage.getItem("sw_log")||"[]");}catch{swLog=[];}
+function swAddLog(){
+  const type=document.getElementById("sw-log-type").value;
+  const price=parseFloat(document.getElementById("sw-log-price").value);
+  const qty=parseInt(document.getElementById("sw-log-qty").value)||0;
+  if(isNaN(price)||qty<=0)return;
+  const now=new Date();
+  swLog.unshift({type,price,qty,ts:(now.getMonth()+1)+"/"+now.getDate()+" "+now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0")});
+  if(swLog.length>30)swLog.pop();
+  localStorage.setItem("sw_log",JSON.stringify(swLog));
+  document.getElementById("sw-log-price").value="";document.getElementById("sw-log-qty").value="";
+  swRenderLog();
+}
+function swClearLog(){if(!confirm("매매 일지 전체 삭제?"))return;swLog=[];localStorage.removeItem("sw_log");swRenderLog();}
+function swRenderLog(){
+  const list=document.getElementById("sw-log-list"),summary=document.getElementById("sw-log-summary");
+  if(!list)return;
+  if(!swLog.length){list.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">아직 기록이 없어요</div>';if(summary)summary.style.display="none";return;}
+  let buy=0,sell=0;swLog.forEach(r=>{if(r.type==="매수")buy+=r.price*r.qty;if(r.type==="매도")sell+=r.price*r.qty;});
+  const pnl=sell-buy;
+  list.innerHTML=swLog.slice(0,10).map(r=>{
+    const c=r.type==="매수"?"var(--blue)":r.type==="매도"?"var(--green)":"var(--text3)";
+    return `<div class="sw-log-row"><span style="font-weight:700;color:${c};min-width:28px;">${r.type}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;">$${r.price.toFixed(2)}×${r.qty}주</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text2);">$${(r.price*r.qty).toFixed(0)}</span><span style="font-size:10px;color:var(--text3);">${r.ts}</span></div>`;
+  }).join("");
+  if(summary){summary.style.display="block";const p=document.getElementById("sw-log-pnl");if(p){p.textContent=(pnl>=0?"+":"")+"$"+pnl.toFixed(2);p.style.color=pnl>=0?"var(--green)":"var(--red)";}}
+}
+  
 // ── 거시모니터 ──
 async function runWarMonitor() {
   const btn = document.getElementById("btnWar");
@@ -1584,7 +1782,7 @@ async function submitComment() {
 const PW_HASH = "79d9d8f002c1c955fa0d21eeaaf2ebf03c3a878d2fdcb6e78d915b3ed81cc886"; // "0410"
 async function sha256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  return Array.from(new Uint8Arra\y(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 window.checkPW = async function() {
   const val = document.getElementById("pwInput").value;
@@ -1603,7 +1801,7 @@ window.checkPW = async function() {
 };
 
 // ── 초기화 ──
-loadSettings(); renderStatic(null); renderRules();
+loadSettings(); renderStatic(null); renderRules(); swRenderLog();
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";

@@ -813,15 +813,7 @@ body {
       style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;color:var(--text3);padding:8px;font-size:11px;cursor:pointer;font-family:inherit;margin-top:6px;font-weight:600;">
       ↻ 새로고침
     </button>
-    <!-- 쿠팡 파트너스 -->
-    <div style="margin-top:14px;">
-      <div style="font-size:9px;color:var(--text3);margin-bottom:6px;text-align:center;letter-spacing:0.08em;font-weight:600;">추천 상품 · 쿠팡 파트너스</div>
-      <div style="border-radius:10px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);">
-        <script src="https://ads-partners.coupang.com/g.js"></script>
-        <script>new PartnersCoupang.G({"id":979393,"template":"carousel","trackingCode":"AF8164365","width":"100%","height":"140","tsource":""});</script>
-      </div>
-      <div style="font-size:8px;color:var(--text3);margin-top:5px;text-align:center;">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
-    </div>
+
   </div>
 </div>
 
@@ -948,15 +940,6 @@ function getRULES() {
         ["장기 하락장","QLD 10주 + SSO 5주 고정 수량 매수 계속. 탄환(SGOV) -> 월 투자금 + 마통으로 자연 전환."],
         ["근거","QLD 10년 백테스트: 120일선 하회 구간은 반드시 회복 (2015·2018·2020·2022 전량 회복 확인). 무한매수는 평단 낮추기의 최강 전략."],
         ["멘탈 관리","QLD 2배 레버리지 MDD -70% 수준. 추가 하락 시 추가 매수 기회로 인식. 타임라인: 10년 이상 보유 관점."],
-      ]
-    },
-    { title:"⚡ 히든전략 — TQQQ/SOXL 특공대", color:"#5b21b6", bg:"#f5f3ff",
-      items:[
-        ["TQQQ 특공대","200일선 하단 진입 시 1주차 5주→2주차 6주→3주차 7주… 매주 1주씩 무한 증가. 백테스트 CAGR 14.7% (200일선 기준). 200일선 복귀 시 익절 시작."],
-        ["SOXL 특공대","300일선 하단 진입 시 1주차 5주→2주차 6주→3주차 7주… 매주 1주씩 무한 증가. 백테스트 CAGR 17.7% (300일선 기준). 300일선 복귀 시 익절 시작."],
-        ["대시보드 알림","조건 충족(하방 돌파) 시 대시보드 탭 하단에 자동 알림 표시. 히든전략 탭에서 이번 주 매수량 계산."],
-        ["운용 원칙","메인 전략(QLD+SSO) 대비 소규모. 포트폴리오 5~10% 이하 배분 권장."],
-        ["익절 기준","평단 대비 +25%/+50%/+100% 각 10% 단계별 무조건 익절"],
       ]
     },
   ];
@@ -1227,7 +1210,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycby12dSTqZ-u9TO3LFaK6aE5IQdygMV-GSwmXdX0a2ynsYU80ZHNOxltb7qXzllltBjuVg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwY0LEiSSLYvLKtINAdpZOUG7wEGI0qTECVqCR_rqxLfE_0Klcs5ajAPIN3xtUzYXFHOA/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");

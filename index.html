@@ -1849,7 +1849,7 @@ function pondModalClose() {
 async function pondModalConfirm() {
   const ticker = document.getElementById("pond-ticker-input").value.trim().toUpperCase();
   const name   = document.getElementById("pond-name-input").value.trim() || ticker;
-  const shares = parseInt(document.getElementById("pond-shares-input").value) || 5;
+  const shares = parseFloat(document.getElementById("pond-shares-input").value) || 5;
   if (!ticker) return;
 
   const item = { id: Date.now(), ticker, name, dailyShares: shares, status: "active",

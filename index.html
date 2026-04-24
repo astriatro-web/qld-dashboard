@@ -789,6 +789,27 @@ body {
   </div>
 </div>
 
+<!-- 웅덩노트 매수기록 수정 모달 -->
+<div id="pond-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8001;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg1);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:16px;">매수기록 수정</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수</div>
+    <input id="pond-edit-shares" type="number" inputmode="numeric"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 단가</div>
+    <input id="pond-edit-price" type="number" inputmode="decimal"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">메모</div>
+    <input id="pond-edit-memo" type="text"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:16px;outline:none;">
+    <div style="display:flex;gap:8px;">
+      <button onclick="pondEditModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
+      <button onclick="pondEditDelete()" style="flex:1;background:#fee2e2;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#dc2626;cursor:pointer;">삭제</button>
+      <button onclick="pondEditConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── 거시모니터 패널 ── -->
 <div class="panel" id="panel-war">
   <div class="war-header">
@@ -1094,7 +1115,7 @@ function saveSettings() {
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","hidden","war","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","rules","hidden","pond","war","settings"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
@@ -1917,7 +1938,6 @@ function pondRender() {
   if (!POND.length) { list.innerHTML = ""; empty.style.display = "block"; return; }
   empty.style.display = "none";
 
-  // 활성 먼저, 종료 나중
   const sorted = [...POND].sort((a,b) => {
     if (a.status === b.status) return b.id - a.id;
     return a.status === "active" ? -1 : 1;
@@ -1925,12 +1945,27 @@ function pondRender() {
 
   list.innerHTML = sorted.map(item => {
     const isActive = item.status === "active";
-    const belowMA = item.currentPrice && item.ma120 && item.currentPrice < item.ma120;
-    const aboveMA = item.currentPrice && item.ma120 && item.currentPrice >= item.ma120;
-    const totalShares = item.buys.reduce((a, b) => a + b.shares, 0);
-    const totalAmt = item.buys.filter(b=>b.price).reduce((a,b) => a + b.shares * b.price, 0);
-    const avgCost = totalShares > 0 && totalAmt > 0 ? (totalAmt / item.buys.filter(b=>b.price).reduce((a,b)=>a+b.shares,0)).toFixed(2) : null;
-    const pnl = avgCost && item.currentPrice ? ((item.currentPrice - avgCost) / avgCost * 100).toFixed(1) : null;
+    const belowMA  = item.currentPrice && item.ma120 && item.currentPrice < item.ma120;
+    const aboveMA  = item.currentPrice && item.ma120 && item.currentPrice >= item.ma120;
+
+    // 누적 통계 — sells 반영
+    const sells = item.sells || [];
+    const totalBuyShares  = item.buys.reduce((a,b) => a + b.shares, 0);
+    const soldShares      = sells.reduce((a,b) => a + b.shares, 0);
+    const heldShares      = Math.max(0, totalBuyShares - soldShares);
+    const totalBuyAmt     = item.buys.filter(b=>b.price).reduce((a,b) => a + b.shares*b.price, 0);
+    const totalBuyPriced  = item.buys.filter(b=>b.price).reduce((a,b) => a + b.shares, 0);
+    const avgCost         = totalBuyPriced > 0 ? totalBuyAmt / totalBuyPriced : null;
+    const pnlPct          = avgCost && item.currentPrice ? (item.currentPrice - avgCost) / avgCost * 100 : null;
+    const totalInvested   = avgCost ? avgCost * totalBuyShares : null;
+    const recoveredAmt    = sells.filter(s=>s.price).reduce((a,b) => a + b.shares*b.price, 0);
+    const recoveredPct    = totalInvested ? (recoveredAmt / totalInvested * 100).toFixed(1) : null;
+
+    // 익절 조건
+    const sell1Trigger = avgCost && item.currentPrice && pnlPct >= 15 && !(item.sell1Done);
+    const sell2Trigger = avgCost && item.currentPrice && pnlPct >= 30 && item.sell1Done && !(item.sell2Done);
+    const sell1Shares  = avgCost ? Math.round(totalBuyShares * 0.25) : 0;
+    const sell2Shares  = avgCost ? Math.round(totalBuyShares * 0.25) : 0;
 
     // 신호 배지
     let signalBadge = "";
@@ -1942,48 +1977,90 @@ function pondRender() {
       signalBadge = `<span style="background:#fef9ee;color:#b45309;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">🔼 120일선 상방</span>`;
     }
 
-    // 최근 매수 기록 (최대 3개)
-    const recentBuys = [...item.buys].reverse().slice(0, 3).map(b =>
-      `<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);">
-        <span style="color:var(--text3);">${b.date}</span>
-        <span style="color:var(--text2);font-weight:600;">${b.shares}주${b.price ? ` · ${b.price.toLocaleString()}` : ""}${b.memo ? ` · ${b.memo}` : ""}</span>
+    // 오늘 이미 매수했는지 체크
+    const today = new Date().toLocaleDateString("ko-KR");
+    const boughtToday = item.buys.some(b => b.date === today);
+
+    // 매수 기록 (최근 5개, 수정 버튼 포함)
+    const recentBuys = [...item.buys].map((b, origIdx) => ({ b, origIdx }))
+      .reverse().slice(0, 5).map(({ b, origIdx }) =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--text3);min-width:70px;">${b.date}</span>
+        <span style="color:var(--text2);font-weight:600;flex:1;text-align:center;">${b.shares}주${b.price ? ` · ${Number(b.price).toLocaleString()}` : ""}${b.memo ? ` <span style="color:var(--text3);">${b.memo}</span>` : ""}</span>
+        <button onclick="pondEditOpen(${item.id},${origIdx})" style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:10px;color:var(--text3);cursor:pointer;">수정</button>
       </div>`
     ).join("");
 
-    return `<div style="background:${isActive ? "var(--bg2)" : "var(--bg3)"};border:1.5px solid ${isActive && belowMA ? "var(--green)" : isActive && aboveMA ? "#f59e0b" : "var(--border)"};border-radius:14px;padding:14px;margin-bottom:10px;opacity:${isActive ? 1 : 0.65};">
+    // 매도 기록
+    const recentSells = sells.slice(-2).reverse().map(s =>
+      `<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:#dc2626;">
+        <span style="color:var(--text3);">${s.date}</span>
+        <span style="font-weight:600;">${s.label} · ${s.shares}주 매도${s.price ? ` · ${Number(s.price).toLocaleString()}` : ""}</span>
+      </div>`
+    ).join("");
+
+    // 원금 회수율 카드
+    const recoveryCard = recoveredPct ? `
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:7px 10px;font-size:11px;margin-bottom:8px;">
+        💰 원금 회수: <b style="color:#15803d;">${recoveredPct}%</b>
+        <span style="color:var(--text3);margin-left:6px;">(회수 ${recoveredAmt.toLocaleString()} / 투자 ${Math.round(totalInvested).toLocaleString()})</span>
+      </div>` : "";
+
+    return `<div style="background:${isActive?"var(--bg2)":"var(--bg3)"};border:1.5px solid ${isActive&&belowMA?"var(--green)":isActive&&(sell1Trigger||sell2Trigger)?"#f59e0b":"var(--border)"};border-radius:14px;padding:14px;margin-bottom:10px;opacity:${isActive?1:0.65};">
+
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
         <div>
           <span style="font-size:16px;font-weight:900;color:var(--text1);">${item.ticker}</span>
-          ${item.name !== item.ticker ? `<span style="font-size:11px;color:var(--text3);margin-left:6px;">${item.name}</span>` : ""}
-          ${!isActive ? `<span style="background:#e5e7eb;color:#6b7280;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;margin-left:6px;">종료 ${item.closedAt||""}</span>` : ""}
+          ${item.name!==item.ticker?`<span style="font-size:11px;color:var(--text3);margin-left:6px;">${item.name}</span>`:""}
+          ${!isActive?`<span style="background:#e5e7eb;color:#6b7280;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;margin-left:6px;">종료 ${item.closedAt||""}</span>`:""}
         </div>
         <button onclick="pondDelete(${item.id})" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
       </div>
 
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
         ${signalBadge}
         <span id="pond-status-${item.id}" style="font-size:10px;color:var(--text3);">
-          ${item.currentPrice ? `현재 ${item.currentPrice.toLocaleString()} / MA120 ${item.ma120 ? item.ma120.toLocaleString() : "?"}` : ""}
+          ${item.currentPrice?`현재 ${item.currentPrice.toLocaleString()} / MA120 ${item.ma120?item.ma120.toLocaleString():"?"}` : ""}
         </span>
         <button onclick="pondFetchPrice(${item.id})" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--text2);cursor:pointer;">↻ 갱신</button>
       </div>
 
-      <div style="display:flex;gap:6px;font-size:11px;color:var(--text3);margin-bottom:10px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;font-size:11px;color:var(--text3);margin-bottom:10px;flex-wrap:wrap;">
         <span>매일 <b style="color:var(--text1);">${item.dailyShares}주</b></span>
-        ${totalShares > 0 ? `<span>· 누적 <b style="color:var(--blue);">${totalShares}주</b></span>` : ""}
-        ${avgCost ? `<span>· 평단 <b style="color:var(--text1);">${parseFloat(avgCost).toLocaleString()}</b></span>` : ""}
-        ${pnl ? `<span>· <b style="color:${parseFloat(pnl)>=0?"var(--green)":"var(--red)"};">${parseFloat(pnl)>=0?"+":""}${pnl}%</b></span>` : ""}
-        <span style="color:var(--text3);">· 등록 ${item.addedAt}</span>
+        ${totalBuyShares>0?`<span>· 누적매수 <b style="color:var(--blue);">${totalBuyShares}주</b></span>`:""}
+        ${heldShares!==totalBuyShares?`<span>· 보유 <b style="color:var(--text1);">${heldShares}주</b></span>`:""}
+        ${avgCost?`<span>· 평단 <b style="color:var(--text1);">${Number(avgCost).toLocaleString()}</b></span>`:""}
+        ${pnlPct!=null?`<span>· <b style="color:${pnlPct>=0?"var(--green)":"var(--red)"};">${pnlPct>=0?"+":""}${pnlPct.toFixed(1)}%</b></span>`:""}
+        <span style="color:var(--text3);">· 시작 ${item.addedAt}</span>
       </div>
 
-      ${recentBuys ? `<div style="margin-bottom:10px;">${recentBuys}</div>` : ""}
-      ${item.buys.length > 3 ? `<div style="font-size:10px;color:var(--text3);margin-bottom:8px;">외 ${item.buys.length-3}건 더 있음</div>` : ""}
+      ${recoveryCard}
+
+      ${sell1Trigger?`
+      <div style="background:#fffbeb;border:1.5px solid #fbbf24;border-radius:10px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:800;color:#b45309;margin-bottom:6px;">💛 익절 1단계 조건 충족 (+${pnlPct.toFixed(1)}% ≥ +15%)</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">원금의 25% 매도 권장 (${sell1Shares}주 · 총매수 ${totalBuyShares}주의 25%)</div>
+        <button onclick="pondSellExec(${item.id},1,${sell1Shares})" style="width:100%;background:#f59e0b;color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:800;cursor:pointer;">📤 1단계 매도 실행 (${sell1Shares}주)</button>
+      </div>`:sell2Trigger?`
+      <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:800;color:#dc2626;margin-bottom:6px;">❤️ 익절 2단계 조건 충족 (+${pnlPct.toFixed(1)}% ≥ +30%)</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">추가 25% 매도 권장 (${sell2Shares}주) · 이후 잔여분 홀드</div>
+        <button onclick="pondSellExec(${item.id},2,${sell2Shares})" style="width:100%;background:#dc2626;color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:800;cursor:pointer;">📤 2단계 매도 실행 (${sell2Shares}주)</button>
+      </div>`:""}
+
+      ${recentSells?`<div style="margin-bottom:8px;">${recentSells}</div>`:""}
+
+      ${totalBuyShares>0?`<div style="margin-bottom:8px;">${recentBuys}</div>`:""}
+      ${item.buys.length>5?`<div style="font-size:10px;color:var(--text3);margin-bottom:6px;">외 ${item.buys.length-5}건</div>`:""}
 
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        ${isActive ? `
-          <button onclick="pondBuyOpen(${item.id})" style="flex:1;min-width:80px;background:var(--blue);color:#fff;border:none;border-radius:9px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;">📝 매수기록</button>
-          ${aboveMA ? `<button onclick="pondClose(${item.id})" style="flex:1;min-width:80px;background:#f59e0b;color:#fff;border:none;border-radius:9px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;">🏁 종료 (상방복귀)</button>` : ""}
-        ` : `
+        ${isActive?`
+          <button onclick="pondBuyToday(${item.id})"
+            style="flex:1;min-width:80px;background:${boughtToday?"#6b7280":"var(--blue)"};color:#fff;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">
+            ${boughtToday?`✅ 오늘 매수완료`:`📥 오늘 매수 (${item.dailyShares}주)`}
+          </button>
+          ${aboveMA||item.sell2Done?`<button onclick="pondClose(${item.id})" style="flex:1;min-width:80px;background:#9ca3af;color:#fff;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">🏁 종료</button>`:""}
+        `:`
           <button onclick="pondReopen(${item.id})" style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:8px 14px;font-size:12px;color:var(--text2);cursor:pointer;">재활성화</button>
         `}
       </div>
@@ -1991,7 +2068,74 @@ function pondRender() {
   }).join("");
 }
 
-// 탭 전환 시 웅덩노트 렌더링
+// 오늘 매수 버튼 — 현재가로 즉시 기록
+function pondBuyToday(id) {
+  const item = POND.find(p => p.id === id);
+  if (!item) return;
+  const today = new Date().toLocaleDateString("ko-KR");
+  if (item.buys.some(b => b.date === today)) {
+    if (!confirm("오늘 이미 매수 기록이 있어요. 추가로 기록할까요?")) return;
+  }
+  item.buys.push({ date: today, shares: item.dailyShares, price: item.currentPrice || null, memo: "" });
+  if (!item.startedAt) item.startedAt = today;
+  pondSave();
+  pondRender();
+}
+
+// 익절 실행
+function pondSellExec(id, stage, shares) {
+  const item = POND.find(p => p.id === id);
+  if (!item) return;
+  const label = stage === 1 ? "1단계(+15%)" : "2단계(+30%)";
+  if (!confirm(`${item.ticker} ${label} 매도 실행\n${shares}주 · 현재가 ${item.currentPrice ? item.currentPrice.toLocaleString() : "??"}\n진행하시겠습니까?`)) return;
+  if (!item.sells) item.sells = [];
+  item.sells.push({
+    date: new Date().toLocaleDateString("ko-KR"),
+    stage, label, shares,
+    price: item.currentPrice || null
+  });
+  if (stage === 1) item.sell1Done = true;
+  if (stage === 2) item.sell2Done = true;
+  pondSave();
+  pondRender();
+}
+
+let pondEditTargetId = null;
+let pondEditBuyIdx = null;
+
+function pondEditOpen(itemId, buyIdx) {
+  const item = POND.find(p => p.id === itemId);
+  if (!item || !item.buys[buyIdx]) return;
+  pondEditTargetId = itemId;
+  pondEditBuyIdx = buyIdx;
+  const b = item.buys[buyIdx];
+  document.getElementById("pond-edit-shares").value = b.shares;
+  document.getElementById("pond-edit-price").value  = b.price || "";
+  document.getElementById("pond-edit-memo").value   = b.memo || "";
+  document.getElementById("pond-edit-modal").style.display = "flex";
+  setTimeout(() => document.getElementById("pond-edit-shares").focus(), 100);
+}
+function pondEditModalClose() {
+  document.getElementById("pond-edit-modal").style.display = "none";
+  pondEditTargetId = null; pondEditBuyIdx = null;
+}
+function pondEditConfirm() {
+  const item = POND.find(p => p.id === pondEditTargetId);
+  if (!item) return;
+  const shares = parseFloat(document.getElementById("pond-edit-shares").value);
+  const price  = parseFloat(document.getElementById("pond-edit-price").value) || null;
+  const memo   = document.getElementById("pond-edit-memo").value.trim();
+  if (!shares) return;
+  item.buys[pondEditBuyIdx] = { ...item.buys[pondEditBuyIdx], shares, price, memo };
+  pondSave(); pondEditModalClose(); pondRender();
+}
+function pondEditDelete() {
+  const item = POND.find(p => p.id === pondEditTargetId);
+  if (!item) return;
+  if (!confirm("이 기록을 삭제하시겠습니까?")) return;
+  item.buys.splice(pondEditBuyIdx, 1);
+  pondSave(); pondEditModalClose(); pondRender();
+}
 const _origSwitchTab = window.switchTab;
 window.switchTab = function(id) {
   _origSwitchTab(id);

@@ -436,7 +436,7 @@ body {
   <div style="font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:8px;font-weight:600;">STRATEGY DASHBOARD</div>
   <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px;letter-spacing:-0.04em;">QLD + SSO + @</div>
   <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:40px;font-weight:500;">레버리지 ETF 전략 관리 시스템</div>
-  <input id="pwInput" type="password" placeholder="비밀번호를 입력하세요"
+  <input id="pwInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="비밀번호를 입력하세요"
     style="width:100%;max-width:300px;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);border-radius:14px;padding:15px 20px;color:#fff;font-size:16px;font-family:inherit;outline:none;text-align:center;margin-bottom:10px;transition:all 0.2s;backdrop-filter:blur(10px);"
     onkeydown="if(event.key==='Enter')checkPW()"
     onfocus="this.style.borderColor='rgba(255,255,255,0.7)';this.style.background='rgba(255,255,255,0.18)'"
@@ -466,6 +466,7 @@ body {
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
   <button class="tab" onclick="switchTab('hidden')">히든전략</button>
+  <button class="tab" onclick="switchTab('pond')">웅덩노트</button>
   <button class="tab" onclick="switchTab('war')">거시모니터</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
@@ -726,6 +727,65 @@ body {
   <div class="card">
     <div class="card-label">히든전략 보유 현황</div>
     <div id="hiddenHoldingRows"><div style="font-size:12px;color:var(--text3);">설정탭에서 TQQQ/SOXL 보유 주수를 입력하세요</div></div>
+  </div>
+</div>
+
+<!-- ── 웅덩노트 패널 ── -->
+<div class="panel" id="panel-pond">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--text1);">📓 웅덩매매 노트</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">관심 종목 120일선 모니터링 · 매수 기록</div>
+    </div>
+    <button onclick="pondAddTicker()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
+      ＋ 종목 추가
+    </button>
+  </div>
+  <div id="pond-list"></div>
+  <div id="pond-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;">
+    ＋ 종목 추가 버튼을 눌러 관심 종목을 등록하세요
+  </div>
+</div>
+
+<!-- 웅덩노트 종목 추가 모달 -->
+<div id="pond-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg1);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:16px;">종목 추가</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">티커 심볼 (예: AAPL, QLD, 005930)</div>
+    <input id="pond-ticker-input" type="text" placeholder="티커 입력"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;text-transform:uppercase;"
+      oninput="this.value=this.value.toUpperCase()">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">종목명 (선택)</div>
+    <input id="pond-name-input" type="text" placeholder="예: 애플, QLD 레버리지"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매일 매수 주수</div>
+    <input id="pond-shares-input" type="number" inputmode="numeric" placeholder="예: 5"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:16px;outline:none;">
+    <div style="display:flex;gap:8px;">
+      <button onclick="pondModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
+      <button onclick="pondModalConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 웅덩노트 매수기록 모달 -->
+<div id="pond-buy-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg1);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:4px;" id="pond-buy-title">매수 기록</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:16px;" id="pond-buy-sub"></div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수</div>
+    <input id="pond-buy-shares" type="number" inputmode="numeric" placeholder="주수"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 단가</div>
+    <input id="pond-buy-price" type="number" inputmode="decimal" placeholder="가격"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">메모 (선택)</div>
+    <input id="pond-buy-memo" type="text" placeholder="예: LOC 주문"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:16px;outline:none;">
+    <div style="display:flex;gap:8px;">
+      <button onclick="pondBuyModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
+      <button onclick="pondBuyModalConfirm()" style="flex:2;background:var(--green);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">기록</button>
+    </div>
   </div>
 </div>
 
@@ -1210,7 +1270,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwY0LEiSSLYvLKtINAdpZOUG7wEGI0qTECVqCR_rqxLfE_0Klcs5ajAPIN3xtUzYXFHOA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwwVHum8apun5gF2BmEzvbDGJwVMNhqyjoBTNMVlhtkTwT5voqdQ9P__GnqDmJdta115Q/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -1738,6 +1798,209 @@ loadSettings(); renderStatic(null); renderRules();
     document.getElementById("pwInput").focus();
   }
 })();
+// ════════════════════════════════════════
+// 웅덩노트
+// ════════════════════════════════════════
+let POND = []; // [{id, ticker, name, dailyShares, status:'active'|'closed', buys:[{date,shares,price,memo}], ma120, currentPrice, closedAt}]
+let pondBuyTargetId = null;
+
+function pondLoad() {
+  try { POND = JSON.parse(localStorage.getItem("qld_pond") || "[]"); } catch { POND = []; }
+}
+function pondSave() {
+  localStorage.setItem("qld_pond", JSON.stringify(POND));
+}
+
+function pondAddTicker() {
+  document.getElementById("pond-ticker-input").value = "";
+  document.getElementById("pond-name-input").value = "";
+  document.getElementById("pond-shares-input").value = "";
+  const m = document.getElementById("pond-modal");
+  m.style.display = "flex";
+  setTimeout(() => document.getElementById("pond-ticker-input").focus(), 100);
+}
+function pondModalClose() {
+  document.getElementById("pond-modal").style.display = "none";
+}
+async function pondModalConfirm() {
+  const ticker = document.getElementById("pond-ticker-input").value.trim().toUpperCase();
+  const name   = document.getElementById("pond-name-input").value.trim() || ticker;
+  const shares = parseInt(document.getElementById("pond-shares-input").value) || 5;
+  if (!ticker) return;
+
+  const item = { id: Date.now(), ticker, name, dailyShares: shares, status: "active",
+                 buys: [], ma120: null, currentPrice: null, closedAt: null, addedAt: new Date().toLocaleDateString("ko-KR") };
+  POND.push(item);
+  pondSave();
+  pondModalClose();
+  pondRender();
+  pondFetchPrice(item.id); // 추가 즉시 시세 조회
+}
+
+// 티커 시세 + MA120 조회 — GAS 프록시 경유 (CORS 우회)
+async function pondFetchPrice(id) {
+  const item = POND.find(p => p.id === id);
+  if (!item) return;
+  const el = document.getElementById("pond-status-" + id);
+  if (el) el.textContent = "조회 중…";
+  try {
+    const params = new URLSearchParams({ action: "ticker_price", ticker: item.ticker });
+    const res = await fetch(GAS_URL + "?" + params.toString(), { method: "GET", mode: "cors", redirect: "follow" });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "조회 실패");
+    item.currentPrice = data.current;
+    item.ma120 = data.ma120;
+    item.currency = data.currency || "";
+    pondSave();
+    pondRender();
+  } catch(e) {
+    if (el) el.textContent = "조회 실패: " + e.message;
+  }
+}
+
+function pondBuyOpen(id) {
+  pondBuyTargetId = id;
+  const item = POND.find(p => p.id === id);
+  if (!item) return;
+  document.getElementById("pond-buy-title").textContent = `${item.ticker} 매수 기록`;
+  document.getElementById("pond-buy-sub").textContent = `기본 ${item.dailyShares}주 · 현재가 ${item.currentPrice ? item.currentPrice.toLocaleString() : "?"}`;
+  document.getElementById("pond-buy-shares").value = item.dailyShares;
+  document.getElementById("pond-buy-price").value = item.currentPrice || "";
+  document.getElementById("pond-buy-memo").value = "";
+  document.getElementById("pond-buy-modal").style.display = "flex";
+  setTimeout(() => document.getElementById("pond-buy-shares").focus(), 100);
+}
+function pondBuyModalClose() {
+  document.getElementById("pond-buy-modal").style.display = "none";
+  pondBuyTargetId = null;
+}
+function pondBuyModalConfirm() {
+  const item = POND.find(p => p.id === pondBuyTargetId);
+  if (!item) return;
+  const shares = parseFloat(document.getElementById("pond-buy-shares").value) || item.dailyShares;
+  const price  = parseFloat(document.getElementById("pond-buy-price").value) || null;
+  const memo   = document.getElementById("pond-buy-memo").value.trim();
+  const today  = new Date().toLocaleDateString("ko-KR");
+  item.buys.push({ date: today, shares, price, memo });
+  pondSave();
+  pondBuyModalClose();
+  pondRender();
+}
+
+function pondClose(id) {
+  const item = POND.find(p => p.id === id);
+  if (!item) return;
+  if (!confirm(`${item.ticker} 포지션을 종료하시겠습니까? (120일선 상방 복귀)`)) return;
+  item.status = "closed";
+  item.closedAt = new Date().toLocaleDateString("ko-KR");
+  pondSave();
+  pondRender();
+}
+function pondReopen(id) {
+  const item = POND.find(p => p.id === id);
+  if (!item) return;
+  item.status = "active";
+  item.closedAt = null;
+  pondSave();
+  pondRender();
+}
+function pondDelete(id) {
+  if (!confirm("종목을 삭제하시겠습니까?")) return;
+  POND = POND.filter(p => p.id !== id);
+  pondSave();
+  pondRender();
+}
+
+function pondRender() {
+  const list = document.getElementById("pond-list");
+  const empty = document.getElementById("pond-empty");
+  if (!POND.length) { list.innerHTML = ""; empty.style.display = "block"; return; }
+  empty.style.display = "none";
+
+  // 활성 먼저, 종료 나중
+  const sorted = [...POND].sort((a,b) => {
+    if (a.status === b.status) return b.id - a.id;
+    return a.status === "active" ? -1 : 1;
+  });
+
+  list.innerHTML = sorted.map(item => {
+    const isActive = item.status === "active";
+    const belowMA = item.currentPrice && item.ma120 && item.currentPrice < item.ma120;
+    const aboveMA = item.currentPrice && item.ma120 && item.currentPrice >= item.ma120;
+    const totalShares = item.buys.reduce((a, b) => a + b.shares, 0);
+    const totalAmt = item.buys.filter(b=>b.price).reduce((a,b) => a + b.shares * b.price, 0);
+    const avgCost = totalShares > 0 && totalAmt > 0 ? (totalAmt / item.buys.filter(b=>b.price).reduce((a,b)=>a+b.shares,0)).toFixed(2) : null;
+    const pnl = avgCost && item.currentPrice ? ((item.currentPrice - avgCost) / avgCost * 100).toFixed(1) : null;
+
+    // 신호 배지
+    let signalBadge = "";
+    if (!item.currentPrice) {
+      signalBadge = `<span style="background:#f3f4f6;color:#6b7280;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">시세없음</span>`;
+    } else if (belowMA) {
+      signalBadge = `<span style="background:#dcfce7;color:#15803d;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">🔽 120일선 하방 · 매수구간</span>`;
+    } else if (aboveMA) {
+      signalBadge = `<span style="background:#fef9ee;color:#b45309;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">🔼 120일선 상방</span>`;
+    }
+
+    // 최근 매수 기록 (최대 3개)
+    const recentBuys = [...item.buys].reverse().slice(0, 3).map(b =>
+      `<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--text3);">${b.date}</span>
+        <span style="color:var(--text2);font-weight:600;">${b.shares}주${b.price ? ` · ${b.price.toLocaleString()}` : ""}${b.memo ? ` · ${b.memo}` : ""}</span>
+      </div>`
+    ).join("");
+
+    return `<div style="background:${isActive ? "var(--bg2)" : "var(--bg3)"};border:1.5px solid ${isActive && belowMA ? "var(--green)" : isActive && aboveMA ? "#f59e0b" : "var(--border)"};border-radius:14px;padding:14px;margin-bottom:10px;opacity:${isActive ? 1 : 0.65};">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+        <div>
+          <span style="font-size:16px;font-weight:900;color:var(--text1);">${item.ticker}</span>
+          ${item.name !== item.ticker ? `<span style="font-size:11px;color:var(--text3);margin-left:6px;">${item.name}</span>` : ""}
+          ${!isActive ? `<span style="background:#e5e7eb;color:#6b7280;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;margin-left:6px;">종료 ${item.closedAt||""}</span>` : ""}
+        </div>
+        <button onclick="pondDelete(${item.id})" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        ${signalBadge}
+        <span id="pond-status-${item.id}" style="font-size:10px;color:var(--text3);">
+          ${item.currentPrice ? `현재 ${item.currentPrice.toLocaleString()} / MA120 ${item.ma120 ? item.ma120.toLocaleString() : "?"}` : ""}
+        </span>
+        <button onclick="pondFetchPrice(${item.id})" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--text2);cursor:pointer;">↻ 갱신</button>
+      </div>
+
+      <div style="display:flex;gap:6px;font-size:11px;color:var(--text3);margin-bottom:10px;flex-wrap:wrap;">
+        <span>매일 <b style="color:var(--text1);">${item.dailyShares}주</b></span>
+        ${totalShares > 0 ? `<span>· 누적 <b style="color:var(--blue);">${totalShares}주</b></span>` : ""}
+        ${avgCost ? `<span>· 평단 <b style="color:var(--text1);">${parseFloat(avgCost).toLocaleString()}</b></span>` : ""}
+        ${pnl ? `<span>· <b style="color:${parseFloat(pnl)>=0?"var(--green)":"var(--red)"};">${parseFloat(pnl)>=0?"+":""}${pnl}%</b></span>` : ""}
+        <span style="color:var(--text3);">· 등록 ${item.addedAt}</span>
+      </div>
+
+      ${recentBuys ? `<div style="margin-bottom:10px;">${recentBuys}</div>` : ""}
+      ${item.buys.length > 3 ? `<div style="font-size:10px;color:var(--text3);margin-bottom:8px;">외 ${item.buys.length-3}건 더 있음</div>` : ""}
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${isActive ? `
+          <button onclick="pondBuyOpen(${item.id})" style="flex:1;min-width:80px;background:var(--blue);color:#fff;border:none;border-radius:9px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;">📝 매수기록</button>
+          ${aboveMA ? `<button onclick="pondClose(${item.id})" style="flex:1;min-width:80px;background:#f59e0b;color:#fff;border:none;border-radius:9px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;">🏁 종료 (상방복귀)</button>` : ""}
+        ` : `
+          <button onclick="pondReopen(${item.id})" style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:8px 14px;font-size:12px;color:var(--text2);cursor:pointer;">재활성화</button>
+        `}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// 탭 전환 시 웅덩노트 렌더링
+const _origSwitchTab = window.switchTab;
+window.switchTab = function(id) {
+  _origSwitchTab(id);
+  if (id === "pond") { pondLoad(); pondRender(); }
+};
+
+// 초기화
+pondLoad();
+
 document.getElementById("pwInput").addEventListener("focus", () => { document.getElementById("pwErr").style.display="none"; });
 </script>
 </body>

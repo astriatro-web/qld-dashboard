@@ -732,14 +732,17 @@ body {
 
 <!-- ── 웅덩노트 패널 ── -->
 <div class="panel" id="panel-pond">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
     <div>
       <div style="font-size:15px;font-weight:800;color:var(--text1);">📓 웅덩매매 노트</div>
       <div style="font-size:11px;color:var(--text3);margin-top:2px;">관심 종목 120일선 모니터링 · 매수 기록</div>
     </div>
-    <button onclick="pondAddTicker()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
-      ＋ 종목 추가
-    </button>
+    <button onclick="pondAddTicker()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">＋ 종목 추가</button>
+  </div>
+  <!-- 일일 투입 예상금액 -->
+  <div id="pond-total-card" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:11px;color:var(--text3);font-weight:600;">📅 하루 예상 투입금액 (활성 종목 합산)</span>
+    <span id="pond-total-value" style="font-size:16px;font-weight:900;color:var(--blue);">-</span>
   </div>
   <div id="pond-list"></div>
   <div id="pond-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;">
@@ -758,8 +761,8 @@ body {
     <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">종목명 (선택)</div>
     <input id="pond-name-input" type="text" placeholder="예: 애플, QLD 레버리지"
       style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매일 매수 주수</div>
-    <input id="pond-shares-input" type="number" inputmode="numeric" placeholder="예: 5"
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매일 매수 주수 (소수점 가능 · 예: 0.5)</div>
+    <input id="pond-shares-input" type="number" inputmode="decimal" step="0.01" placeholder="예: 5 또는 0.5"
       style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:16px;outline:none;">
     <div style="display:flex;gap:8px;">
       <button onclick="pondModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
@@ -774,7 +777,7 @@ body {
     <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:4px;" id="pond-buy-title">매수 기록</div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:16px;" id="pond-buy-sub"></div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수</div>
-    <input id="pond-buy-shares" type="number" inputmode="numeric" placeholder="주수"
+    <input id="pond-buy-shares" type="number" inputmode="decimal" step="0.01" placeholder="주수"
       style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
     <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 단가</div>
     <input id="pond-buy-price" type="number" inputmode="decimal" placeholder="가격"
@@ -1981,15 +1984,18 @@ function pondRender() {
     const today = new Date().toLocaleDateString("ko-KR");
     const boughtToday = item.buys.some(b => b.date === today);
 
-    // 매수 기록 (최근 5개, 수정 버튼 포함)
-    const recentBuys = [...item.buys].map((b, origIdx) => ({ b, origIdx }))
-      .reverse().slice(0, 5).map(({ b, origIdx }) =>
-      `<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);">
+    // 매수 기록 — 최근 3개 노출, 전체는 스크롤 박스
+    const allBuysHtml = [...item.buys].map((b, origIdx) => ({ b, origIdx }))
+      .reverse().map(({ b, origIdx }) =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 0;border-bottom:1px solid var(--border);">
         <span style="color:var(--text3);min-width:70px;">${b.date}</span>
         <span style="color:var(--text2);font-weight:600;flex:1;text-align:center;">${b.shares}주${b.price ? ` · ${Number(b.price).toLocaleString()}` : ""}${b.memo ? ` <span style="color:var(--text3);">${b.memo}</span>` : ""}</span>
         <button onclick="pondEditOpen(${item.id},${origIdx})" style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:10px;color:var(--text3);cursor:pointer;">수정</button>
       </div>`
     ).join("");
+    const recentBuys = item.buys.length > 3
+      ? `<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:4px 8px;background:var(--bg3);">${allBuysHtml}</div>`
+      : `<div style="padding:0 2px;">${allBuysHtml}</div>`;
 
     // 매도 기록
     const recentSells = sells.slice(-2).reverse().map(s =>
@@ -2051,7 +2057,6 @@ function pondRender() {
       ${recentSells?`<div style="margin-bottom:8px;">${recentSells}</div>`:""}
 
       ${totalBuyShares>0?`<div style="margin-bottom:8px;">${recentBuys}</div>`:""}
-      ${item.buys.length>5?`<div style="font-size:10px;color:var(--text3);margin-bottom:6px;">외 ${item.buys.length-5}건</div>`:""}
 
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${isActive?`
@@ -2066,9 +2071,19 @@ function pondRender() {
       </div>
     </div>`;
   }).join("");
+  // 하루 예상 투입금액 계산 (활성 종목 × dailyShares × currentPrice)
+  const totalVal = document.getElementById("pond-total-value");
+  let dailyTotal = 0; let hasPrice = false;
+  POND.filter(p => p.status === "active").forEach(item => {
+    if (item.currentPrice && item.dailyShares) {
+      dailyTotal += item.dailyShares * item.currentPrice;
+      hasPrice = true;
+    }
+  });
+  totalVal.textContent = hasPrice
+    ? `$${dailyTotal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`
+    : "시세 갱신 필요";
 }
-
-// 오늘 매수 버튼 — 현재가로 즉시 기록
 function pondBuyToday(id) {
   const item = POND.find(p => p.id === id);
   if (!item) return;

@@ -748,6 +748,24 @@ body {
   <div id="pond-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;">
     ＋ 종목 추가 버튼을 눌러 관심 종목을 등록하세요
   </div>
+
+  <!-- AI 전략 분석 -->
+  <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div>
+        <div style="font-size:13px;font-weight:800;color:var(--text1);">🤖 웅덩 전략 AI 분석</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">현재 종목들의 매수 적절성 · 익절 타이밍 평가</div>
+      </div>
+      <button id="btnPondAI" onclick="runPondAI()" style="background:var(--purple,#7c3aed);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">
+        <span id="pondAIBtnIcon">⚡</span> AI 분석
+      </button>
+    </div>
+    <div id="pondAIEmpty" style="font-size:12px;color:var(--text3);text-align:center;padding:14px 0;">
+      AI 분석 버튼을 누르면 현재 종목들의<br>전략 적절성을 평가해드립니다<br>
+      <span style="font-size:11px;color:var(--text3);">비용 약 ₩3~4/회</span>
+    </div>
+    <div id="pondAIResult" style="display:none;"></div>
+  </div>
 </div>
 
 <!-- 웅덩노트 종목 추가 모달 -->
@@ -1294,7 +1312,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwwVHum8apun5gF2BmEzvbDGJwVMNhqyjoBTNMVlhtkTwT5voqdQ9P__GnqDmJdta115Q/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwrcjspynfQMLneWognMV3Qt4hgeYbnejQcmYhGK_IESiRWd2M4L9572uuDnvWMinYixg/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -2151,6 +2169,79 @@ function pondEditDelete() {
   item.buys.splice(pondEditBuyIdx, 1);
   pondSave(); pondEditModalClose(); pondRender();
 }
+
+// ── 웅덩노트 AI 분석 ──
+async function runPondAI() {
+  const btn = document.getElementById("btnPondAI");
+  const icon = document.getElementById("pondAIBtnIcon");
+  const empty = document.getElementById("pondAIEmpty");
+  const result = document.getElementById("pondAIResult");
+
+  if (!POND.length) { alert("등록된 종목이 없어요."); return; }
+
+  btn.disabled = true; icon.textContent = "⏳";
+  empty.style.display = "none";
+  result.style.display = "none";
+
+  try {
+    const tickers = POND.filter(p => p.status === "active").map(item => {
+      const sells = item.sells || [];
+      const totalBuyShares = item.buys.reduce((a,b) => a + b.shares, 0);
+      const soldShares = sells.reduce((a,b) => a + b.shares, 0);
+      const heldShares = Math.max(0, totalBuyShares - soldShares);
+      const totalBuyAmt = item.buys.filter(b=>b.price).reduce((a,b) => a + b.shares*b.price, 0);
+      const totalBuyPriced = item.buys.filter(b=>b.price).reduce((a,b) => a + b.shares, 0);
+      const avgCost = totalBuyPriced > 0 ? Math.round(totalBuyAmt/totalBuyPriced*100)/100 : null;
+      return {
+        ticker: item.ticker, name: item.name,
+        currentPrice: item.currentPrice, ma120: item.ma120,
+        avgCost, heldShares, buyCount: item.buys.length,
+        dailyShares: item.dailyShares,
+        sell1Done: !!item.sell1Done, sell2Done: !!item.sell2Done
+      };
+    });
+
+    const payload = encodeURIComponent(JSON.stringify({ tickers }));
+    const res = await fetch(`${GAS_URL}?action=pond_ai&payload=${payload}`, { method:"GET", mode:"cors", redirect:"follow" });
+    const data = await res.json();
+
+    const statusColor = { "매수지속":"var(--green)", "익절고려":"#f59e0b", "매수중단":"var(--red)", "홀드":"var(--text2)" };
+    const statusBg    = { "매수지속":"#dcfce7", "익절고려":"#fffbeb", "매수중단":"#fee2e2", "홀드":"var(--bg3)" };
+
+    let html = "";
+    if (data.overall) {
+      html += `<div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;font-size:12px;color:var(--text1);font-weight:700;line-height:1.6;">📊 ${data.overall}</div>`;
+    }
+    (data.tickers || []).forEach(t => {
+      html += `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:14px;font-weight:900;color:var(--text1);">${t.ticker}</span>
+          <span style="background:${statusBg[t.status]||"var(--bg3)"};color:${statusColor[t.status]||"var(--text2)"};border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;">${t.status||""}</span>
+          ${t.score ? `<span style="font-size:11px;color:var(--text3);">신뢰도 ${t.score}%</span>` : ""}
+        </div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:6px;">${t.comment||""}</div>
+        ${t.action ? `<div style="font-size:11px;background:var(--bg3);border-radius:7px;padding:6px 9px;color:var(--blue);font-weight:700;">→ ${t.action}</div>` : ""}
+      </div>`;
+    });
+    if (data.summary) {
+      html += `<div style="background:var(--bg3);border-radius:10px;padding:12px;font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:8px;">${data.summary}</div>`;
+    }
+    if (data.caution) {
+      html += `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:10px;font-size:11px;color:#dc2626;line-height:1.6;">⚠️ ${data.caution}</div>`;
+    }
+    if (data.fetched_at) {
+      html += `<div style="font-size:10px;color:var(--text3);text-align:right;margin-top:6px;">분석 시각: ${data.fetched_at}</div>`;
+    }
+    result.innerHTML = html;
+    result.style.display = "block";
+  } catch(e) {
+    result.innerHTML = `<div style="color:var(--red);font-size:12px;">오류: ${e.message}</div>`;
+    result.style.display = "block";
+  } finally {
+    btn.disabled = false; icon.textContent = "⚡";
+  }
+}
+
 const _origSwitchTab = window.switchTab;
 window.switchTab = function(id) {
   _origSwitchTab(id);

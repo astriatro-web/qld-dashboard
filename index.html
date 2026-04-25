@@ -2212,7 +2212,17 @@ async function runPondAI() {
 
   runBtn.disabled = true; runIcon.textContent = "⏳";
   empty.style.display = "none";
-  result.style.display = "none";
+  result.innerHTML = `
+    <div style="text-align:center;padding:20px 0;">
+      <div style="font-size:22px;margin-bottom:10px;">🤖</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:6px;">${ticker} 분석 중…</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">
+        시세 조회 + AI 분석 중입니다<br>
+        보통 <b style="color:var(--blue);">10~20초</b> 소요돼요<br>
+        잠시만 기다려 주세요 ☕
+      </div>
+    </div>`;
+  result.style.display = "block";
 
   try {
     // 해당 티커가 POND에 등록돼 있으면 보유 데이터 포함

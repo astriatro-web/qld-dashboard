@@ -666,18 +666,18 @@ body {
 <!-- ── 미니게임 패널 ── -->
 <div class="panel" id="panel-game">
   <div style="text-align:center;padding:20px 0 14px;">
-    <div style="font-size:18px;font-weight:900;color:var(--text1);">📈 주가 방향 예측 게임</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:4px;">과거 QLD 차트를 보고 다음 날 방향을 맞혀보세요</div>
+    <div style="font-size:18px;font-weight:900;color:var(--text1);">💬 오늘의 투자 명언</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px;">빈칸에 들어갈 단어를 맞혀보세요</div>
   </div>
 
-  <!-- 점수판 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+  <!-- 점수 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
       <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">점수</div>
       <div id="game-score" style="font-size:22px;font-weight:900;color:var(--blue);">0</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">연속 정답</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">연속정답</div>
       <div id="game-streak" style="font-size:22px;font-weight:900;color:var(--green);">0</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
@@ -686,40 +686,27 @@ body {
     </div>
   </div>
 
-  <!-- 차트 영역 -->
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div style="font-size:11px;font-weight:700;color:var(--text2);" id="game-info">QLD 과거 차트</div>
-      <div style="font-size:11px;color:var(--text3);">? 다음날은?</div>
+  <!-- 명언 카드 -->
+  <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;">
+    <div style="font-size:10px;color:var(--text3);margin-bottom:12px;font-weight:600;" id="game-author">— 작자</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text1);line-height:1.9;text-align:center;" id="game-quote">
+      새 게임 시작 버튼을 눌러주세요
     </div>
-    <canvas id="game-chart" style="width:100%;max-height:180px;"></canvas>
   </div>
 
-  <!-- MA 정보 -->
-  <div id="game-ma-info" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;font-size:11px;"></div>
+  <!-- 보기 버튼 -->
+  <div id="game-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"></div>
 
-  <!-- 정답/오답 피드백 -->
-  <div id="game-feedback" style="display:none;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px;font-size:14px;font-weight:800;"></div>
+  <!-- 피드백 -->
+  <div id="game-feedback" style="display:none;border-radius:10px;padding:12px;margin-bottom:10px;"></div>
 
-  <!-- 버튼 -->
-  <div id="game-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-    <button onclick="gameAnswer('up')" style="background:var(--green);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:900;cursor:pointer;">
-      📈 상승
-    </button>
-    <button onclick="gameAnswer('down')" style="background:var(--red);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:900;cursor:pointer;">
-      📉 하락
-    </button>
-  </div>
-  <button id="game-next-btn" onclick="gameNext()" style="display:none;width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;">
-    다음 문제 →
+  <button id="game-next-btn" onclick="gameNext()" style="display:none;width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">
+    다음 명언 →
   </button>
-  <button onclick="gameStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text2);cursor:pointer;margin-top:6px;">
-    🔄 새 게임 시작
+  <button onclick="gameStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text2);cursor:pointer;">
+    🔄 새 게임
   </button>
-
-  <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6;">
-    20일치 캔들 표시 · 다음 날 종가 기준 판정 · 연속 정답 시 보너스 점수
-  </div>
+  <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;">정답 +10점 · 3연속 보너스 +5점</div>
 </div>
 
 <!-- ── 웅덩노트 패널 ── -->
@@ -2492,111 +2479,155 @@ async function runPondAI() {
 }
 
 // ════════════════════════════════════════
-// 📈 주가 방향 예측 게임
+// 💬 투자 명언 빈칸 맞추기
 // ════════════════════════════════════════
-let gameState = {
-  data: [], idx: 0, score: 0, streak: 0,
-  total: 0, correct: 0, answered: false, chartInst: null
-};
-
-const GAME_DATA_SETS = [
-  [47.2,44.1,38.9,33.2,28.7,24.1,21.3,23.8,27.4,31.2,34.8,38.1,41.5,44.2,47.8,51.3,54.6,57.2,59.8,62.4,65.1],
-  [62.4,65.1,68.3,71.2,74.5,77.1,73.8,70.2,67.5,64.8,61.2,58.4,55.7,58.9,62.3,65.8,69.1,72.4,75.6,78.2,81.5],
-  [88.4,85.2,81.7,78.3,74.6,71.2,68.5,65.1,61.8,58.4,55.2,52.7,49.3,46.8,43.5,40.2,37.8,35.4,33.1,31.2,29.8],
-  [29.8,31.5,33.2,30.8,28.4,26.1,28.7,31.2,33.8,36.4,34.1,31.8,29.5,27.2,25.1,27.8,30.4,33.1,35.8,38.4,41.2],
-  [41.2,43.8,46.5,49.2,52.1,54.8,57.4,60.1,62.8,65.5,68.2,70.9,73.6,71.2,68.9,66.5,69.2,72.1,75.3,78.6,81.8],
-  [81.8,84.5,87.2,90.1,87.8,85.4,83.1,85.8,88.6,91.4,94.2,97.1,99.8,102.5,105.3,108.1,110.8,113.6,116.4,119.2,122.1],
-  [122.1,118.4,115.2,112.8,116.5,120.3,124.1,127.9,131.7,135.5,132.2,129.1,132.8,136.5,140.3,144.1,147.9,151.7,148.4,145.2,149.1],
-  [149.1,153.2,157.3,161.4,165.5,162.3,159.1,155.8,152.6,156.4,160.2,164.1,168.2,172.3,176.4,173.2,170.1,166.8,170.6,174.5,178.4],
-  [78.4,79.1,77.8,80.2,81.5,79.8,82.1,80.4,81.8,83.2,81.6,80.1,82.4,83.8,82.2,84.5,83.1,85.4,84.2,86.1,85.3],
-  [55.2,54.1,56.3,55.8,57.2,56.1,58.4,57.3,59.6,58.5,60.8,59.7,61.1,60.2,62.4,61.3,63.6,62.5,64.8,63.7,65.1],
+const QUOTE_DATA = [
+  // 워런 버핏
+  { quote:"( ) 속에서 사고, 낙관 속에서 팔아라.", answer:"공포", choices:["공포","탐욕","희망","확신"], author:"워런 버핏", comment:"역발상 투자의 핵심. 남들이 두려워할 때가 최고의 매수 기회입니다." },
+  { quote:"분산투자는 ( )에 대한 보호책이다.", answer:"무지", choices:["무지","손실","리스크","변동성"], author:"워런 버핏", comment:"무엇을 사는지 안다면 분산할 필요가 없다는 집중투자 관점의 명언." },
+  { quote:"최고의 투자는 ( )에 투자하는 것이다.", answer:"자기 자신", choices:["자기 자신","부동산","주식","채권"], author:"워런 버핏", comment:"지식과 역량에 대한 투자는 절대 빼앗기지 않는 자산입니다." },
+  { quote:"내가 가장 좋아하는 보유 기간은 ( )이다.", answer:"영원히", choices:["영원히","10년","5년","1년"], author:"워런 버핏", comment:"장기 보유의 가치 — 레버리지 ETF 장기 보유가 익절보다 높은 수익률을 내는 이유입니다." },
+  { quote:"좋은 기업을 ( ) 가격에 사는 것이 평범한 기업을 훌륭한 가격에 사는 것보다 낫다.", answer:"공정한", choices:["공정한","싼","비싼","적당한"], author:"워런 버핏", comment:"기업의 질이 가격보다 중요합니다." },
+  { quote:"주가가 ( )% 하락했을 때 패닉하지 않는다면, 당신은 좋은 투자자다.", answer:"50", choices:["50","30","20","70"], author:"워런 버핏", comment:"QLD MDD -70%에서 버틸 수 있는 사람만이 웅덩이 전략의 과실을 얻을 수 있습니다." },
+  { quote:"( )을 이해 못하는 사업에는 절대 투자하지 마라.", answer:"자신이", choices:["자신이","남들이","전문가가","시장이"], author:"워런 버핏", comment:"능력범위(Circle of Competence) 안에서만 투자해야 합니다." },
+  { quote:"( )은 투자자의 가장 큰 적이다.", answer:"감정", choices:["감정","시간","정보","시장"], author:"워런 버핏", comment:"두려움과 탐욕이라는 감정이 최적의 매수·매도 타이밍을 놓치게 만듭니다." },
+  { quote:"리스크는 자신이 무엇을 하는지 ( ) 때 발생한다.", answer:"모를", choices:["모를","알","느낄","예측할"], author:"워런 버핏", comment:"리스크는 무지에서 나옵니다. 아는 것에만 투자하세요." },
+  { quote:"( )을 잃는 것은 큰 문제가 아니다. 그것을 되찾을 기회를 잃는 것이 진짜 손실이다.", answer:"돈", choices:["돈","시간","기회","용기"], author:"워런 버핏", comment:"손실 자체보다 시장에서 이탈하는 것이 더 위험합니다." },
+  { quote:"멋진 기업을 ( ) 가격에 사는 것이 훌륭한 전략이다.", answer:"합리적인", choices:["합리적인","가장 싼","높은","낮은"], author:"워런 버핏", comment:"가격에만 집중하다 좋은 기업을 놓치는 것이 더 큰 손실입니다." },
+  { quote:"시간은 훌륭한 기업의 ( )이고, 평범한 기업의 적이다.", answer:"친구", choices:["친구","적","조력자","파트너"], author:"워런 버핏", comment:"좋은 자산은 시간이 지날수록 가치가 커집니다." },
+  { quote:"두려움과 ( ), 이 두 감정이 시장을 움직인다.", answer:"탐욕", choices:["탐욕","희망","기대","확신"], author:"워런 버핏", comment:"공포탐욕지수(Fear & Greed Index)는 이 두 감정을 수치화한 것입니다." },
+  { quote:"( )는 숨겨진 세금이다.", answer:"인플레이션", choices:["인플레이션","소득세","거래세","운용보수"], author:"워런 버핏", comment:"인플레이션이 현금 보유의 실질 가치를 갉아먹습니다. 주식 투자가 인플레 헤지 수단입니다." },
+  // 벤저민 그레이엄
+  { quote:"주가는 단기적으로는 ( )이지만, 장기적으로는 저울이다.", answer:"투표기", choices:["투표기","거울","계산기","온도계"], author:"벤저민 그레이엄", comment:"단기는 감정(인기투표), 장기는 실제 가치(무게)를 반영한다는 가치투자의 핵심." },
+  { quote:"투자에서 ( )는 적이 아니라 기회다.", answer:"변동성", choices:["변동성","손실","공포","시간"], author:"벤저민 그레이엄", comment:"변동성은 웅덩이 전략의 존재 이유입니다. 하락할수록 더 많이 살 수 있습니다." },
+  { quote:"투자자의 가장 큰 ( )는 주식 그 자체가 아니라 투자자 자신이다.", answer:"적", choices:["적","친구","약점","실수"], author:"벤저민 그레이엄", comment:"시장이 아니라 자신의 감정과 판단이 수익률을 결정합니다." },
+  { quote:"( )란 다른 사람들이 비관적일 때 사고, 낙관적일 때 파는 것이다.", answer:"투자", choices:["투자","투기","헤징","트레이딩"], author:"벤저민 그레이엄", comment:"가치투자의 본질은 역발상입니다." },
+  // 피터 린치
+  { quote:"시장이 ( )할 때 팔고 싶다면, 처음부터 사지 말아야 한다.", answer:"폭락", choices:["폭락","상승","횡보","반등"], author:"피터 린치", comment:"하락 견딜 자신이 없다면 투자하지 마라. 120 POND 전략의 무한매수 정신과 일맥상통합니다." },
+  { quote:"( )을 사지 말고 사업체를 사라.", answer:"주식", choices:["주식","차트","숫자","희망"], author:"피터 린치", comment:"주가 차트가 아닌, 그 뒤의 실제 사업을 이해하고 투자하라는 의미입니다." },
+  { quote:"당신이 투자한 이유가 사라지기 전까지는 ( )하지 마라.", answer:"매도", choices:["매도","매수","홀드","걱정"], author:"피터 린치", comment:"원칙 없는 매도가 가장 큰 손실을 낳습니다." },
+  { quote:"주식 시장에서 ( )는 시간이 지나면 항상 돌아온다.", answer:"기회", choices:["기회","손실","공포","탐욕"], author:"피터 린치", comment:"인내하며 기다리면 반드시 좋은 매수 기회가 찾아옵니다." },
+  { quote:"( )을 알면 주식 시장은 예측 가능하다.", answer:"기업", choices:["기업","차트","경제","금리"], author:"피터 린치", comment:"기업 실적과 사업 이해가 주식 투자의 핵심입니다." },
+  // 존 보글
+  { quote:"시장을 ( )하려 하지 마라. 시장에 참여하라.", answer:"예측", choices:["예측","통제","분석","이해"], author:"존 보글", comment:"타이밍보다 시장에 꾸준히 머무는 것이 중요합니다." },
+  { quote:"( )은 투자자의 적이다. 비용을 최소화하라.", answer:"비용", choices:["비용","세금","변동성","시간"], author:"존 보글", comment:"운용보수, 거래비용이 장기 복리 수익률을 갉아먹습니다." },
+  { quote:"단순함은 ( )의 궁극적인 형태다.", answer:"투자", choices:["투자","지식","지혜","전략"], author:"존 보글", comment:"복잡한 전략보다 단순하게 꾸준히 투자하는 것이 가장 강력합니다." },
+  // 찰리 멍거
+  { quote:"( )은 투자의 가장 강력한 무기다.", answer:"인내", choices:["인내","분석","타이밍","정보"], author:"찰리 멍거", comment:"120 POND 전략의 핵심 — 흔들리지 않고 계속 매수하는 인내가 수익을 만듭니다." },
+  { quote:"( )에 대한 이해 없이는 올바른 투자를 할 수 없다.", answer:"심리학", choices:["심리학","회계","경제학","통계학"], author:"찰리 멍거", comment:"투자에서 가장 중요한 것은 인간 심리의 편향을 이해하는 것입니다." },
+  { quote:"크게 성공하고 싶다면 ( )를 피하는 것만으로도 충분하다.", answer:"큰 실수", choices:["큰 실수","작은 손실","변동성","타이밍"], author:"찰리 멍거", comment:"공격적으로 수익을 추구하기보다 큰 실수를 피하는 수비적 전략이 장기 성과를 만듭니다." },
+  { quote:"모든 지혜는 ( )에서 나온다.", answer:"역사", choices:["역사","경험","책","스승"], author:"찰리 멍거", comment:"과거 시장 역사를 공부하면 현재 상황을 더 명확히 볼 수 있습니다." },
+  // 존 템플턴
+  { quote:"( )이 가장 좋은 매수 타이밍이다.", answer:"최고의 공포", choices:["최고의 공포","최고의 탐욕","가장 평온할 때","뉴스가 좋을 때"], author:"존 템플턴", comment:"대공황, 코로나, 금융위기 — 역사상 가장 좋은 매수 기회는 모두 공포의 정점이었습니다." },
+  { quote:"강세장은 ( ) 속에서 태어나고 탐욕 속에서 죽는다.", answer:"비관론", choices:["비관론","낙관론","공포","희망"], author:"존 템플턴", comment:"시장이 가장 어두울 때 씨앗이 뿌려집니다." },
+  { quote:"주식 시장의 가장 무서운 말은 '( )'이다.", answer:"이번엔 다르다", choices:["이번엔 다르다","지금 사야 해","이미 늦었어","곧 오를 거야"], author:"존 템플턴", comment:"사후확증편향 — 지나고 나면 당연해 보이지만, 당시엔 아무도 몰랐습니다." },
+  // 앙드레 코스톨라니
+  { quote:"주식을 사고 ( )을 먹어라. 그리고 잊어버려라.", answer:"수면제", choices:["수면제","커피","밥","약"], author:"앙드레 코스톨라니", comment:"매수 후 단기 변동에 흔들리지 말고 장기 보유하라는 뜻입니다." },
+  { quote:"( )이 많으면 주가는 오른다.", answer:"바보", choices:["바보","천재","돈","주식"], author:"앙드레 코스톨라니", comment:"결국 주가는 시장 참여자의 심리(바보의 수)에 의해 움직인다는 역설적 통찰." },
+  // 월가 격언
+  { quote:"황소도 돈을 벌고 곰도 돈을 번다. ( )만 못 번다.", answer:"돼지", choices:["돼지","닭","개미","고양이"], author:"월가 격언", comment:"과욕 부리지 말라는 말. 조급하게 더 벌려다 모두 잃는 투자자를 돼지에 비유합니다." },
+  { quote:"트렌드는 당신의 ( )이다.", answer:"친구", choices:["친구","적","스승","장애물"], author:"월가 격언", comment:"추세를 거스르지 말고 따르라는 모멘텀 투자의 기본 원칙." },
+  { quote:"( )에서는 모두가 천재처럼 보인다.", answer:"강세장", choices:["강세장","약세장","횡보장","폭락장"], author:"월가 격언", comment:"좋은 시절엔 모두 수익을 냅니다. 진짜 실력은 하락장에서 드러납니다." },
+  { quote:"시장은 당신이 ( )할 수 있는 것보다 더 오래 비이성적 상태를 유지할 수 있다.", answer:"버틸", choices:["버틸","예측","분석","이해"], author:"존 메이너드 케인스", comment:"숏 포지션의 위험성. 웅덩이 전략의 무한매수가 '버티기'에 초점을 맞추는 이유입니다." },
+  { quote:"시장에서 ( )는 없다.", answer:"공짜 점심", choices:["공짜 점심","리스크","기회","손실"], author:"경제학 격언", comment:"모든 수익에는 그에 상응하는 리스크가 존재합니다." },
+  { quote:"( )이 클수록 수익도 크다.", answer:"리스크", choices:["리스크","시간","인내","지식"], author:"월가 격언", comment:"하이 리스크 하이 리턴. SOXL CAGR 17.7%는 MDD -90% 이상의 리스크를 감수한 대가입니다." },
+  // 레이 달리오
+  { quote:"( )에 투자하지 않는 것이 가장 위험한 투자다.", answer:"자기 자신", choices:["자기 자신","주식","부동산","금"], author:"레이 달리오", comment:"지속적인 학습과 역량 개발이 최고의 투자입니다." },
+  { quote:"( ) 포트폴리오가 모든 날씨에 작동하는 유일한 방법이다.", answer:"분산된", choices:["분산된","집중된","레버리지","방어적"], author:"레이 달리오", comment:"올웨더 전략의 핵심 — 어떤 경제 환경에서도 버틸 수 있는 균형 잡힌 포트폴리오." },
+  // 기타 명언
+  { quote:"복리는 세계 ( ) 불가사의다.", answer:"여덟 번째", choices:["여덟 번째","일곱 번째","아홉 번째","열 번째"], author:"알버트 아인슈타인 (속설)", comment:"복리의 마법 — QLD 장기 보유의 핵심 근거입니다. 시간이 돈을 만듭니다." },
+  { quote:"( )하는 것이 아무것도 안 하는 것보다 더 위험할 수 있다.", answer:"과도하게 거래", choices:["과도하게 거래","장기투자","분할매수","기다리는"], author:"투자 격언", comment:"잦은 매매(오버트레이딩)는 수수료와 세금으로 수익률을 갉아먹습니다." },
+  { quote:"계란을 한 ( )에 담지 마라.", answer:"바구니", choices:["바구니","상자","봉투","그릇"], author:"고대 격언", comment:"분산투자의 기본 원칙. 단, 워런 버핏은 '집중투자하고 잘 지켜봐라'고 역설하기도 했습니다." },
+  // 120 POND 연계
+  { quote:"120일선 하방에서 매일 ( )하는 것이 웅덩이 전략의 핵심이다.", answer:"분할매수", choices:["분할매수","전량매수","관망","분석"], author:"120 POND", comment:"하락장에서 매일 꾸준히 사 모으는 것이 평단을 낮추는 가장 강력한 방법입니다." },
+  { quote:"웅덩이 전략에서 ( )은 다음 웅덩이를 위한 총알이다.", answer:"SGOV", choices:["SGOV","현금","채권","달러"], author:"120 POND", comment:"120일선 위에서는 SGOV에 현금을 쌓아 다음 웅덩이 진입을 준비합니다." },
+  { quote:"레버리지 ETF에서 ( )이 가장 강력한 무기다.", answer:"시간", choices:["시간","레버리지","타이밍","분석"], author:"120 POND", comment:"시간은 복리의 가장 강력한 조력자입니다. 장기 보유가 레버리지의 복리 효과를 극대화합니다." },
+  { quote:"하락장은 ( )의 세일 기간이다.", answer:"레버리지 ETF", choices:["레버리지 ETF","현금","채권","금"], author:"120 POND", comment:"주가가 내릴수록 같은 돈으로 더 많이 살 수 있습니다. 하락을 두려워하지 말고 기회로 보세요." },
 ];
 
+let gameState = {
+  questions:[], idx:0, score:0, streak:0,
+  total:0, correct:0, answered:false
+};
+
 function gameStart() {
-  gameState.score=0; gameState.streak=0; gameState.total=0;
-  gameState.correct=0; gameState.answered=false;
-  const dsIdx = Math.floor(Math.random()*GAME_DATA_SETS.length);
-  gameState.data = GAME_DATA_SETS[dsIdx];
-  gameState.idx = 20;
+  gameState.questions = [...QUOTE_DATA].sort(()=>Math.random()-0.5);
+  gameState.idx=0; gameState.score=0; gameState.streak=0;
+  gameState.total=0; gameState.correct=0; gameState.answered=false;
   document.getElementById("game-score").textContent="0";
   document.getElementById("game-streak").textContent="0";
   document.getElementById("game-accuracy").textContent="-";
   document.getElementById("game-feedback").style.display="none";
-  document.getElementById("game-btns").style.display="grid";
   document.getElementById("game-next-btn").style.display="none";
   gameRender();
 }
 
 function gameRender() {
-  const visible = gameState.data.slice(gameState.idx-20, gameState.idx);
-  const labels  = visible.map((_,i)=>`D-${20-i}`);
-  const ma5arr  = visible.map((_,i)=>{ const sl=visible.slice(0,i+1); return sl.length>=5?sl.slice(-5).reduce((a,b)=>a+b,0)/5:null; });
-  const ma20arr = visible.map((_,i)=>{ const sl=visible.slice(0,i+1); return sl.length>=20?sl.reduce((a,b)=>a+b,0)/20:null; });
-  const current = visible[visible.length-1];
-  const ma20val = ma20arr[ma20arr.length-1];
-  const ma5val  = ma5arr[ma5arr.length-1];
-  const pctFrom20 = ma20val ? ((current-ma20val)/ma20val*100).toFixed(1) : null;
+  const q = gameState.questions[gameState.idx];
+  if (!q) {
+    document.getElementById("game-quote").textContent="🎉 모든 명언을 완료했어요!";
+    document.getElementById("game-author").textContent=`최종 점수 ${gameState.score}점 · 정답률 ${Math.round(gameState.correct/gameState.total*100)}%`;
+    document.getElementById("game-btns").innerHTML="";
+    return;
+  }
+  document.getElementById("game-author").textContent=`— ${q.author}`;
+  // ( ) 를 빈칸 박스로 표시
+  document.getElementById("game-quote").innerHTML =
+    q.quote.replace(/\( \)/g, `<span style="display:inline-block;background:var(--blue);color:#fff;border-radius:6px;padding:1px 14px;font-size:14px;letter-spacing:1px;vertical-align:middle;">?</span>`);
 
-  document.getElementById("game-info").textContent=`QLD 현재가 $${current.toFixed(2)}`;
-  document.getElementById("game-ma-info").innerHTML=[
-    ma5val?`<span style="background:#dbeafe;color:#1e40af;border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;">MA5 $${ma5val.toFixed(2)}</span>`:"",
-    ma20val?`<span style="background:#fef3c7;color:#92400e;border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;">MA20 $${ma20val.toFixed(2)}</span>`:"",
-    pctFrom20?`<span style="background:${parseFloat(pctFrom20)>=0?"#dcfce7":"#fee2e2"};color:${parseFloat(pctFrom20)>=0?"#15803d":"#dc2626"};border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;">MA20 대비 ${pctFrom20}%</span>`:"",
-  ].join("");
-
-  if (gameState.chartInst) { gameState.chartInst.destroy(); gameState.chartInst=null; }
-  gameState.chartInst = new Chart(document.getElementById("game-chart"), {
-    type:"line",
-    data:{ labels, datasets:[
-      { label:"QLD", data:visible, borderColor:"#3b82f6", backgroundColor:"rgba(59,130,246,0.08)", borderWidth:2, pointRadius:2, fill:true, tension:0.3 },
-      { label:"MA5", data:ma5arr, borderColor:"#10b981", borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false },
-      { label:"MA20", data:ma20arr, borderColor:"#f59e0b", borderWidth:1.5, borderDash:[6,4], pointRadius:0, fill:false }
-    ]},
-    options:{ responsive:true, maintainAspectRatio:true,
-      plugins:{ legend:{ labels:{ font:{size:10}, boxWidth:16, padding:8, color:"#9ca3af" }}},
-      scales:{
-        x:{ ticks:{ font:{size:9}, maxTicksLimit:6, color:"#9ca3af" }, grid:{color:"rgba(0,0,0,0.05)"} },
-        y:{ ticks:{ font:{size:10}, color:"#9ca3af", callback:v=>"$"+v.toFixed(0) }, grid:{color:"rgba(0,0,0,0.05)"} }
-      }
-    }
-  });
+  // 보기 셔플
+  const shuffled = [...q.choices].sort(()=>Math.random()-0.5);
+  document.getElementById("game-btns").innerHTML = shuffled.map(c =>
+    `<button onclick="gameAnswer('${c.replace(/'/g,"\\'")}');event.stopPropagation();"
+      style="background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;color:var(--text1);cursor:pointer;line-height:1.4;">${c}</button>`
+  ).join("");
 }
 
-function gameAnswer(dir) {
-  if (gameState.answered || gameState.idx>=gameState.data.length) return;
+function gameAnswer(ans) {
+  if (gameState.answered) return;
   gameState.answered=true; gameState.total++;
-  const current=gameState.data[gameState.idx-1];
-  const next=gameState.data[gameState.idx];
-  const correct=next>current?"up":"down";
-  const isRight=dir===correct;
-  const changePct=((next-current)/current*100).toFixed(2);
+  const q = gameState.questions[gameState.idx];
+  const isRight = ans === q.answer;
+
+  // 정답 보기 색상 처리
+  document.querySelectorAll("#game-btns button").forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === q.answer) {
+      btn.style.background="#dcfce7"; btn.style.borderColor="#86efac"; btn.style.color="#15803d";
+    } else if (btn.textContent === ans && !isRight) {
+      btn.style.background="#fee2e2"; btn.style.borderColor="#fca5a5"; btn.style.color="#dc2626";
+    }
+  });
+
+  // 빈칸에 정답 표시
+  document.getElementById("game-quote").innerHTML =
+    q.quote.replace(/\( \)/g, `<span style="display:inline-block;background:${isRight?"#15803d":"#dc2626"};color:#fff;border-radius:6px;padding:1px 14px;font-size:14px;font-weight:800;vertical-align:middle;">${q.answer}</span>`);
+
   if (isRight) {
     gameState.correct++; gameState.streak++;
-    const bonus=gameState.streak>=3?Math.floor(gameState.streak/3)*5:0;
-    gameState.score+=10+bonus;
-    document.getElementById("game-feedback").style.cssText="display:block;background:#dcfce7;border:2px solid #86efac;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px;";
-    document.getElementById("game-feedback").innerHTML=`✅ 정답! ${next>current?"📈 상승":"📉 하락"} (${parseFloat(changePct)>0?"+":""}${changePct}%)<br><span style="font-size:12px;font-weight:600;color:#15803d;">+10점${gameState.streak>=3?` +${Math.floor(gameState.streak/3)*5}점 연속보너스!`:""} · ${gameState.streak}연속 🔥</span>`;
+    const bonus = gameState.streak>=3 ? Math.floor(gameState.streak/3)*5 : 0;
+    gameState.score += 10+bonus;
+    document.getElementById("game-feedback").style.cssText="display:block;background:#dcfce7;border:1.5px solid #86efac;border-radius:10px;padding:12px;margin-bottom:10px;";
+    document.getElementById("game-feedback").innerHTML=
+      `<div style="font-size:13px;font-weight:800;color:#15803d;margin-bottom:5px;">✅ 정답! +10점${bonus?` +${bonus}점 🔥`:""} · ${gameState.streak}연속</div>
+       <div style="font-size:11px;color:#166534;line-height:1.6;">${q.comment}</div>`;
   } else {
     gameState.streak=0;
-    document.getElementById("game-feedback").style.cssText="display:block;background:#fee2e2;border:2px solid #fca5a5;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px;";
-    document.getElementById("game-feedback").innerHTML=`❌ 오답. 실제 ${next>current?"📈 상승":"📉 하락"} (${parseFloat(changePct)>0?"+":""}${changePct}%)<br><span style="font-size:12px;font-weight:600;color:#dc2626;">연속 끊김 · 파이팅!</span>`;
+    document.getElementById("game-feedback").style.cssText="display:block;background:#fee2e2;border:1.5px solid #fca5a5;border-radius:10px;padding:12px;margin-bottom:10px;";
+    document.getElementById("game-feedback").innerHTML=
+      `<div style="font-size:13px;font-weight:800;color:#dc2626;margin-bottom:5px;">❌ 오답 — 정답은 <b>${q.answer}</b></div>
+       <div style="font-size:11px;color:#991b1b;line-height:1.6;">${q.comment}</div>`;
   }
+
   document.getElementById("game-score").textContent=gameState.score;
   document.getElementById("game-streak").textContent=gameState.streak;
   document.getElementById("game-accuracy").textContent=Math.round(gameState.correct/gameState.total*100)+"%";
-  document.getElementById("game-btns").style.display="none";
   document.getElementById("game-next-btn").style.display="block";
-  gameState.idx++;
 }
 
 function gameNext() {
-  gameState.answered=false;
-  if (gameState.idx>=gameState.data.length) {
-    const dsIdx=Math.floor(Math.random()*GAME_DATA_SETS.length);
-    gameState.data=GAME_DATA_SETS[dsIdx]; gameState.idx=20;
-  }
+  gameState.idx++; gameState.answered=false;
   document.getElementById("game-feedback").style.display="none";
-  document.getElementById("game-btns").style.display="grid";
   document.getElementById("game-next-btn").style.display="none";
   gameRender();
 }

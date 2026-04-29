@@ -753,6 +753,31 @@ body {
   </div>
 </div>
 
+<!-- 웅덩노트 종목 수정 모달 -->
+<div id="pond-item-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8100;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg1);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:16px;" id="pond-item-edit-title">종목 수정</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">종목명</div>
+    <input id="pond-item-edit-name" type="text"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수 (소수점 가능)</div>
+    <input id="pond-item-edit-shares" type="number" inputmode="decimal" step="0.01"
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">매수 요일 (복수 선택 가능 · 미선택 시 매일)</div>
+    <div style="display:flex;gap:6px;margin-bottom:16px;" id="pond-item-edit-days">
+      <button type="button" data-day="1" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">월</button>
+      <button type="button" data-day="2" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">화</button>
+      <button type="button" data-day="3" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">수</button>
+      <button type="button" data-day="4" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">목</button>
+      <button type="button" data-day="5" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">금</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="pondItemEditClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
+      <button onclick="pondItemEditConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- 웅덩노트 AI 분석 모달 -->
 <div id="pond-ai-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;">
   <div style="background:var(--bg1);border-radius:18px;padding:22px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.4);margin:auto;">
@@ -791,9 +816,17 @@ body {
     <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">종목명 (선택)</div>
     <input id="pond-name-input" type="text" placeholder="예: 애플, QLD 레버리지"
       style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매일 매수 주수 (소수점 가능 · 예: 0.5)</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수 (소수점 가능 · 예: 0.5)</div>
     <input id="pond-shares-input" type="number" inputmode="decimal" step="0.01" placeholder="예: 5 또는 0.5"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:16px;outline:none;">
+      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">매수 요일 (복수 선택 가능 · 미선택 시 매일)</div>
+    <div style="display:flex;gap:6px;margin-bottom:16px;" id="pond-add-days">
+      <button type="button" data-day="1" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">월</button>
+      <button type="button" data-day="2" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">화</button>
+      <button type="button" data-day="3" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">수</button>
+      <button type="button" data-day="4" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">목</button>
+      <button type="button" data-day="5" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">금</button>
+    </div>
     <div style="display:flex;gap:8px;">
       <button onclick="pondModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
       <button onclick="pondModalConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">추가</button>
@@ -1869,6 +1902,7 @@ function pondAddTicker() {
   document.getElementById("pond-ticker-input").value = "";
   document.getElementById("pond-name-input").value = "";
   document.getElementById("pond-shares-input").value = "";
+  pondSetDayButtons("pond-add-days", []);
   const m = document.getElementById("pond-modal");
   m.style.display = "flex";
   setTimeout(() => document.getElementById("pond-ticker-input").focus(), 100);
@@ -1880,15 +1914,18 @@ async function pondModalConfirm() {
   const ticker = document.getElementById("pond-ticker-input").value.trim().toUpperCase();
   const name   = document.getElementById("pond-name-input").value.trim() || ticker;
   const shares = parseFloat(document.getElementById("pond-shares-input").value) || 5;
+  const buyDays = pondGetSelectedDays("pond-add-days");
   if (!ticker) return;
 
-  const item = { id: Date.now(), ticker, name, dailyShares: shares, status: "active",
-                 buys: [], ma120: null, currentPrice: null, closedAt: null, addedAt: new Date().toLocaleDateString("ko-KR") };
+  const item = { id: Date.now(), ticker, name, dailyShares: shares, buyDays,
+                 status: "active", buys: [], sells: [],
+                 ma120: null, currentPrice: null, closedAt: null,
+                 addedAt: new Date().toLocaleDateString("ko-KR") };
   POND.push(item);
   pondSave();
   pondModalClose();
   pondRender();
-  pondFetchPrice(item.id); // 추가 즉시 시세 조회
+  pondFetchPrice(item.id);
 }
 
 // 티커 시세 + MA120 조회 — GAS 프록시 경유 (CORS 우회)
@@ -2010,7 +2047,11 @@ function pondRender() {
       signalBadge = `<span style="background:#fef9ee;color:#b45309;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">🔼 120일선 상방</span>`;
     }
 
-    // 오늘 이미 매수했는지 체크
+    const dayNames = ["일","월","화","수","목","금","토"];
+    const buyDays = item.buyDays || [];
+    const buyDaysLabel = buyDays.length ? buyDays.map(d => dayNames[d]).join("·") + "요일" : "매일";
+    const todayDow = new Date().getDay();
+    const isBuyDay = buyDays.length === 0 || buyDays.includes(todayDow);
     const today = new Date().toLocaleDateString("ko-KR");
     const boughtToday = item.buys.some(b => b.date === today);
 
@@ -2051,6 +2092,7 @@ function pondRender() {
           ${!isActive?`<span style="background:#e5e7eb;color:#6b7280;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;margin-left:6px;">종료 ${item.closedAt||""}</span>`:""}
         </div>
         <button onclick="pondDelete(${item.id})" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
+        <button onclick="pondItemEditOpen(${item.id})" style="background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;color:var(--text2);cursor:pointer;padding:3px 9px;">수정</button>
       </div>
 
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
@@ -2062,8 +2104,8 @@ function pondRender() {
       </div>
 
       <div style="display:flex;gap:8px;font-size:11px;color:var(--text3);margin-bottom:10px;flex-wrap:wrap;">
-        <span>매일 <b style="color:var(--text1);">${item.dailyShares}주</b></span>
-        ${totalBuyShares>0?`<span>· 누적매수 <b style="color:var(--blue);">${totalBuyShares}주</b></span>`:""}
+        <span><b style="color:var(--text1);">${item.dailyShares}주</b> / <b style="color:var(--text2);">${buyDaysLabel}</b></span>
+        ${totalBuyShares>0?`<span>· 누적 <b style="color:var(--blue);">${totalBuyShares}주</b></span>`:""}
         ${heldShares!==totalBuyShares?`<span>· 보유 <b style="color:var(--text1);">${heldShares}주</b></span>`:""}
         ${avgCost?`<span>· 평단 <b style="color:var(--text1);">${Number(avgCost).toLocaleString()}</b></span>`:""}
         ${pnlPct!=null?`<span>· <b style="color:${pnlPct>=0?"var(--green)":"var(--red)"};">${pnlPct>=0?"+":""}${pnlPct.toFixed(1)}%</b></span>`:""}
@@ -2091,8 +2133,8 @@ function pondRender() {
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${isActive?`
           <button onclick="pondBuyToday(${item.id})"
-            style="flex:1;min-width:80px;background:${boughtToday?"#6b7280":"var(--blue)"};color:#fff;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">
-            ${boughtToday?`✅ 오늘 매수완료`:`📥 오늘 매수 (${item.dailyShares}주)`}
+            style="flex:1;min-width:80px;background:${boughtToday?"#6b7280":isBuyDay?"var(--blue)":"#9ca3af"};color:#fff;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">
+            ${boughtToday?`✅ 오늘 매수완료`:isBuyDay?`📥 오늘 매수 (${item.dailyShares}주)`:`📅 매수요일 아님 (${buyDaysLabel})`}
           </button>
           ${aboveMA||item.sell2Done?`<button onclick="pondClose(${item.id})" style="flex:1;min-width:80px;background:#9ca3af;color:#fff;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">🏁 종료</button>`:""}
         `:`
@@ -2101,11 +2143,14 @@ function pondRender() {
       </div>
     </div>`;
   }).join("");
-  // 하루 예상 투입금액 계산 (활성 종목 × dailyShares × currentPrice)
+  // 하루 예상 투입금액 — 오늘이 매수요일인 종목만 합산
   const totalVal = document.getElementById("pond-total-value");
+  const todayDow = new Date().getDay();
   let dailyTotal = 0; let hasPrice = false;
   POND.filter(p => p.status === "active").forEach(item => {
-    if (item.currentPrice && item.dailyShares) {
+    const days = item.buyDays || [];
+    const isBuyDay = days.length === 0 || days.includes(todayDow);
+    if (item.currentPrice && item.dailyShares && isBuyDay) {
       dailyTotal += item.dailyShares * item.currentPrice;
       hasPrice = true;
     }
@@ -2180,6 +2225,61 @@ function pondEditDelete() {
   if (!confirm("이 기록을 삭제하시겠습니까?")) return;
   item.buys.splice(pondEditBuyIdx, 1);
   pondSave(); pondEditModalClose(); pondRender();
+}
+
+// 요일 토글
+function pondDayToggle(btn) {
+  const on = btn.style.background === "var(--blue)" || btn.style.background === "rgb(59, 130, 246)";
+  btn.style.background = on ? "var(--bg3)" : "var(--blue)";
+  btn.style.color = on ? "var(--text2)" : "#fff";
+  btn.style.borderColor = on ? "var(--border)" : "var(--blue)";
+}
+function pondGetSelectedDays(containerId) {
+  const btns = document.querySelectorAll(`#${containerId} button[data-day]`);
+  const days = [];
+  btns.forEach(b => {
+    if (b.style.background === "var(--blue)" || b.style.background === "rgb(59, 130, 246)") {
+      days.push(parseInt(b.dataset.day));
+    }
+  });
+  return days; // 빈 배열 = 매일
+}
+function pondSetDayButtons(containerId, days) {
+  const btns = document.querySelectorAll(`#${containerId} button[data-day]`);
+  btns.forEach(b => {
+    const active = days && days.includes(parseInt(b.dataset.day));
+    b.style.background = active ? "var(--blue)" : "var(--bg3)";
+    b.style.color = active ? "#fff" : "var(--text2)";
+    b.style.borderColor = active ? "var(--blue)" : "var(--border)";
+  });
+}
+
+let pondItemEditTargetId = null;
+function pondItemEditOpen(id) {
+  const item = POND.find(p => p.id === id);
+  if (!item) return;
+  pondItemEditTargetId = id;
+  document.getElementById("pond-item-edit-title").textContent = `${item.ticker} 수정`;
+  document.getElementById("pond-item-edit-name").value = item.name || item.ticker;
+  document.getElementById("pond-item-edit-shares").value = item.dailyShares;
+  pondSetDayButtons("pond-item-edit-days", item.buyDays || []);
+  document.getElementById("pond-item-edit-modal").style.display = "flex";
+  setTimeout(() => document.getElementById("pond-item-edit-shares").focus(), 100);
+}
+function pondItemEditClose() {
+  document.getElementById("pond-item-edit-modal").style.display = "none";
+  pondItemEditTargetId = null;
+}
+function pondItemEditConfirm() {
+  const item = POND.find(p => p.id === pondItemEditTargetId);
+  if (!item) return;
+  const name = document.getElementById("pond-item-edit-name").value.trim();
+  const shares = parseFloat(document.getElementById("pond-item-edit-shares").value);
+  if (!shares || shares <= 0) return;
+  item.name = name || item.ticker;
+  item.dailyShares = shares;
+  item.buyDays = pondGetSelectedDays("pond-item-edit-days");
+  pondSave(); pondItemEditClose(); pondRender();
 }
 
 // ── 웅덩노트 AI 분석 ──

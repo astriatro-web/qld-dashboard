@@ -433,29 +433,58 @@ body {
 <body>
 
 <!-- 비밀번호 모달 -->
-<div id="pwModal" style="position:fixed;inset:0;background:linear-gradient(135deg,#1e3a8a,#2563eb);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:32px;">
-  <div style="font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:8px;font-weight:600;">STRATEGY DASHBOARD</div>
-  <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px;letter-spacing:-0.04em;">QLD + SSO + @</div>
-  <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:40px;font-weight:500;">레버리지 ETF 전략 관리 시스템</div>
-  <input id="pwInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="비밀번호를 입력하세요"
-    style="width:100%;max-width:300px;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);border-radius:14px;padding:15px 20px;color:#fff;font-size:16px;font-family:inherit;outline:none;text-align:center;margin-bottom:10px;transition:all 0.2s;backdrop-filter:blur(10px);"
-    onkeydown="if(event.key==='Enter')checkPW()"
-    onfocus="this.style.borderColor='rgba(255,255,255,0.7)';this.style.background='rgba(255,255,255,0.18)'"
-    onblur="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.12)'">
-  <button onclick="checkPW()"
-    style="width:100%;max-width:300px;background:#fff;border:none;border-radius:14px;color:#1d4ed8;padding:15px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,0.2);transition:all 0.2s;letter-spacing:-0.01em;"
-    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 12px 32px rgba(0,0,0,0.25)'"
-    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2)'">
-    입력
-  </button>
-  <div id="pwErr" style="color:#fca5a5;font-size:12px;margin-top:12px;display:none;font-weight:600;">비밀번호가 틀렸습니다</div>
+<div id="pwModal" style="position:fixed;inset:0;background:#0f2340;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:32px;overflow:hidden;">
+
+  <!-- 배경 차트 SVG — 로고 디자인 -->
+  <svg viewBox="0 0 680 320" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.22;" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="680" height="320" fill="transparent"/>
+    <!-- 별빛 -->
+    <circle cx="60" cy="40" r="1.2" fill="#ffffff" opacity="0.6"/>
+    <circle cx="180" cy="25" r="0.8" fill="#ffffff" opacity="0.5"/>
+    <circle cx="320" cy="18" r="1" fill="#ffffff" opacity="0.4"/>
+    <circle cx="520" cy="30" r="1.2" fill="#ffffff" opacity="0.6"/>
+    <circle cx="630" cy="55" r="0.8" fill="#ffffff" opacity="0.4"/>
+    <circle cx="640" cy="180" r="1" fill="#ffffff" opacity="0.3"/>
+    <circle cx="50" cy="200" r="0.8" fill="#ffffff" opacity="0.4"/>
+    <!-- 웅덩이 채움 -->
+    <path d="M80 195 L115 210 L140 225 L165 230 L200 222 L230 218 L260 212 L290 205 L290 178 L260 175 L230 172 L200 170 L165 172 L140 175 L115 178 L80 178 Z" fill="#3b82f6" opacity="0.4"/>
+    <!-- MA120 노란 점선 -->
+    <path d="M60 175 Q120 172 180 170 Q240 170 300 168 Q360 166 420 162 Q480 158 540 154 Q580 152 620 150" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="8,5"/>
+    <!-- 주가 흰선 -->
+    <path d="M60 188 Q80 195 100 210 Q120 225 145 232 Q165 235 185 228 Q210 220 235 215 Q260 210 280 205 Q300 195 325 180 Q350 165 375 155 Q400 148 425 145 Q455 142 480 138 Q510 132 540 128 Q570 122 600 118 Q615 115 620 112" fill="none" stroke="#ffffff" stroke-width="2"/>
+    <!-- 현재가 점 -->
+    <circle cx="620" cy="112" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="2"/>
+    <!-- X축 -->
+    <line x1="60" y1="270" x2="640" y2="270" stroke="#ffffff" stroke-width="0.5" opacity="0.4"/>
+  </svg>
+
+  <!-- 텍스트 -->
+  <div style="position:relative;z-index:1;text-align:center;margin-bottom:44px;">
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.3em;text-transform:uppercase;margin-bottom:10px;font-weight:600;">LEVERAGE ETF DASHBOARD</div>
+    <div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1.1;">120 POND</div>
+    <div style="font-size:13px;color:#60a5fa;letter-spacing:0.5em;font-weight:500;margin-top:4px;">STRATEGY</div>
+  </div>
+
+  <!-- 입력 영역 -->
+  <div style="position:relative;z-index:1;width:100%;max-width:300px;">
+    <input id="pwInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="비밀번호를 입력하세요"
+      style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);border-radius:14px;padding:15px 20px;color:#fff;font-size:16px;font-family:inherit;outline:none;text-align:center;margin-bottom:10px;transition:all 0.2s;"
+      onkeydown="if(event.key==='Enter')checkPW()"
+      onfocus="this.style.borderColor='rgba(255,255,255,0.7)';this.style.background='rgba(255,255,255,0.18)'"
+      onblur="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.12)'">
+    <button onclick="checkPW()"
+      style="width:100%;background:#fff;border:none;border-radius:14px;color:#1d4ed8;padding:15px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+      입력
+    </button>
+    <div id="pwErr" style="color:#fca5a5;font-size:12px;margin-top:12px;display:none;font-weight:600;text-align:center;">비밀번호가 틀렸습니다</div>
+  </div>
 </div>
 
 <div id="appWrap" style="display:none;">
 <div class="header">
   <div>
-    <div class="header-sub">QLD · SSO · TQQQ · SOXL</div>
-    <div class="header-title">QLD + SSO + @ 전략 대시보드</div>
+    <div class="header-sub">QLD · SSO · TQQQ · SOXL · 코덱스 · GLDM</div>
+    <div class="header-title">120 POND Strategy</div>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="fetchAll()">
     <span id="btnIcon">↻</span> 새로고침

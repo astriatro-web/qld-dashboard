@@ -428,6 +428,7 @@ body {
 .pnl-chip.up { background: var(--green-lt); color: var(--green); }
 .pnl-chip.dn { background: var(--red-lt); color: var(--red); }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -797,6 +798,10 @@ body {
     </div>
     <!-- 등록 종목 빠른선택 -->
     <div id="pond-ai-quickpick" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
+    <!-- 차트 영역 -->
+    <div id="pondAIChart" style="display:none;margin-bottom:12px;">
+      <canvas id="pondChartCanvas" style="width:100%;border-radius:10px;"></canvas>
+    </div>
     <div id="pondAIResult" style="display:none;"></div>
     <div id="pondAIEmpty" style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;">
       티커를 입력하거나 위 종목을 탭해서 분석하세요<br>
@@ -1357,7 +1362,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwrcjspynfQMLneWognMV3Qt4hgeYbnejQcmYhGK_IESiRWd2M4L9572uuDnvWMinYixg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyid2mhoCRyozp4wuauHRQwKyHXH6Lg2IC-ww90u6dxIK4VIzZcC9vDKHvmQsGe9jDXRg/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -2282,6 +2287,94 @@ function pondItemEditConfirm() {
   pondSave(); pondItemEditClose(); pondRender();
 }
 
+// ── 웅덩노트 차트 렌더링 ──
+let pondChartInstance = null;
+function renderPondChart(ticker, chart, avgCost) {
+  const wrap = document.getElementById("pondAIChart");
+  wrap.style.display = "block";
+
+  if (pondChartInstance) { pondChartInstance.destroy(); pondChartInstance = null; }
+
+  const canvas = document.getElementById("pondChartCanvas");
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark"
+    || window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const gridColor  = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)";
+  const textColor  = isDark ? "#9ca3af" : "#6b7280";
+
+  const datasets = [
+    {
+      label: ticker,
+      data: chart.closes,
+      borderColor: "#3b82f6",
+      backgroundColor: "rgba(59,130,246,0.08)",
+      borderWidth: 1.5,
+      pointRadius: 0,
+      fill: true,
+      tension: 0.3,
+      order: 2
+    },
+    {
+      label: "MA120",
+      data: chart.ma120,
+      borderColor: "#f59e0b",
+      borderWidth: 1.5,
+      borderDash: [4, 3],
+      pointRadius: 0,
+      fill: false,
+      tension: 0.3,
+      order: 1
+    }
+  ];
+
+  if (avgCost) {
+    datasets.push({
+      label: "평단",
+      data: chart.closes.map(() => avgCost),
+      borderColor: "#10b981",
+      borderWidth: 1,
+      borderDash: [6, 4],
+      pointRadius: 0,
+      fill: false,
+      order: 0
+    });
+  }
+
+  pondChartInstance = new Chart(canvas, {
+    type: "line",
+    data: { labels: chart.dates, datasets },
+    options: {
+      responsive: true,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: {
+          labels: { color: textColor, font: { size: 11 }, boxWidth: 20, padding: 10 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toLocaleString() : "-"}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: textColor, font: { size: 9 }, maxTicksLimit: 8,
+            maxRotation: 0
+          },
+          grid: { color: gridColor }
+        },
+        y: {
+          ticks: {
+            color: textColor, font: { size: 10 },
+            callback: v => v.toLocaleString()
+          },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
 // ── 웅덩노트 AI 분석 ──
 function pondAIOpen() {
   const modal = document.getElementById("pond-ai-modal");
@@ -2299,6 +2392,8 @@ function pondAIOpen() {
 }
 function pondAIClose() {
   document.getElementById("pond-ai-modal").style.display = "none";
+  document.getElementById("pondAIChart").style.display = "none";
+  if (pondChartInstance) { pondChartInstance.destroy(); pondChartInstance = null; }
 }
 
 async function runPondAI() {
@@ -2328,6 +2423,18 @@ async function runPondAI() {
     // 해당 티커가 POND에 등록돼 있으면 보유 데이터 포함
     const item = POND.find(p => p.ticker === ticker && p.status === "active");
     let tickerData = { ticker };
+    let chartData = null;
+
+    // 차트 데이터 항상 GAS에서 조회
+    try {
+      const priceRes = await fetch(`${GAS_URL}?action=ticker_price&ticker=${ticker}`, { method:"GET", mode:"cors", redirect:"follow" });
+      const priceData = await priceRes.json();
+      if (priceData.ok && priceData.chart) chartData = priceData.chart;
+      if (!item && priceData.ok) {
+        tickerData = { ticker, currentPrice: priceData.current, ma120: priceData.ma120 };
+      }
+    } catch(e) {}
+
     if (item) {
       const sells = item.sells || [];
       const totalBuyShares = item.buys.reduce((a,b) => a + b.shares, 0);
@@ -2344,12 +2451,13 @@ async function runPondAI() {
         sell1Done: !!item.sell1Done, sell2Done: !!item.sell2Done
       };
     } else {
-      // 미등록 종목이면 GAS로 시세 먼저 조회
-      const priceRes = await fetch(`${GAS_URL}?action=ticker_price&ticker=${ticker}`, { method:"GET", mode:"cors", redirect:"follow" });
-      const priceData = await priceRes.json();
-      if (priceData.ok) {
-        tickerData = { ticker, currentPrice: priceData.current, ma120: priceData.ma120 };
-      }
+      // tickerData already set above
+    }
+
+    // 차트 렌더링
+    if (chartData) {
+      const avgCostForChart = tickerData.avgCost || null;
+      renderPondChart(ticker, chartData, avgCostForChart);
     }
 
     const payload = encodeURIComponent(JSON.stringify({ tickers: [tickerData] }));

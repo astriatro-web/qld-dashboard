@@ -2065,7 +2065,7 @@ function pondRender() {
       </div>`
     ).join("");
     const recentBuys = item.buys.length > 3
-      ? `<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:4px 8px;background:var(--bg3);">${allBuysHtml}</div>`
+      ? `<div style="max-height:150px;overflow-y:scroll;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:8px;padding:4px 8px;background:var(--bg3);">${allBuysHtml}</div>`
       : `<div style="padding:0 2px;">${allBuysHtml}</div>`;
 
     // 매도 기록

@@ -435,10 +435,9 @@ body {
 <!-- 비밀번호 모달 -->
 <div id="pwModal" style="position:fixed;inset:0;background:#0f2340;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:32px;overflow:hidden;">
 
-  <!-- 배경 차트 SVG — 로고 디자인 -->
-  <svg viewBox="0 0 680 320" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.22;" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 차트 SVG -->
+  <svg viewBox="0 0 680 320" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18;" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <rect width="680" height="320" fill="transparent"/>
-    <!-- 별빛 -->
     <circle cx="60" cy="40" r="1.2" fill="#ffffff" opacity="0.6"/>
     <circle cx="180" cy="25" r="0.8" fill="#ffffff" opacity="0.5"/>
     <circle cx="320" cy="18" r="1" fill="#ffffff" opacity="0.4"/>
@@ -446,29 +445,24 @@ body {
     <circle cx="630" cy="55" r="0.8" fill="#ffffff" opacity="0.4"/>
     <circle cx="640" cy="180" r="1" fill="#ffffff" opacity="0.3"/>
     <circle cx="50" cy="200" r="0.8" fill="#ffffff" opacity="0.4"/>
-    <!-- 웅덩이 채움 -->
     <path d="M80 195 L115 210 L140 225 L165 230 L200 222 L230 218 L260 212 L290 205 L290 178 L260 175 L230 172 L200 170 L165 172 L140 175 L115 178 L80 178 Z" fill="#3b82f6" opacity="0.4"/>
-    <!-- MA120 노란 점선 -->
     <path d="M60 175 Q120 172 180 170 Q240 170 300 168 Q360 166 420 162 Q480 158 540 154 Q580 152 620 150" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="8,5"/>
-    <!-- 주가 흰선 -->
     <path d="M60 188 Q80 195 100 210 Q120 225 145 232 Q165 235 185 228 Q210 220 235 215 Q260 210 280 205 Q300 195 325 180 Q350 165 375 155 Q400 148 425 145 Q455 142 480 138 Q510 132 540 128 Q570 122 600 118 Q615 115 620 112" fill="none" stroke="#ffffff" stroke-width="2"/>
-    <!-- 현재가 점 -->
     <circle cx="620" cy="112" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="2"/>
-    <!-- X축 -->
     <line x1="60" y1="270" x2="640" y2="270" stroke="#ffffff" stroke-width="0.5" opacity="0.4"/>
   </svg>
 
-  <!-- 텍스트 -->
+  <!-- 제목 -->
   <div style="position:relative;z-index:1;text-align:center;margin-bottom:44px;">
-    <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.3em;text-transform:uppercase;margin-bottom:10px;font-weight:600;">LEVERAGE ETF DASHBOARD</div>
-    <div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1.1;">120 POND</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:8px;">LEVERAGE ETF DASHBOARD</div>
+    <div style="font-size:36px;font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1.1;">120 POND</div>
     <div style="font-size:13px;color:#60a5fa;letter-spacing:0.5em;font-weight:500;margin-top:4px;">STRATEGY</div>
   </div>
 
   <!-- 입력 영역 -->
   <div style="position:relative;z-index:1;width:100%;max-width:300px;">
     <input id="pwInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="비밀번호를 입력하세요"
-      style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);border-radius:14px;padding:15px 20px;color:#fff;font-size:16px;font-family:inherit;outline:none;text-align:center;margin-bottom:10px;transition:all 0.2s;"
+      style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);border-radius:14px;padding:15px 20px;color:#fff;font-size:16px;font-family:inherit;outline:none;text-align:center;margin-bottom:10px;"
       onkeydown="if(event.key==='Enter')checkPW()"
       onfocus="this.style.borderColor='rgba(255,255,255,0.7)';this.style.background='rgba(255,255,255,0.18)'"
       onblur="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.12)'">
@@ -495,8 +489,8 @@ body {
 <div class="tabs">
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
-  <button class="tab" onclick="switchTab('hidden')">히든전략</button>
   <button class="tab" onclick="switchTab('pond')">웅덩노트</button>
+  <button class="tab" onclick="switchTab('game')">미니게임</button>
   <button class="tab" onclick="switchTab('war')">거시모니터</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
@@ -561,7 +555,7 @@ body {
   </div>
 </div>
 
-<!-- ── 전략원칙 패널 ── -->
+<!-- ── 전략원칙 패널 (전략원칙 + 특공대 합병) ── -->
 <div class="panel" id="panel-rules">
   <div id="guideBox" style="background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.25);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -570,40 +564,27 @@ body {
         style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
     </div>
     <div style="font-size:12px;color:var(--text2);line-height:1.9;">
-      <b style="color:var(--text1);">① 설정 탭</b> 먼저 입력<br>
-      &nbsp;&nbsp;· 매수 시작일 / 탄환 총액 / 월 투자금 / 평단가 / 보유 주수<br><br>
-      <b style="color:var(--text1);">② 대시보드 탭</b> — 매일 아침 새로고침<br>
-      &nbsp;&nbsp;· 현재 모드(매수♾️ / 홀드 / 익절) 자동 판단<br>
-      &nbsp;&nbsp;· LOC 주문 가이드: A(×1.025) + B(×0.990) 6:4 분할<br>
-      &nbsp;&nbsp;· 히든전략(TQQQ/SOXL) 조건 충족 시 자동 알림<br><br>
-      <b style="color:var(--text1);">③ 히든전략 탭</b> — TQQQ/SOXL 특공대<br>
-      &nbsp;&nbsp;· TQQQ: 200일선 하단 시 주별 증가 매수<br>
-      &nbsp;&nbsp;· SOXL: 300일선 하단 시 주별 증가 매수<br><br>
-      <b style="color:var(--text1);">④ 거시모니터 탭</b> — AI 분석 버튼<br>
-      &nbsp;&nbsp;· StockHub 뉴스 → Claude 거시 리스크 분석
+      <b style="color:var(--text1);">① 설정 탭</b> 먼저 입력 · 매수 시작일 / 탄환 총액 / 월 투자금 / 평단가 / 보유 주수<br><br>
+      <b style="color:var(--text1);">② 대시보드 탭</b> — 매일 아침 새로고침 · 모드 자동 판단 · LOC 주문 가이드<br><br>
+      <b style="color:var(--text1);">③ 웅덩노트 탭</b> — 관심 종목 120일선 모니터링 · AI 전략 분석<br><br>
+      <b style="color:var(--text1);">④ 거시모니터 탭</b> — StockHub 뉴스 → Claude AI 거시 리스크 분석
     </div>
   </div>
-  <div id="rules-content"></div>
-</div>
 
-<!-- ── 히든전략 패널 ── -->
-<div class="panel" id="panel-hidden">
-  <!-- 백테스트 요약 -->
-  <div class="card">
+  <!-- 10년 백테스트 테이블 -->
+  <div class="card" style="margin-bottom:12px;">
     <div class="card-label">📊 10년 백테스트 결과 요약 (직접 검증)</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6;">
-      기간: 2016~2026 · 출처: 10년 백테스팅 직접 계산 (코덱스/GLDM: ~2026.04.20 기준)<br>
-    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">기간: 2016~2026 · 코덱스/GLDM: ~2026.04.20 기준</div>
     <div style="overflow-x:auto;">
       <table class="bt-table">
         <thead>
-          <tr><th>상품</th><th>전략</th><th>기준선</th><th class="num">총수익(ROI%)</th><th class="cagr">CAGR</th></tr>
+          <tr><th>상품</th><th>전략</th><th>기준선</th><th class="num">ROI%</th><th class="cagr">CAGR</th></tr>
         </thead>
         <tbody>
           <tr class="highlight"><td>SSO</td><td>웅덩(120) 5주</td><td>120일</td><td class="num">150.95%</td><td class="cagr">9.6%</td></tr>
           <tr class="highlight"><td>QLD</td><td>웅덩(120) 10주</td><td>120일</td><td class="num">191.27%</td><td class="cagr">11.3%</td></tr>
-          <tr class="highlight-blue"><td>TQQQ</td><td>웅덩(200) 5→6→7→8… (주별+1주)</td><td>200일</td><td class="num">294.01%</td><td class="cagr">14.7%</td></tr>
-          <tr class="highlight-blue"><td>SOXL</td><td>웅덩(300) 5→6→7→8… (주별+1주)</td><td>300일</td><td class="num">408.84%</td><td class="cagr">17.7%</td></tr>
+          <tr class="highlight-blue"><td>TQQQ</td><td>웅덩(200) 5→6→7…</td><td>200일</td><td class="num">294.01%</td><td class="cagr">14.7%</td></tr>
+          <tr class="highlight-blue"><td>SOXL</td><td>웅덩(300) 5→6→7…</td><td>300일</td><td class="num">408.84%</td><td class="cagr">17.7%</td></tr>
           <tr style="background:#fff7ed;"><td>GLDM</td><td>웅덩(120) 5주</td><td>120일</td><td class="num">170.26%</td><td class="cagr">10.45%</td></tr>
           <tr style="background:#fef9ee;"><td style="color:#b45309;font-weight:700;">코덱스<br><span style="font-size:9px;color:var(--text3);">122630</span></td><td>웅덩(120) 5주</td><td>120일</td><td class="num" style="color:#b45309;font-weight:800;">582.95%</td><td class="cagr" style="color:#b45309;">21.18%</td></tr>
         </tbody>
@@ -611,43 +592,27 @@ body {
     </div>
   </div>
 
+  <!-- 전략 원칙 카드들 -->
+  <div id="rules-content"></div>
+
   <!-- TQQQ 특공대 -->
   <div class="strategy-block">
     <div class="strategy-header" style="background:var(--purple-lt);color:var(--purple);">
       <span class="hidden-badge tqqq">⚡ TQQQ 특공대</span> 200일선 하단 주별 증가 매수
     </div>
-    <div class="strategy-row">
-      <div class="s-label">진입 조건</div>
-      <div class="s-desc">TQQQ 주가 < 200일 이동평균선 하단 돌파 시 시작</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">매수 방식</div>
-      <div class="s-desc">
-        1주차: <b style="color:var(--purple);">5주</b> → 2주차: <b style="color:var(--purple);">6주</b> → 3주차: <b style="color:var(--purple);">7주</b> → … 매주 1주씩 무한 증가 매일 매수<br>
-      </div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">백테스트 근거</div>
-      <div class="s-desc">200일선 기준 TQQQ 증액 매수 전략 CAGR <b style="color:var(--purple);">14.7%</b> TQQQ 3배 레버리지 특성상 200일 장기선이 안전 진입 기준.</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">익절 기준</div>
-      <div class="s-desc">200일선 위 복귀 시 전량 or 분할 매도. 평단 대비 +25%/+50%/+100% 단계별 각 10% 익절</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">주의</div>
-      <div class="s-desc">TQQQ는 3배 레버리지 — MDD -80% 이상 가능. QLD+SSO 메인 전략 대비 소규모 특공대 운용 권장</div>
-    </div>
-    <!-- TQQQ LOC 계산기 -->
+    <div class="strategy-row"><div class="s-label">진입 조건</div><div class="s-desc">TQQQ 주가 &lt; 200일 이동평균선 하단 돌파 시 시작</div></div>
+    <div class="strategy-row"><div class="s-label">매수 방식</div><div class="s-desc">1주차 <b style="color:var(--purple);">5주</b> → 2주차 6주 → 3주차 7주 … 매주 1주씩 무한 증가 매일 매수</div></div>
+    <div class="strategy-row"><div class="s-label">백테스트</div><div class="s-desc">CAGR <b style="color:var(--purple);">14.7%</b> · 3배 레버리지 특성상 200일 장기선이 안전 진입 기준</div></div>
+    <div class="strategy-row"><div class="s-label">익절 / 주의</div><div class="s-desc">200일선 복귀 시 분할 매도. MDD -80% 이상 가능. 소규모 특공대 운용 권장</div></div>
     <div style="padding:12px 14px;background:var(--purple-lt);border-top:1px solid rgba(124,58,237,0.15);">
-      <div style="font-size:10px;font-weight:800;color:var(--purple);letter-spacing:0.08em;margin-bottom:8px;">⚡ TQQQ 이번 주 매수량 계산</div>
-      <div style="display:flex;gap:7px;align-items:center;margin-bottom:6px;">
-        <div style="font-size:12px;color:var(--text2);">진입 후 경과 주차:</div>
+      <div style="font-size:10px;font-weight:800;color:var(--purple);margin-bottom:8px;">⚡ 이번 주 매수량</div>
+      <div style="display:flex;gap:7px;align-items:center;">
+        <div style="font-size:12px;color:var(--text2);">경과 주차:</div>
         <input type="number" id="tqqq-week" min="1" max="52" value="1" oninput="calcTQQQLOC()"
           style="width:60px;background:#fff;border:1.5px solid rgba(124,58,237,0.3);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;color:var(--purple);font-family:inherit;outline:none;text-align:center;">
         <div style="font-size:12px;color:var(--text2);">주차</div>
       </div>
-      <div id="tqqq-loc-result" style="font-size:13px;font-weight:700;color:var(--purple);">→ 이번 주 매수: 5주 매일</div>
+      <div id="tqqq-loc-result" style="font-size:13px;font-weight:700;color:var(--purple);margin-top:6px;">→ 이번 주 매수: 5주 매일</div>
     </div>
   </div>
 
@@ -656,107 +621,104 @@ body {
     <div class="strategy-header" style="background:var(--teal-lt);color:var(--teal);">
       <span class="hidden-badge soxl">💎 SOXL 특공대</span> 300일선 하단 주별 증가 매수
     </div>
-    <div class="strategy-row">
-      <div class="s-label">진입 조건</div>
-      <div class="s-desc">SOXL 주가 < 300일 이동평균선 하단 돌파 시 시작</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">매수 방식</div>
-      <div class="s-desc">
-        1주차: <b style="color:var(--teal);">5주</b> → 2주차: <b style="color:var(--teal);">6주</b> → 3주차: <b style="color:var(--teal);">7주</b> → … 매주 1주씩 무한 증가 매일 매수<br>
-      </div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">백테스트 근거</div>
-      <div class="s-desc">300일선 기준 SOXL 증액 매수 전략 CAGR <b style="color:var(--teal);">17.7%</b> 반도체 섹터 집중으로 변동성 극심하나 레버리지 ETF 중 장기 수익 최고.</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">익절 기준</div>
-      <div class="s-desc">300일선 위 복귀 시 전량 or 분할 매도. 평단 대비 +25%/+50%/+100% 단계별 각 10% 익절</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">주의</div>
-      <div class="s-desc">반도체 사이클 리스크. MDD -90% 이상 가능. 포트폴리오 5~10% 이하 소규모 특공대 배분 권장</div>
-    </div>
-    <!-- SOXL LOC 계산기 -->
+    <div class="strategy-row"><div class="s-label">진입 조건</div><div class="s-desc">SOXL 주가 &lt; 300일 이동평균선 하단 돌파 시 시작</div></div>
+    <div class="strategy-row"><div class="s-label">매수 방식</div><div class="s-desc">1주차 <b style="color:var(--teal);">5주</b> → 2주차 6주 → 3주차 7주 … 매주 1주씩 무한 증가 매일 매수</div></div>
+    <div class="strategy-row"><div class="s-label">백테스트</div><div class="s-desc">CAGR <b style="color:var(--teal);">17.7%</b> · 반도체 섹터 집중, 레버리지 ETF 중 장기 수익 최고</div></div>
+    <div class="strategy-row"><div class="s-label">익절 / 주의</div><div class="s-desc">300일선 복귀 시 분할 매도. MDD -90% 이상 가능. 포트 5~10% 이하 배분 권장</div></div>
     <div style="padding:12px 14px;background:var(--teal-lt);border-top:1px solid rgba(8,145,178,0.15);">
-      <div style="font-size:10px;font-weight:800;color:var(--teal);letter-spacing:0.08em;margin-bottom:8px;">💎 SOXL 이번 주 매수량 계산</div>
-      <div style="display:flex;gap:7px;align-items:center;margin-bottom:6px;">
-        <div style="font-size:12px;color:var(--text2);">진입 후 경과 주차:</div>
+      <div style="font-size:10px;font-weight:800;color:var(--teal);margin-bottom:8px;">💎 이번 주 매수량</div>
+      <div style="display:flex;gap:7px;align-items:center;">
+        <div style="font-size:12px;color:var(--text2);">경과 주차:</div>
         <input type="number" id="soxl-week" min="1" max="52" value="1" oninput="calcSOXLLOC()"
           style="width:60px;background:#fff;border:1.5px solid rgba(8,145,178,0.3);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;color:var(--teal);font-family:inherit;outline:none;text-align:center;">
         <div style="font-size:12px;color:var(--text2);">주차</div>
       </div>
-      <div id="soxl-loc-result" style="font-size:13px;font-weight:700;color:var(--teal);">→ 이번 주 매수: 5주 매일</div>
+      <div id="soxl-loc-result" style="font-size:13px;font-weight:700;color:var(--teal);margin-top:6px;">→ 이번 주 매수: 5주 매일</div>
     </div>
   </div>
 
-  <!-- 코덱스 레버리지 -->
+  <!-- 코덱스 -->
   <div class="strategy-block">
     <div class="strategy-header" style="background:#fef9ee;color:#b45309;">
       <span class="hidden-badge" style="background:#fef3c7;color:#b45309;border:1px solid rgba(180,83,9,0.3);">🇰🇷 코덱스 레버리지</span> 120일선 하단 매일 5주
     </div>
-    <div class="strategy-row">
-      <div class="s-label">종목코드</div>
-      <div class="s-desc">122630 · KODEX 레버리지 (코스피200 2배) · 국내 ETF</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">진입 조건</div>
-      <div class="s-desc">코덱스 레버리지 주가 &lt; 120일 이동평균선 하단 시 매일 5주 매수</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">매수 방식</div>
-      <div class="s-desc">QLD·SSO와 동일한 120일선 웅덩이 전략. 매일 <b style="color:#b45309;">5주</b> 고정 매수. 120일선 복귀 시 홀드/익절.</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">백테스트 근거</div>
-      <div class="s-desc">120일선 기준 CAGR <b style="color:#b45309;">21.18%</b> · ROI <b style="color:#b45309;">582.95%</b> (2026.04.20 기준). 국내 지수 레버리지 중 최고 성과.</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">익절 기준 (옵션)</div>
-      <div class="s-desc">120일선 복귀 후 평단 대비 +25%/+50%/+100% 각 10% 단계별 익절 (선택)</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">특징 / 주의</div>
-      <div class="s-desc">원화 투자 — 환율 리스크 없음. 국내 시장 시간(9시~15시30분) 매수. 코스피200 2배 레버리지로 MDD -70% 수준 가능.</div>
-    </div>
+    <div class="strategy-row"><div class="s-label">종목</div><div class="s-desc">122630 · KODEX 레버리지 (코스피200 2배) · 국내 ETF · 원화 투자</div></div>
+    <div class="strategy-row"><div class="s-label">백테스트</div><div class="s-desc">CAGR <b style="color:#b45309;">21.18%</b> · ROI <b style="color:#b45309;">582.95%</b> — 국내 지수 레버리지 중 최고 성과</div></div>
+    <div class="strategy-row"><div class="s-label">주의</div><div class="s-desc">코스피200 2배 레버리지 · MDD -70% 수준 · 국내 시장(9시~15시30분) 매수</div></div>
   </div>
 
-  <!-- GLDM 금 ETF -->
+  <!-- GLDM -->
   <div class="strategy-block">
     <div class="strategy-header" style="background:#f0fdf4;color:#15803d;">
       <span class="hidden-badge" style="background:#dcfce7;color:#15803d;border:1px solid rgba(21,128,61,0.3);">🥇 GLDM 금 ETF</span> 120일선 하단 매일 5주
     </div>
-    <div class="strategy-row">
-      <div class="s-label">종목</div>
-      <div class="s-desc">GLDM · SPDR Gold MiniShares · 금 현물 ETF (미국 상장)</div>
+    <div class="strategy-row"><div class="s-label">종목</div><div class="s-desc">GLDM · SPDR Gold MiniShares · 금 현물 ETF · 운용보수 0.10%</div></div>
+    <div class="strategy-row"><div class="s-label">백테스트</div><div class="s-desc">CAGR <b style="color:#15803d;">10.45%</b> · ROI 170.26% — 주식 하락장 역상관으로 포트 변동성 완충</div></div>
+  </div>
+
+  <!-- 보유 현황 -->
+  <div class="card" style="margin-top:8px;">
+    <div class="card-label">특공대 보유 현황</div>
+    <div id="hiddenHoldingRows"><div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div></div>
+  </div>
+</div>
+
+<!-- ── 미니게임 패널 ── -->
+<div class="panel" id="panel-game">
+  <div style="text-align:center;padding:20px 0 14px;">
+    <div style="font-size:18px;font-weight:900;color:var(--text1);">📈 주가 방향 예측 게임</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px;">과거 QLD 차트를 보고 다음 날 방향을 맞혀보세요</div>
+  </div>
+
+  <!-- 점수판 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">점수</div>
+      <div id="game-score" style="font-size:22px;font-weight:900;color:var(--blue);">0</div>
     </div>
-    <div class="strategy-row">
-      <div class="s-label">진입 조건</div>
-      <div class="s-desc">GLDM 주가 &lt; 120일 이동평균선 하단 시 매일 5주 매수</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">연속 정답</div>
+      <div id="game-streak" style="font-size:22px;font-weight:900;color:var(--green);">0</div>
     </div>
-    <div class="strategy-row">
-      <div class="s-label">매수 방식</div>
-      <div class="s-desc">QLD·SSO와 동일한 120일선 웅덩이 전략. 매일 <b style="color:#15803d;">5주</b> 고정 매수. 120일선 복귀 시 홀드/익절.</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">백테스트 근거</div>
-      <div class="s-desc">120일선 기준 CAGR <b style="color:#15803d;">10.45%</b> · ROI <b style="color:#15803d;">170.26%</b>. 주식 시장 하락기 역상관 자산으로 포트폴리오 안정화 역할.</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">익절 기준 (옵션)</div>
-      <div class="s-desc">120일선 복귀 후 평단 대비 +25%/+50%/+100% 각 10% 단계별 익절 (선택)</div>
-    </div>
-    <div class="strategy-row">
-      <div class="s-label">특징 / 주의</div>
-      <div class="s-desc">금 현물 추종 — 레버리지 없음. 주식 하락장에서 방어적 역할. QLD 하락 시 역상관으로 포트 변동성 완충 효과. 저비용(0.10% 운용보수).</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">정답률</div>
+      <div id="game-accuracy" style="font-size:22px;font-weight:900;color:var(--amber);">-</div>
     </div>
   </div>
 
-  <!-- TQQQ/SOXL 보유 현황 -->
-  <div class="card">
-    <div class="card-label">히든전략 보유 현황</div>
-    <div id="hiddenHoldingRows"><div style="font-size:12px;color:var(--text3);">설정탭에서 TQQQ/SOXL 보유 주수를 입력하세요</div></div>
+  <!-- 차트 영역 -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);" id="game-info">QLD 과거 차트</div>
+      <div style="font-size:11px;color:var(--text3);">? 다음날은?</div>
+    </div>
+    <canvas id="game-chart" style="width:100%;max-height:180px;"></canvas>
+  </div>
+
+  <!-- MA 정보 -->
+  <div id="game-ma-info" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;font-size:11px;"></div>
+
+  <!-- 정답/오답 피드백 -->
+  <div id="game-feedback" style="display:none;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px;font-size:14px;font-weight:800;"></div>
+
+  <!-- 버튼 -->
+  <div id="game-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+    <button onclick="gameAnswer('up')" style="background:var(--green);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:900;cursor:pointer;">
+      📈 상승
+    </button>
+    <button onclick="gameAnswer('down')" style="background:var(--red);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:900;cursor:pointer;">
+      📉 하락
+    </button>
+  </div>
+  <button id="game-next-btn" onclick="gameNext()" style="display:none;width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;">
+    다음 문제 →
+  </button>
+  <button onclick="gameStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text2);cursor:pointer;margin-top:6px;">
+    🔄 새 게임 시작
+  </button>
+
+  <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6;">
+    20일치 캔들 표시 · 다음 날 종가 기준 판정 · 연속 정답 시 보너스 점수
   </div>
 </div>
 
@@ -1215,12 +1177,13 @@ function saveSettings() {
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","hidden","pond","war","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","rules","pond","game","war","settings"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
   if (id === "war") loadComments();
-  if (id === "hidden") { renderHiddenHoldings(); calcTQQQLOC(); calcSOXLLOC(); }
+  if (id === "rules") { renderHiddenHoldings(); calcTQQQLOC(); calcSOXLLOC(); }
+  if (id === "game") gameStart();
 }
 
 // ── 유틸 ──
@@ -2526,6 +2489,116 @@ async function runPondAI() {
   } finally {
     runBtn.disabled = false; runIcon.textContent = "⚡";
   }
+}
+
+// ════════════════════════════════════════
+// 📈 주가 방향 예측 게임
+// ════════════════════════════════════════
+let gameState = {
+  data: [], idx: 0, score: 0, streak: 0,
+  total: 0, correct: 0, answered: false, chartInst: null
+};
+
+const GAME_DATA_SETS = [
+  [47.2,44.1,38.9,33.2,28.7,24.1,21.3,23.8,27.4,31.2,34.8,38.1,41.5,44.2,47.8,51.3,54.6,57.2,59.8,62.4,65.1],
+  [62.4,65.1,68.3,71.2,74.5,77.1,73.8,70.2,67.5,64.8,61.2,58.4,55.7,58.9,62.3,65.8,69.1,72.4,75.6,78.2,81.5],
+  [88.4,85.2,81.7,78.3,74.6,71.2,68.5,65.1,61.8,58.4,55.2,52.7,49.3,46.8,43.5,40.2,37.8,35.4,33.1,31.2,29.8],
+  [29.8,31.5,33.2,30.8,28.4,26.1,28.7,31.2,33.8,36.4,34.1,31.8,29.5,27.2,25.1,27.8,30.4,33.1,35.8,38.4,41.2],
+  [41.2,43.8,46.5,49.2,52.1,54.8,57.4,60.1,62.8,65.5,68.2,70.9,73.6,71.2,68.9,66.5,69.2,72.1,75.3,78.6,81.8],
+  [81.8,84.5,87.2,90.1,87.8,85.4,83.1,85.8,88.6,91.4,94.2,97.1,99.8,102.5,105.3,108.1,110.8,113.6,116.4,119.2,122.1],
+  [122.1,118.4,115.2,112.8,116.5,120.3,124.1,127.9,131.7,135.5,132.2,129.1,132.8,136.5,140.3,144.1,147.9,151.7,148.4,145.2,149.1],
+  [149.1,153.2,157.3,161.4,165.5,162.3,159.1,155.8,152.6,156.4,160.2,164.1,168.2,172.3,176.4,173.2,170.1,166.8,170.6,174.5,178.4],
+  [78.4,79.1,77.8,80.2,81.5,79.8,82.1,80.4,81.8,83.2,81.6,80.1,82.4,83.8,82.2,84.5,83.1,85.4,84.2,86.1,85.3],
+  [55.2,54.1,56.3,55.8,57.2,56.1,58.4,57.3,59.6,58.5,60.8,59.7,61.1,60.2,62.4,61.3,63.6,62.5,64.8,63.7,65.1],
+];
+
+function gameStart() {
+  gameState.score=0; gameState.streak=0; gameState.total=0;
+  gameState.correct=0; gameState.answered=false;
+  const dsIdx = Math.floor(Math.random()*GAME_DATA_SETS.length);
+  gameState.data = GAME_DATA_SETS[dsIdx];
+  gameState.idx = 20;
+  document.getElementById("game-score").textContent="0";
+  document.getElementById("game-streak").textContent="0";
+  document.getElementById("game-accuracy").textContent="-";
+  document.getElementById("game-feedback").style.display="none";
+  document.getElementById("game-btns").style.display="grid";
+  document.getElementById("game-next-btn").style.display="none";
+  gameRender();
+}
+
+function gameRender() {
+  const visible = gameState.data.slice(gameState.idx-20, gameState.idx);
+  const labels  = visible.map((_,i)=>`D-${20-i}`);
+  const ma5arr  = visible.map((_,i)=>{ const sl=visible.slice(0,i+1); return sl.length>=5?sl.slice(-5).reduce((a,b)=>a+b,0)/5:null; });
+  const ma20arr = visible.map((_,i)=>{ const sl=visible.slice(0,i+1); return sl.length>=20?sl.reduce((a,b)=>a+b,0)/20:null; });
+  const current = visible[visible.length-1];
+  const ma20val = ma20arr[ma20arr.length-1];
+  const ma5val  = ma5arr[ma5arr.length-1];
+  const pctFrom20 = ma20val ? ((current-ma20val)/ma20val*100).toFixed(1) : null;
+
+  document.getElementById("game-info").textContent=`QLD 현재가 $${current.toFixed(2)}`;
+  document.getElementById("game-ma-info").innerHTML=[
+    ma5val?`<span style="background:#dbeafe;color:#1e40af;border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;">MA5 $${ma5val.toFixed(2)}</span>`:"",
+    ma20val?`<span style="background:#fef3c7;color:#92400e;border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;">MA20 $${ma20val.toFixed(2)}</span>`:"",
+    pctFrom20?`<span style="background:${parseFloat(pctFrom20)>=0?"#dcfce7":"#fee2e2"};color:${parseFloat(pctFrom20)>=0?"#15803d":"#dc2626"};border-radius:6px;padding:2px 8px;font-weight:700;font-size:11px;">MA20 대비 ${pctFrom20}%</span>`:"",
+  ].join("");
+
+  if (gameState.chartInst) { gameState.chartInst.destroy(); gameState.chartInst=null; }
+  gameState.chartInst = new Chart(document.getElementById("game-chart"), {
+    type:"line",
+    data:{ labels, datasets:[
+      { label:"QLD", data:visible, borderColor:"#3b82f6", backgroundColor:"rgba(59,130,246,0.08)", borderWidth:2, pointRadius:2, fill:true, tension:0.3 },
+      { label:"MA5", data:ma5arr, borderColor:"#10b981", borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false },
+      { label:"MA20", data:ma20arr, borderColor:"#f59e0b", borderWidth:1.5, borderDash:[6,4], pointRadius:0, fill:false }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:true,
+      plugins:{ legend:{ labels:{ font:{size:10}, boxWidth:16, padding:8, color:"#9ca3af" }}},
+      scales:{
+        x:{ ticks:{ font:{size:9}, maxTicksLimit:6, color:"#9ca3af" }, grid:{color:"rgba(0,0,0,0.05)"} },
+        y:{ ticks:{ font:{size:10}, color:"#9ca3af", callback:v=>"$"+v.toFixed(0) }, grid:{color:"rgba(0,0,0,0.05)"} }
+      }
+    }
+  });
+}
+
+function gameAnswer(dir) {
+  if (gameState.answered || gameState.idx>=gameState.data.length) return;
+  gameState.answered=true; gameState.total++;
+  const current=gameState.data[gameState.idx-1];
+  const next=gameState.data[gameState.idx];
+  const correct=next>current?"up":"down";
+  const isRight=dir===correct;
+  const changePct=((next-current)/current*100).toFixed(2);
+  if (isRight) {
+    gameState.correct++; gameState.streak++;
+    const bonus=gameState.streak>=3?Math.floor(gameState.streak/3)*5:0;
+    gameState.score+=10+bonus;
+    document.getElementById("game-feedback").style.cssText="display:block;background:#dcfce7;border:2px solid #86efac;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px;";
+    document.getElementById("game-feedback").innerHTML=`✅ 정답! ${next>current?"📈 상승":"📉 하락"} (${parseFloat(changePct)>0?"+":""}${changePct}%)<br><span style="font-size:12px;font-weight:600;color:#15803d;">+10점${gameState.streak>=3?` +${Math.floor(gameState.streak/3)*5}점 연속보너스!`:""} · ${gameState.streak}연속 🔥</span>`;
+  } else {
+    gameState.streak=0;
+    document.getElementById("game-feedback").style.cssText="display:block;background:#fee2e2;border:2px solid #fca5a5;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px;";
+    document.getElementById("game-feedback").innerHTML=`❌ 오답. 실제 ${next>current?"📈 상승":"📉 하락"} (${parseFloat(changePct)>0?"+":""}${changePct}%)<br><span style="font-size:12px;font-weight:600;color:#dc2626;">연속 끊김 · 파이팅!</span>`;
+  }
+  document.getElementById("game-score").textContent=gameState.score;
+  document.getElementById("game-streak").textContent=gameState.streak;
+  document.getElementById("game-accuracy").textContent=Math.round(gameState.correct/gameState.total*100)+"%";
+  document.getElementById("game-btns").style.display="none";
+  document.getElementById("game-next-btn").style.display="block";
+  gameState.idx++;
+}
+
+function gameNext() {
+  gameState.answered=false;
+  if (gameState.idx>=gameState.data.length) {
+    const dsIdx=Math.floor(Math.random()*GAME_DATA_SETS.length);
+    gameState.data=GAME_DATA_SETS[dsIdx]; gameState.idx=20;
+  }
+  document.getElementById("game-feedback").style.display="none";
+  document.getElementById("game-btns").style.display="grid";
+  document.getElementById("game-next-btn").style.display="none";
+  gameRender();
 }
 
 const _origSwitchTab = window.switchTab;

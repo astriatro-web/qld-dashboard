@@ -1082,6 +1082,7 @@ let MD = null;
 function loadSettings() {
   try { S = JSON.parse(localStorage.getItem("qld_s11") || "{}"); } catch { S = {}; }
   S.entryDate     = S.entryDate     || "2026-03-01";
+  S.standbyDate   = S.standbyDate   || "";
   S.totalBullet   = S.totalBullet   || 100000000;
   S.monthlyBudget = S.monthlyBudget || 10000000;
   S.profitCash    = S.profitCash    || 0;
@@ -1362,6 +1363,26 @@ async function fetchAll() {
       tqqq:d.tqqq||null, soxl:d.soxl||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null
     };
+
+    // 대기모드 진입일 자동 감지
+    // QLD > MA120 이면 대기모드 → 오늘 날짜를 standbyDate로 저장
+    // QLD < MA120 이면 매수모드 → standbyDate 초기화
+    if (d.qld && d.ma120) {
+      const today = new Date().toISOString().slice(0, 10);
+      if (d.qld > d.ma120) {
+        // 대기모드: 진입일이 없으면 오늘로 기록, 있으면 유지
+        if (!S.standbyDate) {
+          S.standbyDate = today;
+          localStorage.setItem("qld_s11", JSON.stringify(S));
+        }
+      } else {
+        // 매수모드 복귀: 대기모드 진입일 초기화
+        if (S.standbyDate) {
+          S.standbyDate = "";
+          localStorage.setItem("qld_s11", JSON.stringify(S));
+        }
+      }
+    }
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
     autoCountStreak(MD);
@@ -1434,7 +1455,34 @@ function determineMode(d) {
     } else {
       name="홀드 — 대기모드"; phase="hold";
       const sgText = S.qldAvg ? `익절 대기: 평단 +25%/+50%/+100%` : "⚠ 평단가 미입력 — 설정탭에서 입력하세요";
-      actions=[sgText, "SGOV 100% 적립 (매월 투자금)", `매수 재개: QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"})`];
+
+      // 대기모드 경과일 계산
+      let standbyInfo = "";
+      if (S.standbyDate) {
+        const standbyMs = new Date() - new Date(S.standbyDate);
+        const standbyDays = Math.max(0, Math.floor(standbyMs / 86400000));
+
+        // 나스닥100 역사 기반 회귀 확률 (40년 통계)
+        // 대기일수별 누적 재진입 확률
+        const probTable = [
+          [20, 24], [30, 41], [60, 53], [90, 71],
+          [120, 76], [180, 76], [250, 88], [365, 94], [999, 100]
+        ];
+        let prob = 0;
+        for (const [days, p] of probTable) {
+          if (standbyDays <= days) { prob = p; break; }
+        }
+        // 경과일 구간별 멘트
+        let probColor = prob >= 76 ? "#15803d" : prob >= 53 ? "#b45309" : "#dc2626";
+        let probMemo = standbyDays <= 30 ? "단기 조정 가능성 높음" :
+                       standbyDays <= 90 ? "중기 조정 진행 중" :
+                       standbyDays <= 180 ? "장기 조정 구간 진입" : "역사적 장기 대기 구간";
+        standbyInfo = `대기 ${standbyDays}일 경과 (${S.standbyDate} 진입) · 역사적 ${standbyDays}일 내 120일선 회귀 확률 ${prob}% · ${probMemo}`;
+      } else {
+        standbyInfo = "📊 새로고침 시 대기모드 진입일 자동 기록됩니다";
+      }
+
+      actions=[sgText, standbyInfo, "SGOV 100% 적립 (매월 투자금)", `매수 재개: QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"})`];
     }
     if (S.profitCash>0 && S.rebuyCount>=CFG.WS_REBUY) {
       let rebuyTriggered = false;

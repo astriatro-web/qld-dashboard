@@ -718,6 +718,7 @@ body {
     </div>
     <div style="display:flex;gap:7px;">
       <button id="btnPondAI" onclick="pondAIOpen()" style="background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;"><span id="pondAIBtnIcon">🤖</span> AI</button>
+      <button onclick="pondRefreshAll()" id="btnPondRefresh" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;"><span id="pondRefreshIcon">↻</span> 전체갱신</button>
       <button onclick="pondAddTicker()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">＋ 종목 추가</button>
     </div>
   </div>
@@ -2074,9 +2075,10 @@ function pondRender() {
 
     const dayNames = ["일","월","화","수","목","금","토"];
     const buyDays = item.buyDays || [];
-    const buyDaysLabel = buyDays.length ? buyDays.map(d => dayNames[d]).join("·") + "요일" : "매일";
+    const buyDaysLabel = buyDays.length ? buyDays.map(d => dayNames[d]).join("·") + "요일" : "매일(평일)";
     const todayDow = new Date().getDay();
-    const isBuyDay = buyDays.length === 0 || buyDays.includes(todayDow);
+    const isWeekend = todayDow === 0 || todayDow === 6;
+    const isBuyDay = !isWeekend && (buyDays.length === 0 || buyDays.includes(todayDow));
     const today = new Date().toLocaleDateString("ko-KR");
     const boughtToday = item.buys.some(b => b.date === today);
 
@@ -2157,9 +2159,9 @@ function pondRender() {
 
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${isActive?`
-          <button onclick="pondBuyToday(${item.id})"
-            style="flex:1;min-width:80px;background:${boughtToday?"#6b7280":isBuyDay?"var(--blue)":"#9ca3af"};color:#fff;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">
-            ${boughtToday?`✅ 오늘 매수완료`:isBuyDay?`📥 오늘 매수 (${item.dailyShares}주)`:`📅 매수요일 아님 (${buyDaysLabel})`}
+          <button onclick="${isBuyDay||boughtToday?`pondBuyToday(${item.id})`:`''`}"
+            style="flex:1;min-width:80px;background:${boughtToday?"#6b7280":isBuyDay?"var(--blue)":"#e5e7eb"};color:${boughtToday||isBuyDay?"#fff":"#9ca3af"};border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:${isBuyDay&&!boughtToday?"pointer":"default"};">
+            ${boughtToday?`✅ 오늘 매수완료`:isWeekend?`🏖️ 주말 (시장 휴장)`:isBuyDay?`📥 오늘 매수 (${item.dailyShares}주)`:`📅 매수요일 아님 (${buyDaysLabel})`}
           </button>
           ${aboveMA||item.sell2Done?`<button onclick="pondClose(${item.id})" style="flex:1;min-width:80px;background:#9ca3af;color:#fff;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">🏁 종료</button>`:""}
         `:`
@@ -2168,11 +2170,13 @@ function pondRender() {
       </div>
     </div>`;
   }).join("");
-  // 하루 예상 투입금액 — 오늘이 매수요일인 종목만 합산
+  // 하루 예상 투입금액 — 오늘이 매수요일 + 평일인 종목만 합산
   const totalVal = document.getElementById("pond-total-value");
   const todayDow = new Date().getDay();
+  const isWeekendToday = todayDow === 0 || todayDow === 6;
   let dailyTotal = 0; let hasPrice = false;
   POND.filter(p => p.status === "active").forEach(item => {
+    if (isWeekendToday) return; // 주말은 0
     const days = item.buyDays || [];
     const isBuyDay = days.length === 0 || days.includes(todayDow);
     if (item.currentPrice && item.dailyShares && isBuyDay) {
@@ -2180,9 +2184,11 @@ function pondRender() {
       hasPrice = true;
     }
   });
-  totalVal.textContent = hasPrice
-    ? `$${dailyTotal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`
-    : "시세 갱신 필요";
+  totalVal.textContent = isWeekendToday
+    ? "🏖️ 주말 (시장 휴장)"
+    : hasPrice
+      ? `$${dailyTotal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`
+      : "시세 갱신 필요";
 }
 function pondBuyToday(id) {
   const item = POND.find(p => p.id === id);
@@ -2395,7 +2401,21 @@ function renderPondChart(ticker, chart, avgCost) {
   });
 }
 
-// ── 웅덩노트 AI 분석 ──
+// 전체 종목 시세 갱신
+async function pondRefreshAll() {
+  const btn = document.getElementById("btnPondRefresh");
+  const icon = document.getElementById("pondRefreshIcon");
+  const active = POND.filter(p => p.status === "active" && p.ticker);
+  if (!active.length) return;
+  btn.disabled = true; icon.textContent = "⏳";
+  let done = 0;
+  for (const item of active) {
+    await pondFetchPrice(item.id);
+    done++;
+    icon.textContent = `${done}/${active.length}`;
+  }
+  btn.disabled = false; icon.textContent = "↻";
+}
 function pondAIOpen() {
   const modal = document.getElementById("pond-ai-modal");
   modal.style.display = "flex";

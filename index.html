@@ -1451,15 +1451,19 @@ function determineMode(d) {
         const standbyMs = new Date() - new Date(sd);
         const standbyDays = Math.max(0, Math.floor(standbyMs / 86400000));
 
-        // 나스닥100 역사 기반 회귀 확률 (40년 통계)
-        // 대기일수별 누적 재진입 확률
+        // 나스닥100 역사 기반 회귀 확률 — 선형 보간
         const probTable = [
-          [20, 24], [30, 41], [60, 53], [90, 71],
+          [0, 0], [20, 24], [30, 41], [60, 53], [90, 71],
           [120, 76], [180, 76], [250, 88], [365, 94], [999, 100]
         ];
-        let prob = 0;
-        for (const [days, p] of probTable) {
-          if (standbyDays <= days) { prob = p; break; }
+        let prob = 100;
+        for (let pi = 0; pi < probTable.length - 1; pi++) {
+          const [d1, p1] = probTable[pi];
+          const [d2, p2] = probTable[pi + 1];
+          if (standbyDays <= d2) {
+            prob = Math.round(p1 + (p2 - p1) * (standbyDays - d1) / (d2 - d1));
+            break;
+          }
         }
         // 경과일 구간별 멘트
         let probColor = prob >= 76 ? "#15803d" : prob >= 53 ? "#b45309" : "#dc2626";

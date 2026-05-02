@@ -1472,6 +1472,7 @@ function determineMode(d) {
 
       // 대기모드 경과일 계산
       let standbyInfo = "";
+      let compositeInfo = "";
       const sd = d.standbyDate || S.standbyDate;
       if (sd) {
         const standbyMs = new Date() - new Date(sd);
@@ -1491,17 +1492,48 @@ function determineMode(d) {
             break;
           }
         }
+
         // 경과일 구간별 멘트
-        let probColor = prob >= 76 ? "#15803d" : prob >= 53 ? "#b45309" : "#dc2626";
-        let probMemo = standbyDays <= 30 ? "단기 조정 가능성 높음" :
-                       standbyDays <= 90 ? "중기 조정 진행 중" :
-                       standbyDays <= 180 ? "장기 조정 구간 진입" : "역사적 장기 대기 구간";
-        standbyInfo = `대기 ${standbyDays}일 경과 (${sd} 진입) · 역사적 ${standbyDays}일 내 120일선 회귀 확률 ${prob}% · ${probMemo}`;
+        const probMemo = standbyDays <= 30 ? "단기 조정" :
+                         standbyDays <= 90 ? "중기 조정" :
+                         standbyDays <= 180 ? "장기 조정" : "역사적 장기 대기";
+        standbyInfo = `📅 대기 ${standbyDays}일 경과 (${sd} 진입) · 역사적 회귀 확률 ${prob}% · ${probMemo}`;
+
+        // F&G 복합 점수
+        const fg = d.fg;
+        if (fg != null) {
+          // F&G 역지수: 공포일수록 높게 (바닥 가능성)
+          const fgInverse = fg <= 20 ? 90 :
+                            fg <= 40 ? Math.round(90 - (fg - 20) * (20/20)) :
+                            fg <= 60 ? Math.round(70 - (fg - 40) * (20/20)) :
+                            fg <= 80 ? Math.round(50 - (fg - 60) * (20/20)) :
+                                       Math.round(30 - (fg - 80) * (20/20));
+          const fgLabel = fg <= 20 ? "극단공포" : fg <= 40 ? "공포" :
+                          fg <= 60 ? "중립" : fg <= 80 ? "탐욕" : "극단탐욕";
+
+          // 복합점수 = 회귀확률 60% + F&G역지수 40%
+          const composite = Math.round(prob * 0.6 + fgInverse * 0.4);
+
+          const compColor = composite >= 70 ? "#15803d" :
+                            composite >= 50 ? "#b45309" : "#6b7280";
+          const compMemo  = composite >= 75 ? "매수 재개 타이밍 근접 — 적극 준비" :
+                            composite >= 60 ? "조건 무르익는 중 — 탄환 점검 권장" :
+                            composite >= 45 ? "중간 신뢰 구간 — 추가 하락 가능성 상존" :
+                                              "아직 초기 단계 — 대기 지속";
+
+          compositeInfo = `📊 복합 회귀 점수: ${composite}점/100 (회귀확률 ${prob}% × 0.6 + F&G역지수 ${fgInverse}% × 0.4 · F&G ${fg} ${fgLabel}) — ${compMemo}`;
+        }
       } else {
         standbyInfo = "📊 새로고침 시 대기모드 진입일 자동 기록됩니다";
       }
 
-      actions=[sgText, standbyInfo, "SGOV 100% 적립 (매월 투자금)", `매수 재개: QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"})`];
+      actions = [
+        sgText,
+        standbyInfo,
+        ...(compositeInfo ? [compositeInfo] : []),
+        "SGOV 100% 적립 (매월 투자금)",
+        `매수 재개: QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"})`
+      ];
     }
     if (S.profitCash>0 && S.rebuyCount>=CFG.WS_REBUY) {
       let rebuyTriggered = false;

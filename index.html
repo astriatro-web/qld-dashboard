@@ -530,17 +530,18 @@ body {
     </div>
   </div>
 
-  <!-- SPY 120일 미니 차트 -->
+  <!-- SSO 120일 미니 차트 -->
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-      <div style="font-size:10px;font-weight:700;color:var(--text2);">SPY 120일 차트</div>
+      <div style="font-size:10px;font-weight:700;color:var(--text2);">SSO 120일 차트</div>
       <div style="display:flex;gap:6px;font-size:9px;align-items:center;">
-        <span style="color:#22c55e;">━ SPY</span>
-        <span style="color:#f97316;">┅ MA200</span>
+        <span style="color:#f87171;">━ SSO</span>
+        <span style="color:#f59e0b;">┅ MA120</span>
+        <span style="color:#10b981;">┅ 평단</span>
       </div>
     </div>
     <div style="position:relative;height:75px;width:100%;">
-      <canvas id="dashboard-spy-chart"></canvas>
+      <canvas id="dashboard-sso-chart"></canvas>
     </div>
   </div>
   <div class="grid2">
@@ -1360,34 +1361,51 @@ function renderMiniChart(chart) {
 }
 
 // ── 대시보드 SPY 미니 차트 ──
-let spyChartInst = null;
-function renderSPYChart(chart) {
-  const canvas = document.getElementById("dashboard-spy-chart");
-  if (!canvas || !chart) return;
-  if (spyChartInst) { spyChartInst.destroy(); spyChartInst = null; }
+let ssoChartInst = null;
+function renderSSOChart(chart) {
+  const canvas = document.getElementById("dashboard-sso-chart");
+  if (!canvas || !chart || !chart.ssoCloses || !chart.ssoCloses.length) return;
+  if (ssoChartInst) { ssoChartInst.destroy(); ssoChartInst = null; }
   const isDark = document.documentElement.getAttribute("data-theme") === "dark"
     || window.matchMedia("(prefers-color-scheme:dark)").matches;
   const gridC = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
   const textC = isDark ? "#6b7280" : "#9ca3af";
 
-  const belowMA = chart.closes.map((c,i) =>
-    chart.ma200[i] != null && c < chart.ma200[i] ? c : null
+  // SSO MA120 계산 (클라이언트에서 직접)
+  const closes = chart.ssoCloses;
+  const ssoMA120 = closes.map((_, i) => {
+    if (i < 119) return null;
+    const slice = closes.slice(i - 119, i + 1);
+    return Math.round(slice.reduce((a,b)=>a+b,0)/120 * 100) / 100;
+  });
+
+  // MA120 하방 음영
+  const belowMA = closes.map((c,i) =>
+    ssoMA120[i] != null && c < ssoMA120[i] ? c : null
   );
 
-  spyChartInst = new Chart(canvas, {
+  // SSO 평단가
+  const avgDataset = S.ssoAvg ? [{
+    label:"평단", data: closes.map(()=>S.ssoAvg),
+    borderColor:"#10b981", borderWidth:1, borderDash:[5,4],
+    pointRadius:0, fill:false
+  }] : [];
+
+  ssoChartInst = new Chart(canvas, {
     type:"line",
     data:{ labels: chart.dates, datasets:[
       {
-        label:"SPY", data: chart.closes,
-        borderColor:"#22c55e", borderWidth:1.5,
-        backgroundColor:"rgba(34,197,94,0.06)",
+        label:"SSO", data: closes,
+        borderColor:"#f87171", borderWidth:1.5,
+        backgroundColor:"rgba(248,113,113,0.06)",
         pointRadius:0, fill:true, tension:0.3
       },
       {
-        label:"MA200", data: chart.ma200,
-        borderColor:"#f97316", borderWidth:1.5,
+        label:"MA120", data: ssoMA120,
+        borderColor:"#f59e0b", borderWidth:1.5,
         borderDash:[5,4], pointRadius:0, fill:false, tension:0.3
       },
+      ...avgDataset,
       {
         label:"_below", data: belowMA,
         borderColor:"rgba(0,0,0,0)",
@@ -1605,8 +1623,7 @@ async function fetchAll() {
       tqqq:d.tqqq||null, soxl:d.soxl||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null,
       standbyDate: d.standbyDate || null,
-      chart: d.chart || null,
-      spyChart: d.spyChart || null
+      chart: d.chart || null
     };
     // standbyDate 저장
     if (d.standbyDate) { S.standbyDate = d.standbyDate; }
@@ -1614,7 +1631,7 @@ async function fetchAll() {
     localStorage.setItem("qld_s11", JSON.stringify(S));
     // 미니 차트 렌더링
     if (d.chart) renderMiniChart(d.chart);
-    if (d.spyChart) renderSPYChart(d.spyChart);
+    if (d.chart) renderSSOChart(d.chart);
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
     autoCountStreak(MD);
@@ -3070,4 +3087,3 @@ document.getElementById("pwInput").addEventListener("focus", () => { document.ge
 </script>
 </body>
 </html>
-// ── 유틸 ──

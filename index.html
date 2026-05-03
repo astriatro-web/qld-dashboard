@@ -518,6 +518,7 @@ body {
       <div style="font-size:10px;font-weight:700;color:var(--text2);">QLD 120일 차트</div>
       <div style="display:flex;gap:6px;font-size:9px;align-items:center;flex-wrap:wrap;">
         <span style="color:#3b82f6;">━ QLD</span>
+        <span style="color:#f87171;">━ SSO</span>
         <span style="color:#f59e0b;">┅ MA120</span>
         <span style="color:#a78bfa;">┅ MA20</span>
         <span style="color:#10b981;">┅ 평단</span>
@@ -1243,11 +1244,25 @@ function renderMiniChart(chart) {
   const gridC = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
   const textC = isDark ? "#6b7280" : "#9ca3af";
 
+  // 평단가 라인
+  const avgDataset = S.qldAvg ? [{
+    label:"평단", data: chart.closes.map(()=>S.qldAvg),
+    borderColor:"#10b981", borderWidth:1, borderDash:[5,4],
+    pointRadius:0, fill:false
+  }] : [];
+
   // MA20 라인
   const ma20Dataset = chart.ma20 ? [{
     label:"MA20", data: chart.ma20,
     borderColor:"#a78bfa", borderWidth:1,
     borderDash:[3,3], pointRadius:0, fill:false, tension:0.3
+  }] : [];
+
+  // SSO 라인 (데이터 있을 때만)
+  const ssoDataset = chart.ssoCloses ? [{
+    label:"SSO", data: chart.ssoCloses,
+    borderColor:"#f87171", borderWidth:1.2,
+    pointRadius:0, fill:false, tension:0.3
   }] : [];
 
   // MA120 하방 구간 배경 음영
@@ -1305,6 +1320,7 @@ function renderMiniChart(chart) {
       },
       ...ma20Dataset,
       ...avgDataset,
+      ...ssoDataset,
       {
         label:"_below", data: belowMA,
         borderColor:"rgba(0,0,0,0)",
@@ -1568,7 +1584,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxA8MiBabPghm4NfZ_FHyluLe7PHHH6Lv3qLcN8uYL5UZsz5m7Z_I7zxkIgimFsjKT9sQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwyL438Nh9jv9FMxlPqDoaAwUxL5kO5OYLUJRYlxcXsUwChCsRX64wVd_U2BJbccGiSaw/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");

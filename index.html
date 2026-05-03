@@ -516,16 +516,30 @@ body {
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
       <div style="font-size:10px;font-weight:700;color:var(--text2);">QLD 120일 차트</div>
-      <div style="display:flex;gap:8px;font-size:9px;align-items:center;">
+      <div style="display:flex;gap:6px;font-size:9px;align-items:center;flex-wrap:wrap;">
         <span style="color:#3b82f6;">━ QLD</span>
         <span style="color:#f59e0b;">┅ MA120</span>
+        <span style="color:#a78bfa;">┅ MA20</span>
         <span style="color:#10b981;">┅ 평단</span>
         <span id="mini-chart-score" style="display:none;background:#1e40af;color:#fff;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:800;"></span>
       </div>
     </div>
-    <!-- 고정 높이 wrapper — 클릭 시 늘어남 방지 -->
     <div style="position:relative;height:90px;width:100%;">
       <canvas id="dashboard-mini-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- SPY 120일 미니 차트 -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);">SPY 120일 차트</div>
+      <div style="display:flex;gap:6px;font-size:9px;align-items:center;">
+        <span style="color:#22c55e;">━ SPY</span>
+        <span style="color:#f97316;">┅ MA200</span>
+      </div>
+    </div>
+    <div style="position:relative;height:75px;width:100%;">
+      <canvas id="dashboard-spy-chart"></canvas>
     </div>
   </div>
   <div class="grid2">
@@ -1229,11 +1243,11 @@ function renderMiniChart(chart) {
   const gridC = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
   const textC = isDark ? "#6b7280" : "#9ca3af";
 
-  // 평단가 라인
-  const avgDataset = S.qldAvg ? [{
-    label:"평단", data: chart.closes.map(()=>S.qldAvg),
-    borderColor:"#10b981", borderWidth:1, borderDash:[5,4],
-    pointRadius:0, fill:false
+  // MA20 라인
+  const ma20Dataset = chart.ma20 ? [{
+    label:"MA20", data: chart.ma20,
+    borderColor:"#a78bfa", borderWidth:1,
+    borderDash:[3,3], pointRadius:0, fill:false, tension:0.3
   }] : [];
 
   // MA120 하방 구간 배경 음영
@@ -1289,6 +1303,7 @@ function renderMiniChart(chart) {
         borderColor:"#f59e0b", borderWidth:1.5,
         borderDash:[5,4], pointRadius:0, fill:false, tension:0.3
       },
+      ...ma20Dataset,
       ...avgDataset,
       {
         label:"_below", data: belowMA,
@@ -1328,7 +1343,64 @@ function renderMiniChart(chart) {
   });
 }
 
-// ── 유틸 ──
+// ── 대시보드 SPY 미니 차트 ──
+let spyChartInst = null;
+function renderSPYChart(chart) {
+  const canvas = document.getElementById("dashboard-spy-chart");
+  if (!canvas || !chart) return;
+  if (spyChartInst) { spyChartInst.destroy(); spyChartInst = null; }
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark"
+    || window.matchMedia("(prefers-color-scheme:dark)").matches;
+  const gridC = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+  const textC = isDark ? "#6b7280" : "#9ca3af";
+
+  const belowMA = chart.closes.map((c,i) =>
+    chart.ma200[i] != null && c < chart.ma200[i] ? c : null
+  );
+
+  spyChartInst = new Chart(canvas, {
+    type:"line",
+    data:{ labels: chart.dates, datasets:[
+      {
+        label:"SPY", data: chart.closes,
+        borderColor:"#22c55e", borderWidth:1.5,
+        backgroundColor:"rgba(34,197,94,0.06)",
+        pointRadius:0, fill:true, tension:0.3
+      },
+      {
+        label:"MA200", data: chart.ma200,
+        borderColor:"#f97316", borderWidth:1.5,
+        borderDash:[5,4], pointRadius:0, fill:false, tension:0.3
+      },
+      {
+        label:"_below", data: belowMA,
+        borderColor:"rgba(0,0,0,0)",
+        backgroundColor:"rgba(239,68,68,0.12)",
+        pointRadius:0, fill:true, tension:0.3
+      }
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{ duration:300 },
+      events:["mousemove","mouseout","touchstart","touchmove"],
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          mode:"index", intersect:false,
+          callbacks:{
+            label: ctx => ctx.dataset.label.startsWith("_") ? null
+              : ` ${ctx.dataset.label}: $${ctx.parsed.y?.toFixed(2)||""}`
+          },
+          filter: item => !item.dataset.label.startsWith("_")
+        }
+      },
+      scales:{
+        x:{ ticks:{ color:textC, font:{size:8}, maxTicksLimit:6, maxRotation:0 }, grid:{color:gridC} },
+        y:{ position:"right", ticks:{ color:textC, font:{size:9}, callback: v=>"$"+v.toFixed(0) }, grid:{color:gridC} }
+      }
+    }
+  });
+}
 const f  = (n, d=1) => (n != null && !isNaN(n)) ? parseFloat(n).toFixed(d) : "N/A";
 const fKRW = n => n ? `₩${Math.round(n/10000).toLocaleString()}만` : "₩0";
 const fgLbl  = v => v<=20?"극단공포":v<=40?"공포":v<=60?"중립":v<=80?"탐욕":"극단탐욕";
@@ -1496,7 +1568,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyIwKS82DNO3Tptoe_tC1CjIVe0AD5LiPwm8spVmdebyw8Pld7eqXZ8yCM2FW7flK7jGQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxA8MiBabPghm4NfZ_FHyluLe7PHHH6Lv3qLcN8uYL5UZsz5m7Z_I7zxkIgimFsjKT9sQ/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -1517,7 +1589,8 @@ async function fetchAll() {
       tqqq:d.tqqq||null, soxl:d.soxl||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null,
       standbyDate: d.standbyDate || null,
-      chart: d.chart || null
+      chart: d.chart || null,
+      spyChart: d.spyChart || null
     };
     // standbyDate 저장
     if (d.standbyDate) { S.standbyDate = d.standbyDate; }
@@ -1525,6 +1598,7 @@ async function fetchAll() {
     localStorage.setItem("qld_s11", JSON.stringify(S));
     // 미니 차트 렌더링
     if (d.chart) renderMiniChart(d.chart);
+    if (d.spyChart) renderSPYChart(d.spyChart);
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
     autoCountStreak(MD);
@@ -2980,3 +3054,4 @@ document.getElementById("pwInput").addEventListener("focus", () => { document.ge
 </script>
 </body>
 </html>
+// ── 유틸 ──

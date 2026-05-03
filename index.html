@@ -511,6 +511,19 @@ body {
     <div class="mc"><div class="mc-label">SSO / SPY</div><div class="mc-value" id="v-sso" style="color:var(--text3);">—</div><div class="mc-sub" id="v-spy">SPY —</div></div>
     <div class="mc"><div class="mc-label">SGOV / 환율</div><div class="mc-value" id="v-sgov" style="color:var(--text3);">—</div><div class="mc-sub" id="v-usdkrw">환율 —</div></div>
   </div>
+
+  <!-- QLD 120일 미니 차트 -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);">QLD 120일 차트</div>
+      <div style="display:flex;gap:8px;font-size:9px;">
+        <span style="color:#3b82f6;">━ QLD</span>
+        <span style="color:#f59e0b;">┅ MA120</span>
+        <span style="color:#10b981;">┅ 평단</span>
+      </div>
+    </div>
+    <canvas id="dashboard-mini-chart" style="width:100%;height:90px;"></canvas>
+  </div>
   <div class="grid2">
     <div class="mc"><div class="mc-label">Fear &amp; Greed</div><div class="mc-value" id="v-fg" style="color:var(--text3);">—</div><div class="mc-sub" id="v-fglabel">—</div></div>
     <div class="mc"><div class="mc-label">VIX</div><div class="mc-value" id="v-vix" style="color:var(--text3);">—</div><div class="mc-sub" id="v-vixlabel">—</div></div>
@@ -1200,6 +1213,80 @@ function switchTab(id) {
   if (id === "game") gameStart();
 }
 
+// ── 대시보드 QLD 미니 차트 ──
+let miniChartInst = null;
+function renderMiniChart(chart) {
+  const canvas = document.getElementById("dashboard-mini-chart");
+  if (!canvas || !chart) return;
+  if (miniChartInst) { miniChartInst.destroy(); miniChartInst = null; }
+
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark"
+    || window.matchMedia("(prefers-color-scheme:dark)").matches;
+  const gridC = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+  const textC = isDark ? "#6b7280" : "#9ca3af";
+
+  // 평단가 라인
+  const avgDataset = S.qldAvg ? [{
+    label:"평단", data: chart.closes.map(()=>S.qldAvg),
+    borderColor:"#10b981", borderWidth:1, borderDash:[5,4],
+    pointRadius:0, fill:false
+  }] : [];
+
+  // 120일선 하방 구간 배경색 처리
+  const belowMA = chart.closes.map((c,i) =>
+    chart.ma120[i] != null && c < chart.ma120[i] ? c : null
+  );
+
+  miniChartInst = new Chart(canvas, {
+    type:"line",
+    data:{ labels: chart.dates, datasets:[
+      {
+        label:"QLD", data: chart.closes,
+        borderColor:"#3b82f6", borderWidth:1.5,
+        backgroundColor:"rgba(59,130,246,0.06)",
+        pointRadius:0, fill:true, tension:0.3
+      },
+      {
+        label:"MA120", data: chart.ma120,
+        borderColor:"#f59e0b", borderWidth:1.5,
+        borderDash:[5,4], pointRadius:0, fill:false, tension:0.3
+      },
+      ...avgDataset,
+      {
+        label:"하방구간", data: belowMA,
+        borderColor:"rgba(239,68,68,0.0)",
+        backgroundColor:"rgba(239,68,68,0.12)",
+        pointRadius:0, fill:true, tension:0.3
+      }
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{ duration:400 },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          mode:"index", intersect:false,
+          callbacks:{
+            label: ctx => ctx.dataset.label === "하방구간" ? null
+              : ` ${ctx.dataset.label}: $${ctx.parsed.y?.toFixed(2)||""}`
+          },
+          filter: item => item.dataset.label !== "하방구간"
+        }
+      },
+      scales:{
+        x:{
+          ticks:{ color:textC, font:{size:8}, maxTicksLimit:6, maxRotation:0 },
+          grid:{ color:gridC }
+        },
+        y:{
+          ticks:{ color:textC, font:{size:9}, callback: v=>"$"+v.toFixed(0) },
+          grid:{ color:gridC }
+        }
+      }
+    }
+  });
+}
+
 // ── 유틸 ──
 const f  = (n, d=1) => (n != null && !isNaN(n)) ? parseFloat(n).toFixed(d) : "N/A";
 const fKRW = n => n ? `₩${Math.round(n/10000).toLocaleString()}만` : "₩0";
@@ -1368,7 +1455,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwVHTls-HoZXWqxoUBLJL0EOsJkHBq5fx9sqo53uYs5qj8mfIkfGkwzTFx9NyD0-EeYSg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyIwKS82DNO3Tptoe_tC1CjIVe0AD5LiPwm8spVmdebyw8Pld7eqXZ8yCM2FW7flK7jGQ/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -1388,15 +1475,15 @@ async function fetchAll() {
       ma200spy:d.ma200spy, spym:d.spym||null,
       tqqq:d.tqqq||null, soxl:d.soxl||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null,
-      standbyDate: d.standbyDate || null
+      standbyDate: d.standbyDate || null,
+      chart: d.chart || null
     };
-    // standbyDate를 S에 저장 (대기모드일 때만)
-    if (d.standbyDate) {
-      S.standbyDate = d.standbyDate;
-    } else {
-      S.standbyDate = "";
-    }
+    // standbyDate 저장
+    if (d.standbyDate) { S.standbyDate = d.standbyDate; }
+    else { S.standbyDate = ""; }
     localStorage.setItem("qld_s11", JSON.stringify(S));
+    // 미니 차트 렌더링
+    if (d.chart) renderMiniChart(d.chart);
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
     autoCountStreak(MD);

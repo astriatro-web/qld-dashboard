@@ -516,13 +516,17 @@ body {
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
       <div style="font-size:10px;font-weight:700;color:var(--text2);">QLD 120일 차트</div>
-      <div style="display:flex;gap:8px;font-size:9px;">
+      <div style="display:flex;gap:8px;font-size:9px;align-items:center;">
         <span style="color:#3b82f6;">━ QLD</span>
         <span style="color:#f59e0b;">┅ MA120</span>
         <span style="color:#10b981;">┅ 평단</span>
+        <span id="mini-chart-score" style="display:none;background:#1e40af;color:#fff;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:800;"></span>
       </div>
     </div>
-    <canvas id="dashboard-mini-chart" style="width:100%;height:90px;"></canvas>
+    <!-- 고정 높이 wrapper — 클릭 시 늘어남 방지 -->
+    <div style="position:relative;height:90px;width:100%;">
+      <canvas id="dashboard-mini-chart"></canvas>
+    </div>
   </div>
   <div class="grid2">
     <div class="mc"><div class="mc-label">Fear &amp; Greed</div><div class="mc-value" id="v-fg" style="color:var(--text3);">—</div><div class="mc-sub" id="v-fglabel">—</div></div>
@@ -1232,10 +1236,44 @@ function renderMiniChart(chart) {
     pointRadius:0, fill:false
   }] : [];
 
-  // 120일선 하방 구간 배경색 처리
+  // MA120 하방 구간 배경 음영
   const belowMA = chart.closes.map((c,i) =>
     chart.ma120[i] != null && c < chart.ma120[i] ? c : null
   );
+
+  // 복합 회귀 점수 계산 (대기모드일 때만)
+  const sd = MD?.standbyDate || S.standbyDate;
+  const fg = MD?.fg;
+  let scoreText = null;
+  if (sd && MD?.qld && MD?.ma120 && MD.qld > MD.ma120) {
+    const days = Math.max(0, Math.floor((new Date() - new Date(sd)) / 86400000));
+    const probTable = [[0,0],[20,24],[30,41],[60,53],[90,71],[120,76],[180,76],[250,88],[365,94],[999,100]];
+    let prob = 100;
+    for (let i = 0; i < probTable.length-1; i++) {
+      const [d1,p1] = probTable[i], [d2,p2] = probTable[i+1];
+      if (days <= d2) { prob = Math.round(p1+(p2-p1)*(days-d1)/(d2-d1)); break; }
+    }
+    if (fg != null) {
+      const fgInv = fg<=20?90: fg<=40?Math.round(90-(fg-20)):
+                    fg<=60?Math.round(70-(fg-40)): fg<=80?Math.round(50-(fg-60)):
+                    Math.round(30-(fg-80));
+      const composite = Math.round(prob*0.6 + fgInv*0.4);
+      scoreText = `회귀점수 ${composite}점`;
+    } else {
+      scoreText = `회귀확률 ${prob}%`;
+    }
+  }
+
+  // 점수 배지 표시
+  const badge = document.getElementById("mini-chart-score");
+  if (badge) {
+    if (scoreText) {
+      badge.textContent = scoreText;
+      badge.style.display = "inline-block";
+    } else {
+      badge.style.display = "none";
+    }
+  }
 
   miniChartInst = new Chart(canvas, {
     type:"line",
@@ -1253,24 +1291,26 @@ function renderMiniChart(chart) {
       },
       ...avgDataset,
       {
-        label:"하방구간", data: belowMA,
-        borderColor:"rgba(239,68,68,0.0)",
+        label:"_below", data: belowMA,
+        borderColor:"rgba(0,0,0,0)",
         backgroundColor:"rgba(239,68,68,0.12)",
         pointRadius:0, fill:true, tension:0.3
       }
     ]},
     options:{
-      responsive:true, maintainAspectRatio:false,
-      animation:{ duration:400 },
+      responsive:true,
+      maintainAspectRatio:false,  // wrapper div 높이로 고정
+      animation:{ duration:300 },
+      events:["mousemove","mouseout","touchstart","touchmove"], // click 이벤트 제거
       plugins:{
         legend:{ display:false },
         tooltip:{
           mode:"index", intersect:false,
           callbacks:{
-            label: ctx => ctx.dataset.label === "하방구간" ? null
+            label: ctx => ctx.dataset.label.startsWith("_") ? null
               : ` ${ctx.dataset.label}: $${ctx.parsed.y?.toFixed(2)||""}`
           },
-          filter: item => item.dataset.label !== "하방구간"
+          filter: item => !item.dataset.label.startsWith("_")
         }
       },
       scales:{
@@ -1279,6 +1319,7 @@ function renderMiniChart(chart) {
           grid:{ color:gridC }
         },
         y:{
+          position:"right",
           ticks:{ color:textC, font:{size:9}, callback: v=>"$"+v.toFixed(0) },
           grid:{ color:gridC }
         }

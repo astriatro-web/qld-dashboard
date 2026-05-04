@@ -995,9 +995,19 @@ body {
 
 <!-- ── 설정 패널 ── -->
 <div class="panel" id="panel-settings">
+  <!-- 닉네임 + 클라우드 저장 -->
+  <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+    <div style="font-size:10px;color:var(--blue);font-weight:800;letter-spacing:0.1em;margin-bottom:10px;">☁ 클라우드 저장 (기기 연동)</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="s-nick" type="text" maxlength="20" placeholder="닉네임 입력 (예: 닥터김)" class="setting-input" style="flex:1;margin-bottom:0;">
+      <button onclick="cloudSave()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">저장</button>
+      <button onclick="cloudLoad()" style="background:var(--bg3);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">불러오기</button>
+    </div>
+    <div id="cloud-status" style="font-size:11px;color:var(--text3);min-height:16px;"></div>
+  </div>
   <div style="background:var(--blue-lt);border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
     <div style="font-size:10px;color:var(--blue);font-weight:800;letter-spacing:0.1em;margin-bottom:4px;">⚙ 기본 설정</div>
-    <div style="font-size:11px;color:var(--text3);line-height:1.7;">저장은 자동으로 됩니다 (localStorage)</div>
+    <div style="font-size:11px;color:var(--text3);line-height:1.7;">설정 입력 후 위에서 <b>저장</b> 누르면 기기가 바뀌어도 유지됩니다</div>
   </div>
   <div class="setting-group"><div class="setting-label">매수 시작일</div><input class="setting-input" type="text" id="s-entryDate" placeholder="2026-03-01" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">QLD 매일 매수 주수</div><input class="setting-input" type="number" id="s-qldDaily" placeholder="10" min="1" oninput="saveSettings()"></div>
@@ -1206,6 +1216,45 @@ function saveSettings() {
   S.gldmAvg  = ga  ? parseFloat(ga)  : null;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   renderStatic(null);
+}
+
+async function cloudSave() {
+  const nick = document.getElementById("s-nick").value.trim();
+  const st   = document.getElementById("cloud-status");
+  if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
+  saveSettings();
+  st.style.color="var(--text3)"; st.textContent="⏳ 저장 중...";
+  try {
+    const params = new URLSearchParams({ action:"save_settings", nick, data: JSON.stringify(S) });
+    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+    const json = await res.json();
+    if (json.ok) {
+      localStorage.setItem("qld_nick", nick);
+      st.style.color="var(--green)"; st.textContent="✅ 저장 완료 (" + nick + ")";
+    } else {
+      st.style.color="var(--red)"; st.textContent="❌ 저장 실패: " + (json.error||"");
+    }
+  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + e.message; }
+}
+
+async function cloudLoad() {
+  const nick = document.getElementById("s-nick").value.trim();
+  const st   = document.getElementById("cloud-status");
+  if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
+  st.style.color="var(--text3)"; st.textContent="⏳ 불러오는 중...";
+  try {
+    const params = new URLSearchParams({ action:"load_settings", nick });
+    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+    const json = await res.json();
+    if (!json.ok) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + (json.error||""); return; }
+    if (!json.data) { st.style.color="var(--amber)"; st.textContent="⚠ 저장된 데이터 없음 (" + nick + ")"; return; }
+    S = JSON.parse(json.data);
+    localStorage.setItem("qld_s11", JSON.stringify(S));
+    localStorage.setItem("qld_nick", nick);
+    loadSettings();
+    renderStatic(null);
+    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ")";
+  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + e.message; }
 }
 
 function switchTab(id) {
@@ -1470,7 +1519,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwnOCiKqXezo8QcpPyLNOcrVQMBxL8NCN5MsrA4aQzzAXxRs2fkIJmr9y8c1ElbUPaSdA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyhhdhmImNy8LpCR8kQGy8LqXc-c7hr8nUQmfzHM27nFglpb0dx3tn41MJhWjfBxzjziA/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -2057,6 +2106,8 @@ window.checkPW = async function() {
 
 // ── 초기화 ──
 loadSettings(); renderStatic(null); renderRules();
+// 닉네임 자동 복원
+(function(){ const n = localStorage.getItem("qld_nick"); if(n) { const el = document.getElementById("s-nick"); if(el) el.value = n; } })();
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";

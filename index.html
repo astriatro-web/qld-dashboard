@@ -523,16 +523,16 @@ body {
         <span id="mini-chart-score" style="display:none;background:#1e40af;color:#fff;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:800;"></span>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;overflow:hidden;">
       <div>
         <div style="font-size:9px;color:var(--text3);text-align:center;margin-bottom:3px;">2달 추이</div>
-        <div style="position:relative;height:90px;">
+        <div style="position:relative;height:80px;width:100%;overflow:hidden;">
           <canvas id="dashboard-mini-chart-2m"></canvas>
         </div>
       </div>
       <div>
         <div style="font-size:9px;color:var(--text3);text-align:center;margin-bottom:3px;">6달 추이</div>
-        <div style="position:relative;height:90px;">
+        <div style="position:relative;height:80px;width:100%;overflow:hidden;">
           <canvas id="dashboard-mini-chart-6m"></canvas>
         </div>
       </div>
@@ -1243,7 +1243,7 @@ function buildChartDatasets(chart, qldAvg, ssoAvg) {
 
 function buildChartOptions(textC, gridC) {
   return {
-    responsive:true, maintainAspectRatio:false,
+    responsive:true, maintainAspectRatio:false, layout:{padding:0},
     animation:{ duration:300 },
     events:["mousemove","mouseout","touchstart","touchmove"],
     plugins:{

@@ -518,7 +518,6 @@ body {
       <div style="font-size:10px;font-weight:700;color:var(--text2);">QLD 120일 차트</div>
       <div style="display:flex;gap:6px;font-size:9px;align-items:center;flex-wrap:wrap;">
         <span style="color:#3b82f6;">━ QLD</span>
-        <span style="color:#f87171;">━ SSO</span>
         <span style="color:#f59e0b;">┅ MA120</span>
         <span style="color:#a78bfa;">┅ MA20</span>
         <span style="color:#10b981;">┅ 평단</span>
@@ -547,13 +546,6 @@ body {
   <div class="grid2">
     <div class="mc"><div class="mc-label">Fear &amp; Greed</div><div class="mc-value" id="v-fg" style="color:var(--text3);">—</div><div class="mc-sub" id="v-fglabel">—</div></div>
     <div class="mc"><div class="mc-label">VIX</div><div class="mc-value" id="v-vix" style="color:var(--text3);">—</div><div class="mc-sub" id="v-vixlabel">—</div></div>
-  </div>
-
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div><div class="card-label">골든크로스 (MA20 vs MA60)</div><div id="v-gc" style="font-size:13px;font-weight:700;color:var(--text3);">—</div></div>
-      <div style="text-align:right;"><div style="font-size:10px;color:var(--text3);">MA20 / MA60</div><div id="v-ma2060" style="font-size:12px;color:var(--text2);">— / —</div></div>
-    </div>
   </div>
 
   <div class="card">
@@ -1028,7 +1020,6 @@ body {
     </div>
     <input class="setting-input" type="number" id="s-fg" placeholder="현재값 입력 (예: 34)" min="0" max="100" oninput="saveSettings()">
   </div>
-  <div class="setting-group"><div class="setting-label">골든크로스 연속일 (자동 · 최대5일)</div><input class="setting-input" type="number" id="s-gcCount" placeholder="자동계산" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">재투입 조건 연속일 (자동 · 최대5일)</div><input class="setting-input" type="number" id="s-rebuyCount" placeholder="자동계산" oninput="saveSettings()"></div>
 
   <div style="border-top:1px solid var(--border);margin:4px 0 12px;padding-top:12px;">
@@ -1260,12 +1251,6 @@ function renderMiniChart(chart) {
   }] : [];
 
   // SSO 라인 (데이터 있을 때만)
-  const ssoDataset = chart.ssoCloses ? [{
-    label:"SSO", data: chart.ssoCloses,
-    borderColor:"#f87171", borderWidth:1.2,
-    pointRadius:0, fill:false, tension:0.3
-  }] : [];
-
   // MA120 하방 구간 배경 음영
   const belowMA = chart.closes.map((c,i) =>
     chart.ma120[i] != null && c < chart.ma120[i] ? c : null
@@ -1321,7 +1306,6 @@ function renderMiniChart(chart) {
       },
       ...ma20Dataset,
       ...avgDataset,
-      ...ssoDataset,
       {
         label:"_below", data: belowMA,
         borderColor:"rgba(0,0,0,0)",
@@ -1602,7 +1586,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwyL438Nh9jv9FMxlPqDoaAwUxL5kO5OYLUJRYlxcXsUwChCsRX64wVd_U2BJbccGiSaw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwXNtLU1PC00B7z72Plpji_z7lmekWwv0Bb7pt3jfees5ZdJDNTDaVkltYt7ODbn35Nbw/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -1756,7 +1740,7 @@ function determineMode(d) {
                             composite >= 45 ? "중간 신뢰 구간 — 추가 하락 가능성 상존" :
                                               "아직 초기 단계 — 대기 지속";
 
-          compositeInfo = `📊 복합 회귀 점수: ${composite}점/100 (회귀확률 ${prob}% × 0.6 + F&G역지수 ${fgInverse}% × 0.4 · F&G ${fg} ${fgLabel}) — ${compMemo}`;
+          compositeInfo = `📊 복합 회귀 점수: ${composite}점/100 · 회귀확률 ${prob}% · 공포도 가중치 ${fgInverse}% · F&G ${fg} ${fgLabel} — ${compMemo}`;
         }
       } else {
         standbyInfo = "📊 새로고침 시 대기모드 진입일 자동 기록됩니다";
@@ -1824,11 +1808,6 @@ function renderDashboard(d) {
   if (d.fg!=null) { setText("v-fg",""+d.fg,fgClr(d.fg)); setText("v-fglabel",fgLbl(d.fg)); }
   else { setText("v-fg","N/A"); setText("v-fglabel","조회 실패"); }
   setText("v-vix", f(d.vix), vixClr(d.vix)); setText("v-vixlabel", vixLbl(d.vix));
-  const gc = d.ma20&&d.ma60 ? d.ma20>d.ma60 : null;
-  const gcEl = document.getElementById("v-gc");
-  gcEl.textContent = gc===true?"MA20 > MA60  골든크로스 ✓":gc===false?"MA20 < MA60  데드크로스 ✗":"데이터 수집 중";
-  gcEl.style.color = gc===true?"#16a34a":gc===false?"#dc2626":"var(--text3)";
-  document.getElementById("v-ma2060").textContent = `${d.ma20?"$"+f(d.ma20,1):"—"} / ${d.ma60?"$"+f(d.ma60,1):"—"}`;
 
   renderStatic(d);
   renderHoldings(d.qld, d.sso, d.usdkrw, d.sgov);

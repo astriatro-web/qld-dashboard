@@ -512,35 +512,30 @@ body {
     <div class="mc"><div class="mc-label">SGOV / 환율</div><div class="mc-value" id="v-sgov" style="color:var(--text3);">—</div><div class="mc-sub" id="v-usdkrw">환율 —</div></div>
   </div>
 
-  <!-- QLD 120일 미니 차트 -->
+  <!-- QLD+SSO 합산 차트 (좌: 2달 / 우: 6달) -->
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-      <div style="font-size:10px;font-weight:700;color:var(--text2);">QLD 120일 차트</div>
-      <div style="display:flex;gap:6px;font-size:9px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;font-size:9px;align-items:center;">
         <span style="color:#3b82f6;">━ QLD</span>
+        <span style="color:#f87171;">━ SSO</span>
         <span style="color:#f59e0b;">┅ MA120</span>
-        <span style="color:#a78bfa;">┅ MA20</span>
         <span style="color:#10b981;">┅ 평단</span>
         <span id="mini-chart-score" style="display:none;background:#1e40af;color:#fff;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:800;"></span>
       </div>
     </div>
-    <div style="position:relative;height:90px;width:100%;">
-      <canvas id="dashboard-mini-chart"></canvas>
-    </div>
-  </div>
-
-  <!-- SSO 120일 미니 차트 -->
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-      <div style="font-size:10px;font-weight:700;color:var(--text2);">SSO 120일 차트</div>
-      <div style="display:flex;gap:6px;font-size:9px;align-items:center;">
-        <span style="color:#f87171;">━ SSO</span>
-        <span style="color:#f59e0b;">┅ MA120</span>
-        <span style="color:#10b981;">┅ 평단</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div>
+        <div style="font-size:9px;color:var(--text3);text-align:center;margin-bottom:3px;">2달 추이</div>
+        <div style="position:relative;height:90px;">
+          <canvas id="dashboard-mini-chart-2m"></canvas>
+        </div>
       </div>
-    </div>
-    <div style="position:relative;height:75px;width:100%;">
-      <canvas id="dashboard-sso-chart"></canvas>
+      <div>
+        <div style="font-size:9px;color:var(--text3);text-align:center;margin-bottom:3px;">6달 추이</div>
+        <div style="position:relative;height:90px;">
+          <canvas id="dashboard-mini-chart-6m"></canvas>
+        </div>
+      </div>
     </div>
   </div>
   <div class="grid2">
@@ -1225,199 +1220,88 @@ function switchTab(id) {
 }
 
 // ── 대시보드 QLD 미니 차트 ──
-let miniChartInst = null;
-function renderMiniChart(chart) {
-  const canvas = document.getElementById("dashboard-mini-chart");
-  if (!canvas || !chart) return;
-  if (miniChartInst) { miniChartInst.destroy(); miniChartInst = null; }
+let chartInst2m = null, chartInst6m = null;
 
+function buildChartDatasets(chart, qldAvg, ssoAvg) {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark"
+    || window.matchMedia("(prefers-color-scheme:dark)").matches;
+  const belowMA = (chart.closes||[]).map((c,i) =>
+    chart.ma120 && chart.ma120[i] != null && c < chart.ma120[i] ? c : null
+  );
+  const datasets = [
+    { label:"QLD", data:chart.closes, borderColor:"#3b82f6", backgroundColor:"rgba(59,130,246,0.07)", borderWidth:1.5, pointRadius:0, fill:true, tension:0.3 },
+    { label:"MA120", data:chart.ma120, borderColor:"#f59e0b", borderWidth:1.2, borderDash:[5,4], pointRadius:0, fill:false, tension:0.3 },
+  ];
+  if (chart.ssoCloses && chart.ssoCloses.length) {
+    datasets.push({ label:"SSO", data:chart.ssoCloses, borderColor:"#f87171", borderWidth:1.2, pointRadius:0, fill:false, tension:0.3 });
+  }
+  if (qldAvg) datasets.push({ label:"평단QLD", data:chart.closes.map(()=>qldAvg), borderColor:"#10b981", borderWidth:1, borderDash:[5,4], pointRadius:0, fill:false });
+  if (ssoAvg && chart.ssoCloses) datasets.push({ label:"평단SSO", data:chart.closes.map(()=>ssoAvg), borderColor:"#34d399", borderWidth:1, borderDash:[3,3], pointRadius:0, fill:false });
+  datasets.push({ label:"_below", data:belowMA, borderColor:"rgba(0,0,0,0)", backgroundColor:"rgba(239,68,68,0.1)", pointRadius:0, fill:true, tension:0.3 });
+  return datasets;
+}
+
+function buildChartOptions(textC, gridC) {
+  return {
+    responsive:true, maintainAspectRatio:false,
+    animation:{ duration:300 },
+    events:["mousemove","mouseout","touchstart","touchmove"],
+    plugins:{
+      legend:{ display:false },
+      tooltip:{
+        mode:"index", intersect:false,
+        callbacks:{ label: ctx => ctx.dataset.label.startsWith("_") ? null : ` ${ctx.dataset.label}: $${ctx.parsed.y?.toFixed(2)||""}` },
+        filter: item => !item.dataset.label.startsWith("_")
+      }
+    },
+    scales:{
+      x:{ ticks:{ color:textC, font:{size:7}, maxTicksLimit:4, maxRotation:0 }, grid:{ color:gridC } },
+      y:{ position:"right", ticks:{ color:textC, font:{size:8}, callback: v=>"$"+v.toFixed(0) }, grid:{ color:gridC } }
+    }
+  };
+}
+
+function renderDualChart(chart2m, chart6m) {
   const isDark = document.documentElement.getAttribute("data-theme") === "dark"
     || window.matchMedia("(prefers-color-scheme:dark)").matches;
   const gridC = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
   const textC = isDark ? "#6b7280" : "#9ca3af";
 
-  // 평단가 라인
-  const avgDataset = S.qldAvg ? [{
-    label:"평단", data: chart.closes.map(()=>S.qldAvg),
-    borderColor:"#10b981", borderWidth:1, borderDash:[5,4],
-    pointRadius:0, fill:false
-  }] : [];
+  if (chartInst2m) { chartInst2m.destroy(); chartInst2m = null; }
+  if (chartInst6m) { chartInst6m.destroy(); chartInst6m = null; }
 
-  // MA20 라인
-  const ma20Dataset = chart.ma20 ? [{
-    label:"MA20", data: chart.ma20,
-    borderColor:"#a78bfa", borderWidth:1,
-    borderDash:[3,3], pointRadius:0, fill:false, tension:0.3
-  }] : [];
+  const qldAvg = S.qldAvg || null;
+  const ssoAvg = S.ssoAvg || null;
 
-  // SSO 라인 (데이터 있을 때만)
-  // MA120 하방 구간 배경 음영
-  const belowMA = chart.closes.map((c,i) =>
-    chart.ma120[i] != null && c < chart.ma120[i] ? c : null
-  );
-
-  // 복합 회귀 점수 계산 (대기모드일 때만)
+  // 복합 회귀 점수 배지
   const sd = MD?.standbyDate || S.standbyDate;
   const fg = MD?.fg;
   let scoreText = null;
   if (sd && MD?.qld && MD?.ma120 && MD.qld > MD.ma120) {
-    const days = Math.max(0, Math.floor((new Date() - new Date(sd)) / 86400000));
-    const probTable = [[0,0],[20,24],[30,41],[60,53],[90,71],[120,76],[180,76],[250,88],[365,94],[999,100]];
+    const days = Math.max(0, Math.floor((new Date()-new Date(sd))/86400000));
+    const pt = [[0,0],[20,24],[30,41],[60,53],[90,71],[120,76],[180,76],[250,88],[365,94],[999,100]];
     let prob = 100;
-    for (let i = 0; i < probTable.length-1; i++) {
-      const [d1,p1] = probTable[i], [d2,p2] = probTable[i+1];
-      if (days <= d2) { prob = Math.round(p1+(p2-p1)*(days-d1)/(d2-d1)); break; }
+    for (let i=0;i<pt.length-1;i++) {
+      const [d1,p1]=pt[i],[d2,p2]=pt[i+1];
+      if (days<=d2){prob=Math.round(p1+(p2-p1)*(days-d1)/(d2-d1));break;}
     }
-    if (fg != null) {
-      const fgInv = fg<=20?90: fg<=40?Math.round(90-(fg-20)):
-                    fg<=60?Math.round(70-(fg-40)): fg<=80?Math.round(50-(fg-60)):
-                    Math.round(30-(fg-80));
-      const composite = Math.round(prob*0.6 + fgInv*0.4);
-      scoreText = `회귀점수 ${composite}점`;
-    } else {
-      scoreText = `회귀확률 ${prob}%`;
-    }
+    if (fg!=null) {
+      const fgInv=fg<=20?90:fg<=40?Math.round(90-(fg-20)):fg<=60?Math.round(70-(fg-40)):fg<=80?Math.round(50-(fg-60)):Math.round(30-(fg-80));
+      const composite=Math.round(prob*0.6+fgInv*0.4);
+      scoreText=`회귀점수 ${composite}점`;
+    } else { scoreText=`회귀확률 ${prob}%`; }
   }
-
-  // 점수 배지 표시
   const badge = document.getElementById("mini-chart-score");
-  if (badge) {
-    if (scoreText) {
-      badge.textContent = scoreText;
-      badge.style.display = "inline-block";
-    } else {
-      badge.style.display = "none";
-    }
+  if (badge) { if (scoreText){badge.textContent=scoreText;badge.style.display="inline-block";}else{badge.style.display="none";} }
+
+  if (chart2m) {
+    const c2 = document.getElementById("dashboard-mini-chart-2m");
+    if (c2) chartInst2m = new Chart(c2, { type:"line", data:{ labels:chart2m.dates, datasets:buildChartDatasets(chart2m,qldAvg,ssoAvg) }, options:buildChartOptions(textC,gridC) });
   }
-
-  miniChartInst = new Chart(canvas, {
-    type:"line",
-    data:{ labels: chart.dates, datasets:[
-      {
-        label:"QLD", data: chart.closes,
-        borderColor:"#3b82f6", borderWidth:1.5,
-        backgroundColor:"rgba(59,130,246,0.06)",
-        pointRadius:0, fill:true, tension:0.3
-      },
-      {
-        label:"MA120", data: chart.ma120,
-        borderColor:"#f59e0b", borderWidth:1.5,
-        borderDash:[5,4], pointRadius:0, fill:false, tension:0.3
-      },
-      ...ma20Dataset,
-      ...avgDataset,
-      {
-        label:"_below", data: belowMA,
-        borderColor:"rgba(0,0,0,0)",
-        backgroundColor:"rgba(239,68,68,0.12)",
-        pointRadius:0, fill:true, tension:0.3
-      }
-    ]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,  // wrapper div 높이로 고정
-      animation:{ duration:300 },
-      events:["mousemove","mouseout","touchstart","touchmove"], // click 이벤트 제거
-      plugins:{
-        legend:{ display:false },
-        tooltip:{
-          mode:"index", intersect:false,
-          callbacks:{
-            label: ctx => ctx.dataset.label.startsWith("_") ? null
-              : ` ${ctx.dataset.label}: $${ctx.parsed.y?.toFixed(2)||""}`
-          },
-          filter: item => !item.dataset.label.startsWith("_")
-        }
-      },
-      scales:{
-        x:{
-          ticks:{ color:textC, font:{size:8}, maxTicksLimit:6, maxRotation:0 },
-          grid:{ color:gridC }
-        },
-        y:{
-          position:"right",
-          ticks:{ color:textC, font:{size:9}, callback: v=>"$"+v.toFixed(0) },
-          grid:{ color:gridC }
-        }
-      }
-    }
-  });
-}
-
-// ── 대시보드 SPY 미니 차트 ──
-let ssoChartInst = null;
-function renderSSOChart(chart) {
-  const canvas = document.getElementById("dashboard-sso-chart");
-  if (!canvas || !chart || !chart.ssoCloses || !chart.ssoCloses.length) return;
-  if (ssoChartInst) { ssoChartInst.destroy(); ssoChartInst = null; }
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark"
-    || window.matchMedia("(prefers-color-scheme:dark)").matches;
-  const gridC = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
-  const textC = isDark ? "#6b7280" : "#9ca3af";
-
-  // SSO MA120 계산 (클라이언트에서 직접)
-  const closes = chart.ssoCloses;
-  const ssoMA120 = closes.map((_, i) => {
-    if (i < 119) return null;
-    const slice = closes.slice(i - 119, i + 1);
-    return Math.round(slice.reduce((a,b)=>a+b,0)/120 * 100) / 100;
-  });
-
-  // MA120 하방 음영
-  const belowMA = closes.map((c,i) =>
-    ssoMA120[i] != null && c < ssoMA120[i] ? c : null
-  );
-
-  // SSO 평단가
-  const avgDataset = S.ssoAvg ? [{
-    label:"평단", data: closes.map(()=>S.ssoAvg),
-    borderColor:"#10b981", borderWidth:1, borderDash:[5,4],
-    pointRadius:0, fill:false
-  }] : [];
-
-  ssoChartInst = new Chart(canvas, {
-    type:"line",
-    data:{ labels: chart.dates, datasets:[
-      {
-        label:"SSO", data: closes,
-        borderColor:"#f87171", borderWidth:1.5,
-        backgroundColor:"rgba(248,113,113,0.06)",
-        pointRadius:0, fill:true, tension:0.3
-      },
-      {
-        label:"MA120", data: ssoMA120,
-        borderColor:"#f59e0b", borderWidth:1.5,
-        borderDash:[5,4], pointRadius:0, fill:false, tension:0.3
-      },
-      ...avgDataset,
-      {
-        label:"_below", data: belowMA,
-        borderColor:"rgba(0,0,0,0)",
-        backgroundColor:"rgba(239,68,68,0.12)",
-        pointRadius:0, fill:true, tension:0.3
-      }
-    ]},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      animation:{ duration:300 },
-      events:["mousemove","mouseout","touchstart","touchmove"],
-      plugins:{
-        legend:{ display:false },
-        tooltip:{
-          mode:"index", intersect:false,
-          callbacks:{
-            label: ctx => ctx.dataset.label.startsWith("_") ? null
-              : ` ${ctx.dataset.label}: $${ctx.parsed.y?.toFixed(2)||""}`
-          },
-          filter: item => !item.dataset.label.startsWith("_")
-        }
-      },
-      scales:{
-        x:{ ticks:{ color:textC, font:{size:8}, maxTicksLimit:6, maxRotation:0 }, grid:{color:gridC} },
-        y:{ position:"right", ticks:{ color:textC, font:{size:9}, callback: v=>"$"+v.toFixed(0) }, grid:{color:gridC} }
-      }
-    }
-  });
+  if (chart6m) {
+    const c6 = document.getElementById("dashboard-mini-chart-6m");
+    if (c6) chartInst6m = new Chart(c6, { type:"line", data:{ labels:chart6m.dates, datasets:buildChartDatasets(chart6m,qldAvg,ssoAvg) }, options:buildChartOptions(textC,gridC) });
+  }
 }
 const f  = (n, d=1) => (n != null && !isNaN(n)) ? parseFloat(n).toFixed(d) : "N/A";
 const fKRW = n => n ? `₩${Math.round(n/10000).toLocaleString()}만` : "₩0";
@@ -1586,7 +1470,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwXNtLU1PC00B7z72Plpji_z7lmekWwv0Bb7pt3jfees5ZdJDNTDaVkltYt7ODbn35Nbw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwnOCiKqXezo8QcpPyLNOcrVQMBxL8NCN5MsrA4aQzzAXxRs2fkIJmr9y8c1ElbUPaSdA/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -1607,15 +1491,15 @@ async function fetchAll() {
       tqqq:d.tqqq||null, soxl:d.soxl||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null,
       standbyDate: d.standbyDate || null,
-      chart: d.chart || null
+      chart2m: d.chart2m || null,
+      chart6m: d.chart6m || null
     };
     // standbyDate 저장
     if (d.standbyDate) { S.standbyDate = d.standbyDate; }
     else { S.standbyDate = ""; }
     localStorage.setItem("qld_s11", JSON.stringify(S));
     // 미니 차트 렌더링
-    if (d.chart) renderMiniChart(d.chart);
-    if (d.chart) renderSSOChart(d.chart);
+    if (d.chart2m || d.chart6m) renderDualChart(d.chart2m, d.chart6m);
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
     autoCountStreak(MD);

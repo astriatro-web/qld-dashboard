@@ -743,9 +743,16 @@ body {
     </div>
   </div>
   <!-- 일일 투입 예상금액 -->
-  <div id="pond-total-card" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+  <div id="pond-total-card" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
     <span style="font-size:11px;color:var(--text3);font-weight:600;">📅 하루 예상 투입금액 (활성 종목 합산)</span>
     <span id="pond-total-value" style="font-size:16px;font-weight:900;color:var(--blue);">-</span>
+  </div>
+  <!-- 정렬 -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <span style="font-size:10px;color:var(--text3);font-weight:700;align-self:center;white-space:nowrap;">정렬</span>
+    <button id="sort-pnl-btn" onclick="pondSetSort('pnl')" style="flex:1;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 0;font-size:11px;font-weight:700;cursor:pointer;">수익률 ↓</button>
+    <button id="sort-invest-btn" onclick="pondSetSort('invest')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:6px 0;font-size:11px;font-weight:700;cursor:pointer;">투입금액 ↓</button>
+    <button id="sort-default-btn" onclick="pondSetSort('default')" style="flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:6px 0;font-size:11px;font-weight:700;cursor:pointer;">기본순</button>
   </div>
   <div id="pond-list"></div>
   <div id="pond-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;">
@@ -2123,6 +2130,21 @@ loadSettings(); renderStatic(null); renderRules();
 // ════════════════════════════════════════
 let POND = []; // [{id, ticker, name, dailyShares, status:'active'|'closed', buys:[{date,shares,price,memo}], ma120, currentPrice, closedAt}]
 let pondBuyTargetId = null;
+let pondSortMode = 'default'; // 'default' | 'pnl' | 'invest'
+
+function pondSetSort(mode) {
+  pondSortMode = mode;
+  // 버튼 스타일 업데이트
+  ['pnl','invest','default'].forEach(m => {
+    const btn = document.getElementById('sort-' + m + '-btn');
+    if (!btn) return;
+    const active = m === mode;
+    btn.style.background = active ? 'var(--blue)' : 'var(--bg3)';
+    btn.style.color = active ? '#fff' : 'var(--text2)';
+    btn.style.border = active ? 'none' : '1px solid var(--border)';
+  });
+  pondRender();
+}
 
 function pondLoad() {
   try { POND = JSON.parse(localStorage.getItem("qld_pond") || "[]"); } catch { POND = []; }
@@ -2274,9 +2296,24 @@ function pondRender() {
   if (!POND.length) { list.innerHTML = ""; empty.style.display = "block"; return; }
   empty.style.display = "none";
 
-  const sorted = [...POND].sort((a,b) => {
-    if (a.status === b.status) return b.id - a.id;
-    return a.status === "active" ? -1 : 1;
+  const getPnl = item => {
+    const buys = item.buys || [];
+    const totalAmt = buys.filter(b=>b.price).reduce((a,b)=>a+b.shares*b.price, 0);
+    const totalSh  = buys.filter(b=>b.price).reduce((a,b)=>a+b.shares, 0);
+    const avg = totalSh > 0 ? totalAmt / totalSh : null;
+    return (avg && item.currentPrice) ? (item.currentPrice - avg) / avg * 100 : -9999;
+  };
+  const getInvest = item => {
+    const buys = item.buys || [];
+    return buys.filter(b=>b.price).reduce((a,b)=>a+b.shares*b.price, 0);
+  };
+
+  const sorted = [...POND].sort((a, b) => {
+    // 항상 active 먼저
+    if (a.status !== b.status) return a.status === "active" ? -1 : 1;
+    if (pondSortMode === 'pnl')    return getPnl(b) - getPnl(a);
+    if (pondSortMode === 'invest') return getInvest(b) - getInvest(a);
+    return b.id - a.id; // default: 최근 추가순
   });
 
   list.innerHTML = sorted.map(item => {

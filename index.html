@@ -2235,6 +2235,39 @@ function pondDelete(id) {
   pondRender();
 }
 
+const POND_SELL_STAGES = [
+  { key:"sell1Done", pnl:25,  label:"1단계", color:"#b45309", bg:"#fffbeb", border:"#fbbf24", btnBg:"#f59e0b", emoji:"💛" },
+  { key:"sell2Done", pnl:50,  label:"2단계", color:"#c2410c", bg:"#fff7ed", border:"#fdba74", btnBg:"#ea580c", emoji:"🟠" },
+  { key:"sell3Done", pnl:75,  label:"3단계", color:"#b91c1c", bg:"#fef2f2", border:"#fca5a5", btnBg:"#dc2626", emoji:"🔴" },
+  { key:"sell4Done", pnl:100, label:"4단계", color:"#7c3aed", bg:"#ede9fe", border:"#c4b5fd", btnBg:"#7c3aed", emoji:"💜" },
+  { key:"sell5Done", pnl:125, label:"5단계", color:"#0e7490", bg:"#e0f2fe", border:"#7dd3fc", btnBg:"#0284c7", emoji:"💙" },
+  { key:"sell6Done", pnl:150, label:"6단계", color:"#15803d", bg:"#dcfce7", border:"#86efac", btnBg:"#16a34a", emoji:"✅" },
+];
+
+function pondSellBanner(item, activeSt, allDone, heldShares, sellShares, pnlPct) {
+  if (allDone) {
+    return '<div style="background:#dcfce7;border:1.5px solid #86efac;border-radius:10px;padding:10px;margin-bottom:8px;"><div style="font-size:12px;font-weight:800;color:#15803d;">🎉 원금 회수 완료! 잔여 포지션 홀드 중</div></div>';
+  }
+  if (!activeSt) return "";
+  // 진행바
+  const bars = POND_SELL_STAGES.map(st => {
+    const done = item[st.key];
+    const isCur = st.key === activeSt.key;
+    const bg     = done ? "#dcfce7" : isCur ? activeSt.bg    : "var(--bg3)";
+    const border = done ? "#86efac" : isCur ? activeSt.border: "var(--border)";
+    const color  = done ? "#15803d" : isCur ? activeSt.color : "var(--text3)";
+    const txt    = done ? "✓" : "+" + st.pnl + "%";
+    return '<span style="flex:1;text-align:center;background:' + bg + ';border:1px solid ' + border + ';border-radius:5px;padding:2px 0;font-size:10px;font-weight:700;color:' + color + ';">' + txt + '</span>';
+  }).join("");
+  const nextTxt = activeSt.pnl < 150 ? " · 다음 +" + (activeSt.pnl + 25) + "%" : " · 🎉 원금 회수!";
+  return '<div style="background:' + activeSt.bg + ';border:1.5px solid ' + activeSt.border + ';border-radius:10px;padding:10px;margin-bottom:8px;">'
+    + '<div style="font-size:12px;font-weight:800;color:' + activeSt.color + ';margin-bottom:4px;">' + activeSt.emoji + ' 익절 ' + activeSt.label + ' 권장 (+' + pnlPct.toFixed(1) + '% ≥ +' + activeSt.pnl + '%)</div>'
+    + '<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">현재 보유 <b>' + heldShares + '주</b>의 10% · <b style="color:' + activeSt.color + ';">' + sellShares + '주</b> 매도 권장' + nextTxt + '</div>'
+    + '<div style="display:flex;gap:5px;margin-bottom:6px;">' + bars + '</div>'
+    + '<button onclick="pondSellExec(' + item.id + ',\'' + activeSt.key + '\',' + sellShares + ')" style="width:100%;background:' + activeSt.btnBg + ';color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:800;cursor:pointer;">📤 ' + activeSt.label + ' 실현 (' + sellShares + '주)</button>'
+    + '</div>';
+}
+
 function pondRender() {
   const list = document.getElementById("pond-list");
   const empty = document.getElementById("pond-empty");
@@ -2265,14 +2298,7 @@ function pondRender() {
     const recoveredPct    = totalInvested ? (recoveredAmt / totalInvested * 100).toFixed(1) : null;
 
     // 익절 6단계 — +25%마다 보유수량 10% 실현 (6회 완료 시 원금 회수)
-    const SELL_STAGES = [
-      { key:"sell1Done", pnl:25,  label:"1단계", color:"#b45309", bg:"#fffbeb", border:"#fbbf24", btnBg:"#f59e0b", emoji:"💛" },
-      { key:"sell2Done", pnl:50,  label:"2단계", color:"#c2410c", bg:"#fff7ed", border:"#fdba74", btnBg:"#ea580c", emoji:"🟠" },
-      { key:"sell3Done", pnl:75,  label:"3단계", color:"#b91c1c", bg:"#fef2f2", border:"#fca5a5", btnBg:"#dc2626", emoji:"🔴" },
-      { key:"sell4Done", pnl:100, label:"4단계", color:"#7c3aed", bg:"#ede9fe", border:"#c4b5fd", btnBg:"#7c3aed", emoji:"💜" },
-      { key:"sell5Done", pnl:125, label:"5단계", color:"#0e7490", bg:"#e0f2fe", border:"#7dd3fc", btnBg:"#0284c7", emoji:"💙" },
-      { key:"sell6Done", pnl:150, label:"6단계 (원금회수)", color:"#15803d", bg:"#dcfce7", border:"#86efac", btnBg:"#16a34a", emoji:"✅" },
-    ];
+    const SELL_STAGES = POND_SELL_STAGES;
     // 현재 활성 단계 찾기 (앞 단계 완료 + 현재 pnl 충족 + 미완료)
     const activeSellStage = avgCost && item.currentPrice ? SELL_STAGES.find((st, i) => {
       const prevDone = i === 0 || item[SELL_STAGES[i-1].key];
@@ -2366,16 +2392,7 @@ function pondRender() {
 
       ${recoveryCard}
 
-      ${activeSellStage ? `
-      <div style="background:${activeSellStage.bg};border:1.5px solid ${activeSellStage.border};border-radius:10px;padding:10px;margin-bottom:8px;">
-        <div style="font-size:12px;font-weight:800;color:${activeSellStage.color};margin-bottom:4px;">${activeSellStage.emoji} 익절 ${activeSellStage.label} 권장 (+${pnlPct.toFixed(1)}% ≥ +${activeSellStage.pnl}%)</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">현재 보유 <b>${heldShares}주</b>의 10% · <b style="color:${activeSellStage.color};">${sellShares}주</b> 매도 권장${activeSellStage.pnl < 150 ? ` · 다음 +${activeSellStage.pnl+25}%에 ${SELL_STAGES[SELL_STAGES.findIndex(s=>s.key===activeSellStage.key)+1]?.label||""}` : " · 🎉 원금 회수 완료!"}</div>
-        <div style="display:flex;gap:5px;margin-bottom:6px;font-size:10px;color:var(--text3);">${SELL_STAGES.map(st=>`<span style="flex:1;text-align:center;background:${item[st.key]?"#dcfce7":st.key===activeSellStage.key?activeSellStage.bg:"var(--bg3)"};border:1px solid ${item[st.key]?"#86efac":st.key===activeSellStage.key?activeSellStage.border:"var(--border)"};border-radius:5px;padding:2px 0;font-weight:700;color:${item[st.key]?"#15803d":st.key===activeSellStage.key?activeSellStage.color:"var(--text3)"};">${item[st.key]?"✓":"+"+st.pnl+"%"}</span>`).join("")}</div>
-        <button onclick="pondSellExec(${item.id},'${activeSellStage.key}',${sellShares})" style="width:100%;background:${activeSellStage.btnBg};color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:800;cursor:pointer;">📤 ${activeSellStage.label} 실현 (${sellShares}주)</button>
-      </div>` : allSellDone ? `
-      <div style="background:#dcfce7;border:1.5px solid #86efac;border-radius:10px;padding:10px;margin-bottom:8px;">
-        <div style="font-size:12px;font-weight:800;color:#15803d;">🎉 원금 회수 완료! 잔여 포지션 홀드 중</div>
-      </div>` : ""}
+      ${pondSellBanner(item, activeSellStage, allSellDone, heldShares, sellShares, pnlPct)}
 
       ${recentSells?`<div style="margin-bottom:8px;">${recentSells}</div>`:""}
 

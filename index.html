@@ -1165,7 +1165,7 @@ function loadSettings() {
   document.getElementById("s-monthlyBudget").value = S.monthlyBudget;
   document.getElementById("s-profitCash").value    = S.profitCash;
   document.getElementById("s-fg").value            = S.fg != null ? S.fg : "";
-  document.getElementById("s-gcCount").value       = S.gcCount;
+  const gcEl = document.getElementById("s-gcCount"); if(gcEl) gcEl.value = S.gcCount;
   document.getElementById("s-rebuyCount").value    = S.rebuyCount;
   document.getElementById("s-qldHeld").value       = S.qldHeld;
   document.getElementById("s-ssoHeld").value       = S.ssoHeld;
@@ -1191,7 +1191,8 @@ function saveSettings() {
   S.profitCash     = parseFloat(document.getElementById("s-profitCash").value) || 0;
   const fgv        = document.getElementById("s-fg").value;
   S.fg             = fgv !== "" ? parseInt(fgv) : null;
-  S.gcCount        = parseInt(document.getElementById("s-gcCount").value) || 0;
+  const gcEl2 = document.getElementById("s-gcCount");
+  S.gcCount        = gcEl2 ? (parseInt(gcEl2.value) || 0) : (S.gcCount || 0);
   S.rebuyCount     = parseInt(document.getElementById("s-rebuyCount").value) || 0;
   S.qldHeld        = parseInt(document.getElementById("s-qldHeld").value) || 0;
   S.ssoHeld        = parseInt(document.getElementById("s-ssoHeld").value) || 0;
@@ -2107,7 +2108,7 @@ window.checkPW = async function() {
 // ── 초기화 ──
 loadSettings(); renderStatic(null); renderRules();
 // 닉네임 자동 복원
-(function(){ const n = localStorage.getItem("qld_nick"); if(n) { const el = document.getElementById("s-nick"); if(el) el.value = n; } })();
+(function(){ const n = localStorage.getItem("qld_nick"); if(n){ const el=document.getElementById("s-nick"); if(el) el.value=n; } })();
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";

@@ -1729,6 +1729,31 @@ function determineMode(d) {
   return { name, phase, actions, pc: MODES[phase] || MODES.loading, dd, elapsed:el };
 }
 
+function calcScoreData(d) {
+  const sd = (d && (d.standbyDate || S.standbyDate)) || null;
+  if (!sd) return null;
+  const standbyDays = Math.max(0, Math.floor((new Date() - new Date(sd)) / 86400000));
+  const probTable = [[0,0],[20,24],[30,41],[60,53],[90,71],[120,76],[180,76],[250,88],[365,94],[999,100]];
+  let prob = 100;
+  for (let i = 0; i < probTable.length - 1; i++) {
+    const [d1,p1] = probTable[i], [d2,p2] = probTable[i+1];
+    if (standbyDays <= d2) { prob = Math.round(p1 + (p2-p1)*(standbyDays-d1)/(d2-d1)); break; }
+  }
+  const fg = d?.fg ?? S.fg ?? null;
+  let composite = null, fgInverse = null, fgLabel = null;
+  if (fg != null) {
+    fgInverse = fg<=20?90: fg<=40?Math.round(90-(fg-20)): fg<=60?Math.round(70-(fg-40)): fg<=80?Math.round(50-(fg-60)): Math.round(30-(fg-80));
+    fgLabel = fg<=20?"극단공포": fg<=40?"공포": fg<=60?"중립": fg<=80?"탐욕":"극단탐욕";
+    composite = Math.round(prob * 0.6 + fgInverse * 0.4);
+  }
+  const phaseMemo = standbyDays<=30?"단기 조정": standbyDays<=90?"중기 조정": standbyDays<=180?"장기 조정":"역사적 장기 대기";
+  const compMemo = !composite ? null :
+    composite>=75?"매수 재개 타이밍 근접":
+    composite>=60?"조건 무르익는 중":
+    composite>=45?"추가 하락 가능성 상존":"아직 초기 단계";
+  return { standbyDays, sd, prob, phaseMemo, fg, fgInverse, fgLabel, composite, compMemo };
+}
+
 function renderDashboard(d) {
   const mode = determineMode(d);
   const mc = document.getElementById("modeCard");
@@ -1739,6 +1764,9 @@ function renderDashboard(d) {
   al.innerHTML = mode.actions.map(a =>
     `<li class="action-item" style="color:${mode.pc.tx}"><span class="action-dot" style="color:${mode.pc.bd};"></span>${a}</li>`
   ).join("");
+
+  // 복합 회귀 점수 바 (홀드/대기모드일 때만)
+  renderScoreBar(d);
 
   // 지표
   const maClr = d.ma120 ? (d.qld < d.ma120 ? "#16a34a" : "#d97706") : "var(--text3)";
@@ -1778,6 +1806,75 @@ function renderDashboard(d) {
 
   // 익절 실행 카드
   renderDashSellCard(mode, d);
+}
+
+// ── 복합 회귀 점수 바 ──
+function renderScoreBar(d) {
+  const mc = document.getElementById("modeCard");
+  if (!mc) return;
+  // 기존 scoreBar 제거
+  const old = document.getElementById("scoreBarWrap");
+  if (old) old.remove();
+
+  const sc = calcScoreData(d);
+  if (!sc) return; // 대기 진입일 없으면 표시 안 함
+
+  const { standbyDays, sd, prob, phaseMemo, fg, fgInverse, fgLabel, composite, compMemo } = sc;
+
+  // 색상
+  const barColor = !composite ? "#6b7280" :
+    composite >= 75 ? "#15803d" :
+    composite >= 60 ? "#b45309" :
+    composite >= 45 ? "#d97706" : "#6b7280";
+
+  const wrap = document.createElement("div");
+  wrap.id = "scoreBarWrap";
+  wrap.style.cssText = "margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.08);";
+
+  // 회귀확률 바
+  const probBar =
+    '<div style="margin-bottom:10px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+    +   '<span style="font-size:10px;font-weight:700;color:var(--text3);">📈 역사적 회귀확률</span>'
+    +   '<span style="font-size:11px;font-weight:800;color:' + barColor + ';">' + prob + '%</span>'
+    + '</div>'
+    + '<div style="height:7px;background:rgba(0,0,0,0.08);border-radius:4px;overflow:hidden;">'
+    +   '<div style="height:100%;width:' + prob + '%;background:' + barColor + ';border-radius:4px;transition:width 1s ease;"></div>'
+    + '</div>'
+    + '<div style="font-size:10px;color:var(--text3);margin-top:3px;">대기 ' + standbyDays + '일 · ' + phaseMemo + '</div>'
+    + '</div>';
+
+  // F&G 역지수 바
+  const fgBar = fg != null ?
+    '<div style="margin-bottom:10px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+    +   '<span style="font-size:10px;font-weight:700;color:var(--text3);">😨 공포 가중치 (F&G 역지수)</span>'
+    +   '<span style="font-size:11px;font-weight:800;color:' + barColor + ';">' + fgInverse + '%</span>'
+    + '</div>'
+    + '<div style="height:7px;background:rgba(0,0,0,0.08);border-radius:4px;overflow:hidden;">'
+    +   '<div style="height:100%;width:' + fgInverse + '%;background:#dc2626;border-radius:4px;transition:width 1s ease;"></div>'
+    + '</div>'
+    + '<div style="font-size:10px;color:var(--text3);margin-top:3px;">F&G ' + fg + ' (' + fgLabel + ') — 공포일수록 높음</div>'
+    + '</div>'
+    : '<div style="font-size:11px;color:var(--text3);margin-bottom:10px;">⚠ F&G 미입력 — 설정탭에서 입력하면 복합점수 계산</div>';
+
+  // 복합점수 바 (굵게)
+  const compBar = composite != null ?
+    '<div style="background:rgba(0,0,0,0.04);border-radius:10px;padding:10px 12px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+    +   '<span style="font-size:10px;font-weight:800;color:var(--text3);">🎯 복합 회귀 점수</span>'
+    +   '<span style="font-size:18px;font-weight:900;color:' + barColor + ';">' + composite + '<span style="font-size:11px;">/100</span></span>'
+    + '</div>'
+    + '<div style="height:10px;background:rgba(0,0,0,0.08);border-radius:5px;overflow:hidden;margin-bottom:5px;">'
+    +   '<div style="height:100%;width:' + composite + '%;background:linear-gradient(90deg,' + barColor + ',' + barColor + 'aa);border-radius:5px;transition:width 1.2s ease;"></div>'
+    + '</div>'
+    + '<div style="font-size:10px;font-weight:700;color:' + barColor + ';">' + (compMemo || "") + '</div>'
+    + '<div style="font-size:9px;color:var(--text3);margin-top:2px;">회귀확률 60% + 공포가중치 40% 복합</div>'
+    + '</div>'
+    : '';
+
+  wrap.innerHTML = probBar + fgBar + compBar;
+  mc.appendChild(wrap);
 }
 
 // ── 대시보드 익절 실행 카드 ──

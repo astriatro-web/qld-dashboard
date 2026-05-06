@@ -505,6 +505,9 @@ body {
     <ul class="action-list" id="actionList" style="margin-top:8px;"></ul>
   </div>
 
+  <!-- 익절 실행 카드 -->
+  <div id="dashSellCard" style="display:none;"></div>
+
   <div class="grid2">
     <div class="mc"><div class="mc-label">QLD</div><div class="mc-value" id="v-qld" style="color:var(--text3);">—</div><div class="mc-sub" id="v-ma120">MA120 —</div></div>
     <div class="mc"><div class="mc-label">이격률 / DD</div><div class="mc-value" id="v-gap" style="color:var(--text3);">—</div><div class="mc-sub" id="v-dd">DD —</div></div>
@@ -1166,6 +1169,9 @@ function loadSettings() {
   S.gldmAvg       = S.gldmAvg       || null;
   S.qldDailyShares = S.qldDailyShares || 10;
   S.ssoDailyShares = S.ssoDailyShares || 5;
+  S.dashSell1Done  = S.dashSell1Done  || false;
+  S.dashSell2Done  = S.dashSell2Done  || false;
+  S.dashSell3Done  = S.dashSell3Done  || false;
 
   document.getElementById("s-entryDate").value     = S.entryDate;
   document.getElementById("s-totalBullet").value   = S.totalBullet;
@@ -1769,6 +1775,121 @@ function renderDashboard(d) {
 
   // 재투입 조건
   renderRebuy(d, dd, mode);
+
+  // 익절 실행 카드
+  renderDashSellCard(mode, d);
+}
+
+// ── 대시보드 익절 실행 카드 ──
+const DASH_SELL_STAGES = [
+  { phase:"sell1", gap:0.25, key:"dashSell1Done", label:"1단계 +25%", color:"#b45309", bg:"#fffbeb", border:"#fbbf24", btnBg:"#f59e0b", emoji:"💛", cumRecovery:"12.5%" },
+  { phase:"sell2", gap:0.50, key:"dashSell2Done", label:"2단계 +50%", color:"#c2410c", bg:"#fff7ed", border:"#fdba74", btnBg:"#ea580c", emoji:"🟠", cumRecovery:"27.5%" },
+  { phase:"sell3", gap:1.00, key:"dashSell3Done", label:"3단계 +100%", color:"#b91c1c", bg:"#fef2f2", border:"#fca5a5", btnBg:"#dc2626", emoji:"🔴", cumRecovery:"47.5%" },
+];
+
+function renderDashSellCard(mode, d) {
+  const card = document.getElementById("dashSellCard");
+  if (!card) return;
+
+  const st = DASH_SELL_STAGES.find(s => s.phase === mode.phase);
+  if (!st) { card.style.display = "none"; return; }
+
+  // 이미 이 단계 완료했으면 숨김
+  if (S[st.key]) { card.style.display = "none"; return; }
+
+  const qHeld  = S.qldHeld  || 0;
+  const sHeld  = S.ssoHeld  || 0;
+  const qSell  = Math.max(0, Math.round(qHeld  * 0.10));
+  const sSell  = Math.max(0, Math.round(sHeld  * 0.10));
+  const qAvg   = S.qldAvg   || 0;
+  const sAvg   = S.ssoAvg   || 0;
+  const usd    = (d && d.usdkrw) ? d.usdkrw : (S.usdkrw || 1380);
+  const qUSD   = qSell * (d?.qld  || qAvg);
+  const sUSD   = sSell * (d?.sso  || sAvg);
+  const totalUSD  = qUSD + sUSD;
+  const totalKRW  = Math.round(totalUSD * usd);
+  const f2 = n => n.toFixed(2);
+
+  // 진행 바
+  const bars = DASH_SELL_STAGES.map(s => {
+    const done = S[s.key];
+    const isCur = s.key === st.key;
+    const bg  = done ? "#dcfce7" : isCur ? st.bg    : "var(--bg3)";
+    const bd  = done ? "#86efac" : isCur ? st.border: "var(--border)";
+    const clr = done ? "#15803d" : isCur ? st.color : "var(--text3)";
+    const txt = done ? "✓" : s.label;
+    return '<span style="flex:1;text-align:center;background:' + bg + ';border:1px solid ' + bd + ';border-radius:6px;padding:3px 2px;font-size:9px;font-weight:700;color:' + clr + ';">' + txt + '</span>';
+  }).join("");
+
+  card.style.display = "block";
+  card.innerHTML =
+    '<div style="background:' + st.bg + ';border:1.5px solid ' + st.border + ';border-radius:14px;padding:14px 16px;margin-bottom:10px;">'
+    + '<div style="font-size:10px;font-weight:800;color:' + st.color + ';letter-spacing:0.08em;margin-bottom:8px;">' + st.emoji + ' 익절 ' + st.label + ' — 실행 또는 홀드 선택</div>'
+    + '<div style="display:flex;gap:5px;margin-bottom:10px;">' + bars + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:11px;margin-bottom:12px;">'
+    + '<div style="background:rgba(0,0,0,0.05);border-radius:8px;padding:7px 8px;">'
+    +   '<div style="font-size:9px;color:' + st.color + ';font-weight:700;margin-bottom:3px;">QLD 매도</div>'
+    +   '<div style="font-weight:800;color:var(--text1);">' + qSell + '주</div>'
+    +   '<div style="font-size:10px;color:var(--text3);">보유 ' + qHeld + '주의 10%</div>'
+    + '</div>'
+    + '<div style="background:rgba(0,0,0,0.05);border-radius:8px;padding:7px 8px;">'
+    +   '<div style="font-size:9px;color:' + st.color + ';font-weight:700;margin-bottom:3px;">SSO 매도</div>'
+    +   '<div style="font-weight:800;color:var(--text1);">' + sSell + '주</div>'
+    +   '<div style="font-size:10px;color:var(--text3);">보유 ' + sHeld + '주의 10%</div>'
+    + '</div>'
+    + '<div style="background:rgba(0,0,0,0.05);border-radius:8px;padding:7px 8px;">'
+    +   '<div style="font-size:9px;color:' + st.color + ';font-weight:700;margin-bottom:3px;">SGOV 전환</div>'
+    +   '<div style="font-weight:800;color:var(--text1);">≈$' + Math.round(totalUSD).toLocaleString() + '</div>'
+    +   '<div style="font-size:10px;color:var(--text3);">≈' + Math.round(totalKRW/10000).toLocaleString() + '만원</div>'
+    + '</div>'
+    + '</div>'
+    + '<div style="font-size:10px;color:var(--text3);margin-bottom:10px;">실행 시 익절현금풀에 자동 합산 · 누적 원금 회수율 ' + st.cumRecovery + ' 달성</div>'
+    + '<div style="display:flex;gap:8px;">'
+    +   '<button onclick="dashSellSkip(\'' + st.key + '\')" style="flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;">📌 홀드 (이번 단계 스킵)</button>'
+    +   '<button onclick="dashSellExec(\'' + st.key + '\',' + qSell + ',' + sSell + ',' + totalUSD.toFixed(2) + ',' + totalKRW + ')" style="flex:1;background:' + st.btnBg + ';border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;color:#fff;cursor:pointer;">' + st.emoji + ' 매도 실행 → SGOV</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function dashSellExec(key, qSell, sSell, totalUSD, totalKRW) {
+  const st = DASH_SELL_STAGES.find(s => s.key === key);
+  if (!confirm(st.label + ' 익절 실행\nQLD ' + qSell + '주 + SSO ' + sSell + '주 매도\n≈$' + Math.round(totalUSD).toLocaleString() + ' → 익절현금풀(SGOV) 합산\n진행하시겠습니까?')) return;
+  // 보유수량 차감
+  S.qldHeld = Math.max(0, (S.qldHeld || 0) - qSell);
+  S.ssoHeld = Math.max(0, (S.ssoHeld || 0) - sSell);
+  // 익절현금풀 합산 (원화)
+  S.profitCash = (S.profitCash || 0) + totalKRW;
+  // 단계 완료 표시
+  S[key] = true;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  // 설정탭 input 동기화
+  const qEl = document.getElementById("s-qldHeld"); if(qEl) qEl.value = S.qldHeld;
+  const sEl = document.getElementById("s-ssoHeld"); if(sEl) sEl.value = S.ssoHeld;
+  const pEl = document.getElementById("s-profitCash"); if(pEl) pEl.value = S.profitCash;
+  // 대시보드 갱신
+  renderStatic(MD);
+  if (MD) renderHoldings(MD.qld, MD.sso, MD.usdkrw, MD.sgov);
+  renderDashSellCard({ phase: DASH_SELL_STAGES.find(s=>s.key===key)?.phase }, MD);
+  // 완료 토스트
+  const card = document.getElementById("dashSellCard");
+  if (card) {
+    card.innerHTML = '<div style="background:#dcfce7;border:1.5px solid #86efac;border-radius:12px;padding:12px 16px;margin-bottom:10px;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:18px;">✅</span>'
+      + '<div><div style="font-size:13px;font-weight:800;color:#15803d;">' + st.label + ' 익절 완료!</div>'
+      + '<div style="font-size:11px;color:#166534;margin-top:2px;">QLD ' + qSell + '주 + SSO ' + sSell + '주 → 익절현금풀 ≈' + Math.round(totalKRW/10000).toLocaleString() + '만원 합산</div></div>'
+      + '</div>';
+    setTimeout(() => { if(MD) renderDashSellCard(determineMode(MD), MD); }, 3000);
+  }
+}
+
+function dashSellSkip(key) {
+  S[key] = true;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  const card = document.getElementById("dashSellCard");
+  if (card) {
+    card.innerHTML = '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--text3);">📌 이번 익절 단계 스킵 — 잔여 포지션 홀드 유지</div>';
+    setTimeout(() => { card.style.display = "none"; }, 2000);
+  }
 }
 
 function renderHiddenAlerts(d) {

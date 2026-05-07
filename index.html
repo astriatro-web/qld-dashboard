@@ -1230,6 +1230,9 @@ function saveSettings() {
   S.gldmAvg  = ga  ? parseFloat(ga)  : null;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   renderStatic(null);
+  // 닉네임 있으면 자동 동기화
+  const nick2 = localStorage.getItem("qld_nick");
+  if (nick2) { clearTimeout(_cloudSyncTimer); _cloudSyncTimer = setTimeout(() => cloudAutoSync(nick2), 3000); }
 }
 
 async function cloudSave() {
@@ -2383,8 +2386,31 @@ function pondSetSort(mode) {
 function pondLoad() {
   try { POND = JSON.parse(localStorage.getItem("qld_pond") || "[]"); } catch { POND = []; }
 }
+let _cloudSyncTimer = null;
 function pondSave() {
   localStorage.setItem("qld_pond", JSON.stringify(POND));
+  // 닉네임 있으면 3초 후 클라우드 자동 동기화
+  const nick = localStorage.getItem("qld_nick");
+  if (!nick) return;
+  clearTimeout(_cloudSyncTimer);
+  _cloudSyncTimer = setTimeout(() => cloudAutoSync(nick), 3000);
+}
+
+async function cloudAutoSync(nick) {
+  try {
+    const payload = { settings: S, pond: POND };
+    const params = new URLSearchParams({ action:"save_settings", nick, data: JSON.stringify(payload) });
+    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+    // 상태 표시 (설정탭 열려있을 때만)
+    const st = document.getElementById("cloud-status");
+    if (st) {
+      st.style.color = "var(--green)";
+      st.textContent = "☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")";
+    }
+  } catch(e) {
+    const st = document.getElementById("cloud-status");
+    if (st) { st.style.color="var(--amber)"; st.textContent="⚠ 자동 저장 실패 — 수동 저장 권장"; }
+  }
 }
 
 function pondAddTicker() {

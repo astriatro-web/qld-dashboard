@@ -1236,36 +1236,6 @@ function saveSettings() {
 }
 
 // 저장용 압축 / 복원
-// JSONP 방식 GAS 호출 (CORS 완전 우회)
-function gasJsonp(params, timeoutMs) {
-  timeoutMs = timeoutMs || 15000;
-  return new Promise(function(resolve, reject) {
-    var cbName = "_gasJP_" + Date.now() + "_" + Math.floor(Math.random()*10000);
-    var script = document.createElement("script");
-    var timer = setTimeout(function() {
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-      reject(new Error("타임아웃 (" + (timeoutMs/1000) + "초)"));
-    }, timeoutMs);
-    window[cbName] = function(data) {
-      clearTimeout(timer);
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-      resolve(data);
-    };
-    params.callback = cbName;
-    var qs = Object.keys(params).map(function(k) {
-      return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
-    }).join("&");
-    script.src = GAS_URL + "?" + qs;
-    script.onerror = function() {
-      clearTimeout(timer); delete window[cbName];
-      reject(new Error("스크립트 로드 실패"));
-    };
-    document.head.appendChild(script);
-  });
-}
-
 function pondCompress(pond) {
   return pond.map(function(p) {
     return {
@@ -1301,13 +1271,12 @@ async function cloudSave() {
   saveSettings();
   st.style.color="var(--text3)"; st.textContent="⏳ 저장 중...";
   try {
-    const json = await gasJsonp({ action:"save_settings", nick, data: JSON.stringify({ S, p: pondCompress(POND) }) });
-    if (json.ok) {
-      localStorage.setItem("qld_nick", nick);
-      st.style.color="var(--green)"; st.textContent="✅ 저장 완료 (" + nick + ")";
-    } else {
-      st.style.color="var(--red)"; st.textContent="❌ 저장 실패: " + (json.error||"");
-    }
+    const data = JSON.stringify({ S, p: pondCompress(POND) });
+    const params = new URLSearchParams({ action:"save_settings", nick, data });
+    // no-cors: 응답 못 읽지만 요청은 전송됨 (iOS Safari CORS 우회)
+    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"no-cors" });
+    localStorage.setItem("qld_nick", nick);
+    st.style.color="var(--green)"; st.textContent="✅ 저장 요청 완료 (" + nick + ")";
   } catch(e) { st.style.color="var(--red)"; st.textContent="❌ " + e.message; }
 }
 
@@ -1317,7 +1286,10 @@ async function cloudLoad() {
   if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
   st.style.color="var(--text3)"; st.textContent="⏳ 불러오는 중...";
   try {
-    const json = await gasJsonp({ action:"load_settings", nick });
+    // 불러오기는 cors + redirect:follow 필요 (응답을 읽어야 함)
+    const params = new URLSearchParams({ action:"load_settings", nick });
+    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+    const json = await res.json();
     if (!json.ok) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + (json.error||""); return; }
     if (!json.data) { st.style.color="var(--amber)"; st.textContent="⚠ 저장된 데이터 없음 (" + nick + ")"; return; }
     const parsed = JSON.parse(json.data);
@@ -2447,12 +2419,14 @@ function pondSave() {
 
 async function cloudAutoSync(nick) {
   try {
-    const json = await gasJsonp({ action:"save_settings", nick, data: JSON.stringify({ S, p: pondCompress(POND) }) });
+    const data = JSON.stringify({ S, p: pondCompress(POND) });
+    const params = new URLSearchParams({ action:"save_settings", nick, data });
+    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"no-cors" });
     const st = document.getElementById("cloud-status");
-    if (st && json && json.ok) { st.style.color="var(--green)"; st.textContent="☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; }
+    if (st) { st.style.color="var(--green)"; st.textContent="☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; }
   } catch(e) {
     const st = document.getElementById("cloud-status");
-    if (st) { st.style.color="var(--amber)"; st.textContent="⚠ 자동 저장 실패 — 수동 저장 권장"; }
+    if (st) { st.style.color="var(--amber)"; st.textContent="⚠ 자동 저장 실패"; }
   }
 }
 

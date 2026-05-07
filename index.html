@@ -1239,12 +1239,13 @@ async function cloudSave() {
   saveSettings();
   st.style.color="var(--text3)"; st.textContent="⏳ 저장 중...";
   try {
-    const params = new URLSearchParams({ action:"save_settings", nick, data: JSON.stringify(S) });
+    const payload = { settings: S, pond: POND };
+    const params = new URLSearchParams({ action:"save_settings", nick, data: JSON.stringify(payload) });
     const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
     const json = await res.json();
     if (json.ok) {
       localStorage.setItem("qld_nick", nick);
-      st.style.color="var(--green)"; st.textContent="✅ 저장 완료 (" + nick + ")";
+      st.style.color="var(--green)"; st.textContent="✅ 저장 완료 (" + nick + ") — 설정 + 웅덩노트 포함";
     } else {
       st.style.color="var(--red)"; st.textContent="❌ 저장 실패: " + (json.error||"");
     }
@@ -1262,12 +1263,23 @@ async function cloudLoad() {
     const json = await res.json();
     if (!json.ok) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + (json.error||""); return; }
     if (!json.data) { st.style.color="var(--amber)"; st.textContent="⚠ 저장된 데이터 없음 (" + nick + ")"; return; }
-    S = JSON.parse(json.data);
+    const parsed = JSON.parse(json.data);
+    // 구버전(S만 저장) / 신버전(settings+pond) 호환
+    if (parsed.settings) {
+      S = parsed.settings;
+      if (parsed.pond) {
+        POND = parsed.pond;
+        localStorage.setItem("qld_pond", JSON.stringify(POND));
+      }
+    } else {
+      S = parsed; // 구버전
+    }
     localStorage.setItem("qld_s11", JSON.stringify(S));
     localStorage.setItem("qld_nick", nick);
     loadSettings();
     renderStatic(null);
-    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ")";
+    pondRender();
+    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ") — 설정 + 웅덩노트 복원";
   } catch(e) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + e.message; }
 }
 
@@ -3287,7 +3299,7 @@ function gameNext() {
 const _origSwitchTab = window.switchTab;
 window.switchTab = function(id) {
   _origSwitchTab(id);
-  if (id === "pond") { pondLoad(); pondRender(); }
+  if (id === "pond") { pondRender(); } // pondLoad 제거 — 초기화 시 1회만 로드
 };
 
 // 초기화

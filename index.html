@@ -1242,9 +1242,10 @@ async function cloudSave() {
   saveSettings();
   st.style.color="var(--text3)"; st.textContent="⏳ 저장 중...";
   try {
-    const payload = { settings: S, pond: POND };
-    const params = new URLSearchParams({ action:"save_settings", nick, data: JSON.stringify(payload) });
-    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+    const pondMin = POND.map(p => { const { currentPrice, ma120, currency, ...rest } = p; return rest; });
+    const body = JSON.stringify({ action:"save_settings", nick, data: JSON.stringify({ settings: S, pond: pondMin }) });
+    const res = await fetch(GAS_URL, { method:"POST", mode:"cors", redirect:"follow",
+      headers:{"Content-Type":"application/json"}, body });
     const json = await res.json();
     if (json.ok) {
       localStorage.setItem("qld_nick", nick);
@@ -1261,8 +1262,9 @@ async function cloudLoad() {
   if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
   st.style.color="var(--text3)"; st.textContent="⏳ 불러오는 중...";
   try {
-    const params = new URLSearchParams({ action:"load_settings", nick });
-    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+    const body = JSON.stringify({ action:"load_settings", nick });
+    const res = await fetch(GAS_URL, { method:"POST", mode:"cors", redirect:"follow",
+      headers:{"Content-Type":"application/json"}, body });
     const json = await res.json();
     if (!json.ok) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + (json.error||""); return; }
     if (!json.data) { st.style.color="var(--amber)"; st.textContent="⚠ 저장된 데이터 없음 (" + nick + ")"; return; }
@@ -1548,7 +1550,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyhhdhmImNy8LpCR8kQGy8LqXc-c7hr8nUQmfzHM27nFglpb0dx3tn41MJhWjfBxzjziA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzmO1yKu-VTExi5Xtc2Q75YkOwXR3AhEjAwfBIIHR-Cbuxh4BDXx9wPcE6unuueQyuw4g/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -2398,10 +2400,10 @@ function pondSave() {
 
 async function cloudAutoSync(nick) {
   try {
-    const payload = { settings: S, pond: POND };
-    const params = new URLSearchParams({ action:"save_settings", nick, data: JSON.stringify(payload) });
-    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
-    // 상태 표시 (설정탭 열려있을 때만)
+    const pondMin = POND.map(p => { const { currentPrice, ma120, currency, ...rest } = p; return rest; });
+    const body = JSON.stringify({ action:"save_settings", nick, data: JSON.stringify({ settings: S, pond: pondMin }) });
+    await fetch(GAS_URL, { method:"POST", mode:"cors", redirect:"follow",
+      headers:{"Content-Type":"application/json"}, body });
     const st = document.getElementById("cloud-status");
     if (st) {
       st.style.color = "var(--green)";

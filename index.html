@@ -1269,15 +1269,24 @@ async function cloudSave() {
   try {
     const data = JSON.stringify({ S, p: pondCompress(POND) });
     const params = new URLSearchParams({ action:"save_settings", nick, data });
-    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
-    const json = await res.json();
+    const url = GAS_URL + "?" + params.toString();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
+    const res = await fetch(url, { method:"GET", mode:"cors", redirect:"follow", signal: controller.signal });
+    clearTimeout(timer);
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch(pe) { throw new Error("응답 파싱 실패: " + text.substring(0,100)); }
     if (json.ok) {
       localStorage.setItem("qld_nick", nick);
       st.style.color="var(--green)"; st.textContent="✅ 저장 완료 (" + nick + ") — 설정 + 웅덩노트 포함";
     } else {
-      st.style.color="var(--red)"; st.textContent="❌ 저장 실패: " + (json.error||"");
+      st.style.color="var(--red)"; st.textContent="❌ 저장 실패: " + (json.error||JSON.stringify(json));
     }
-  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + e.message; }
+  } catch(e) {
+    const msg = e.name === 'AbortError' ? '타임아웃 (15초 초과)' : e.message;
+    st.style.color="var(--red)"; st.textContent="❌ " + msg;
+  }
 }
 
 async function cloudLoad() {
@@ -1572,7 +1581,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzmO1yKu-VTExi5Xtc2Q75YkOwXR3AhEjAwfBIIHR-Cbuxh4BDXx9wPcE6unuueQyuw4g/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwxvZZXhihemRGm2CQOT1lsDO_-K8oOY91siARiosJzMTS6bKDrlLhpudAJY88Uz3kFNA/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");

@@ -1235,6 +1235,31 @@ function saveSettings() {
   if (nick2) { clearTimeout(_cloudSyncTimer); _cloudSyncTimer = setTimeout(() => cloudAutoSync(nick2), 3000); }
 }
 
+// 저장용 압축 / 복원
+function pondCompress(pond) {
+  return pond.map(p => ({
+    id: p.id, t: p.ticker,
+    n: p.name !== p.ticker ? p.name : undefined,
+    ds: p.dailyShares, bd: p.buyDays || [], s: p.status,
+    b: (p.buys||[]).map(b => [b.date, b.shares, b.price||0, b.memo||undefined]),
+    sl: (p.sells||[]), ca: p.closedAt, aa: p.addedAt,
+    s1:p.sell1Done||undefined, s2:p.sell2Done||undefined,
+    s3:p.sell3Done||undefined, s4:p.sell4Done||undefined,
+    s5:p.sell5Done||undefined, s6:p.sell6Done||undefined,
+  }));
+}
+function pondDecompress(arr) {
+  return arr.map(p => ({
+    id: p.id, ticker: p.t, name: p.n || p.t,
+    dailyShares: p.ds, buyDays: p.bd || [], status: p.s,
+    buys: (p.b||[]).map(b => ({ date:b[0], shares:b[1], price:b[2]||null, memo:b[3]||'' })),
+    sells: p.sl || [], closedAt: p.ca, addedAt: p.aa,
+    sell1Done:!!p.s1, sell2Done:!!p.s2, sell3Done:!!p.s3,
+    sell4Done:!!p.s4, sell5Done:!!p.s5, sell6Done:!!p.s6,
+    currentPrice: null, ma120: null,
+  }));
+}
+
 async function cloudSave() {
   const nick = document.getElementById("s-nick").value.trim();
   const st   = document.getElementById("cloud-status");
@@ -1242,10 +1267,9 @@ async function cloudSave() {
   saveSettings();
   st.style.color="var(--text3)"; st.textContent="⏳ 저장 중...";
   try {
-    const pondMin = POND.map(p => { const { currentPrice, ma120, currency, ...rest } = p; return rest; });
-    const body = JSON.stringify({ action:"save_settings", nick, data: JSON.stringify({ settings: S, pond: pondMin }) });
-    const res = await fetch(GAS_URL, { method:"POST", mode:"cors", redirect:"follow",
-      headers:{"Content-Type":"application/json"}, body });
+    const data = JSON.stringify({ S, p: pondCompress(POND) });
+    const params = new URLSearchParams({ action:"save_settings", nick, data });
+    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
     const json = await res.json();
     if (json.ok) {
       localStorage.setItem("qld_nick", nick);
@@ -1262,28 +1286,26 @@ async function cloudLoad() {
   if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
   st.style.color="var(--text3)"; st.textContent="⏳ 불러오는 중...";
   try {
-    const body = JSON.stringify({ action:"load_settings", nick });
-    const res = await fetch(GAS_URL, { method:"POST", mode:"cors", redirect:"follow",
-      headers:{"Content-Type":"application/json"}, body });
+    const params = new URLSearchParams({ action:"load_settings", nick });
+    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
     const json = await res.json();
     if (!json.ok) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + (json.error||""); return; }
     if (!json.data) { st.style.color="var(--amber)"; st.textContent="⚠ 저장된 데이터 없음 (" + nick + ")"; return; }
     const parsed = JSON.parse(json.data);
-    // 구버전(S만 저장) / 신버전(settings+pond) 호환
-    if (parsed.settings) {
+    // 신버전 { S, p } / 구버전 { settings, pond } / 최구버전 S만
+    if (parsed.S && parsed.p) {
+      S = parsed.S;
+      POND = pondDecompress(parsed.p);
+    } else if (parsed.settings) {
       S = parsed.settings;
-      if (parsed.pond) {
-        POND = parsed.pond;
-        localStorage.setItem("qld_pond", JSON.stringify(POND));
-      }
+      POND = parsed.pond || [];
     } else {
-      S = parsed; // 구버전
+      S = parsed;
     }
     localStorage.setItem("qld_s11", JSON.stringify(S));
+    localStorage.setItem("qld_pond", JSON.stringify(POND));
     localStorage.setItem("qld_nick", nick);
-    loadSettings();
-    renderStatic(null);
-    pondRender();
+    loadSettings(); renderStatic(null); pondRender();
     st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ") — 설정 + 웅덩노트 복원";
   } catch(e) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + e.message; }
 }
@@ -2400,15 +2422,11 @@ function pondSave() {
 
 async function cloudAutoSync(nick) {
   try {
-    const pondMin = POND.map(p => { const { currentPrice, ma120, currency, ...rest } = p; return rest; });
-    const body = JSON.stringify({ action:"save_settings", nick, data: JSON.stringify({ settings: S, pond: pondMin }) });
-    await fetch(GAS_URL, { method:"POST", mode:"cors", redirect:"follow",
-      headers:{"Content-Type":"application/json"}, body });
+    const data = JSON.stringify({ S, p: pondCompress(POND) });
+    const params = new URLSearchParams({ action:"save_settings", nick, data });
+    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
     const st = document.getElementById("cloud-status");
-    if (st) {
-      st.style.color = "var(--green)";
-      st.textContent = "☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")";
-    }
+    if (st) { st.style.color="var(--green)"; st.textContent="☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; }
   } catch(e) {
     const st = document.getElementById("cloud-status");
     if (st) { st.style.color="var(--amber)"; st.textContent="⚠ 자동 저장 실패 — 수동 저장 권장"; }

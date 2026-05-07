@@ -1236,28 +1236,62 @@ function saveSettings() {
 }
 
 // 저장용 압축 / 복원
+// JSONP 방식 GAS 호출 (CORS 완전 우회)
+function gasJsonp(params, timeoutMs) {
+  timeoutMs = timeoutMs || 15000;
+  return new Promise(function(resolve, reject) {
+    var cbName = "_gasJP_" + Date.now() + "_" + Math.floor(Math.random()*10000);
+    var script = document.createElement("script");
+    var timer = setTimeout(function() {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error("타임아웃 (" + (timeoutMs/1000) + "초)"));
+    }, timeoutMs);
+    window[cbName] = function(data) {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      resolve(data);
+    };
+    params.callback = cbName;
+    var qs = Object.keys(params).map(function(k) {
+      return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
+    }).join("&");
+    script.src = GAS_URL + "?" + qs;
+    script.onerror = function() {
+      clearTimeout(timer); delete window[cbName];
+      reject(new Error("스크립트 로드 실패"));
+    };
+    document.head.appendChild(script);
+  });
+}
+
 function pondCompress(pond) {
-  return pond.map(p => ({
-    id: p.id, t: p.ticker,
-    n: p.name !== p.ticker ? p.name : undefined,
-    ds: p.dailyShares, bd: p.buyDays || [], s: p.status,
-    b: (p.buys||[]).map(b => [b.date, b.shares, b.price||0, b.memo||undefined]),
-    sl: (p.sells||[]), ca: p.closedAt, aa: p.addedAt,
-    s1:p.sell1Done||undefined, s2:p.sell2Done||undefined,
-    s3:p.sell3Done||undefined, s4:p.sell4Done||undefined,
-    s5:p.sell5Done||undefined, s6:p.sell6Done||undefined,
-  }));
+  return pond.map(function(p) {
+    return {
+      id: p.id, t: p.ticker,
+      n: p.name !== p.ticker ? p.name : undefined,
+      ds: p.dailyShares, bd: p.buyDays || [], s: p.status,
+      b: (p.buys||[]).map(function(b) { return [b.date, b.shares, b.price||0, b.memo||undefined]; }),
+      sl: (p.sells||[]), ca: p.closedAt, aa: p.addedAt,
+      s1:p.sell1Done||undefined, s2:p.sell2Done||undefined,
+      s3:p.sell3Done||undefined, s4:p.sell4Done||undefined,
+      s5:p.sell5Done||undefined, s6:p.sell6Done||undefined,
+    };
+  });
 }
 function pondDecompress(arr) {
-  return arr.map(p => ({
-    id: p.id, ticker: p.t, name: p.n || p.t,
-    dailyShares: p.ds, buyDays: p.bd || [], status: p.s,
-    buys: (p.b||[]).map(b => ({ date:b[0], shares:b[1], price:b[2]||null, memo:b[3]||'' })),
-    sells: p.sl || [], closedAt: p.ca, addedAt: p.aa,
-    sell1Done:!!p.s1, sell2Done:!!p.s2, sell3Done:!!p.s3,
-    sell4Done:!!p.s4, sell5Done:!!p.s5, sell6Done:!!p.s6,
-    currentPrice: null, ma120: null,
-  }));
+  return arr.map(function(p) {
+    return {
+      id: p.id, ticker: p.t, name: p.n || p.t,
+      dailyShares: p.ds, buyDays: p.bd || [], status: p.s,
+      buys: (p.b||[]).map(function(b) { return { date:b[0], shares:b[1], price:b[2]||null, memo:b[3]||'' }; }),
+      sells: p.sl || [], closedAt: p.ca, addedAt: p.aa,
+      sell1Done:!!p.s1, sell2Done:!!p.s2, sell3Done:!!p.s3,
+      sell4Done:!!p.s4, sell5Done:!!p.s5, sell6Done:!!p.s6,
+      currentPrice: null, ma120: null,
+    };
+  });
 }
 
 async function cloudSave() {
@@ -1267,26 +1301,14 @@ async function cloudSave() {
   saveSettings();
   st.style.color="var(--text3)"; st.textContent="⏳ 저장 중...";
   try {
-    const data = JSON.stringify({ S, p: pondCompress(POND) });
-    const params = new URLSearchParams({ action:"save_settings", nick, data });
-    const url = GAS_URL + "?" + params.toString();
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
-    const res = await fetch(url, { method:"GET", mode:"cors", redirect:"follow", signal: controller.signal });
-    clearTimeout(timer);
-    const text = await res.text();
-    let json;
-    try { json = JSON.parse(text); } catch(pe) { throw new Error("응답 파싱 실패: " + text.substring(0,100)); }
+    const json = await gasJsonp({ action:"save_settings", nick, data: JSON.stringify({ S, p: pondCompress(POND) }) });
     if (json.ok) {
       localStorage.setItem("qld_nick", nick);
-      st.style.color="var(--green)"; st.textContent="✅ 저장 완료 (" + nick + ") — 설정 + 웅덩노트 포함";
+      st.style.color="var(--green)"; st.textContent="✅ 저장 완료 (" + nick + ")";
     } else {
-      st.style.color="var(--red)"; st.textContent="❌ 저장 실패: " + (json.error||JSON.stringify(json));
+      st.style.color="var(--red)"; st.textContent="❌ 저장 실패: " + (json.error||"");
     }
-  } catch(e) {
-    const msg = e.name === 'AbortError' ? '타임아웃 (15초 초과)' : e.message;
-    st.style.color="var(--red)"; st.textContent="❌ " + msg;
-  }
+  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ " + e.message; }
 }
 
 async function cloudLoad() {
@@ -1295,29 +1317,23 @@ async function cloudLoad() {
   if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
   st.style.color="var(--text3)"; st.textContent="⏳ 불러오는 중...";
   try {
-    const params = new URLSearchParams({ action:"load_settings", nick });
-    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
-    const json = await res.json();
+    const json = await gasJsonp({ action:"load_settings", nick });
     if (!json.ok) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + (json.error||""); return; }
     if (!json.data) { st.style.color="var(--amber)"; st.textContent="⚠ 저장된 데이터 없음 (" + nick + ")"; return; }
     const parsed = JSON.parse(json.data);
-    // 신버전 { S, p } / 구버전 { settings, pond } / 최구버전 S만
     if (parsed.S && parsed.p) {
-      S = parsed.S;
-      POND = pondDecompress(parsed.p);
+      S = parsed.S; POND = pondDecompress(parsed.p);
     } else if (parsed.settings) {
-      S = parsed.settings;
-      POND = parsed.pond || [];
-    } else {
-      S = parsed;
-    }
+      S = parsed.settings; POND = parsed.pond || [];
+    } else { S = parsed; }
     localStorage.setItem("qld_s11", JSON.stringify(S));
     localStorage.setItem("qld_pond", JSON.stringify(POND));
     localStorage.setItem("qld_nick", nick);
     loadSettings(); renderStatic(null); pondRender();
-    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ") — 설정 + 웅덩노트 복원";
-  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ 오류: " + e.message; }
+    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ")";
+  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ " + e.message; }
 }
+
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
@@ -1581,7 +1597,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwxvZZXhihemRGm2CQOT1lsDO_-K8oOY91siARiosJzMTS6bKDrlLhpudAJY88Uz3kFNA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzkMe3p2TVvxxKNXNvstvOcKQBHI3Du2pmJDMH-WI2Lwv8QZcVmYG4IzVSbaIGaq1k9PA/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");
@@ -2431,11 +2447,9 @@ function pondSave() {
 
 async function cloudAutoSync(nick) {
   try {
-    const data = JSON.stringify({ S, p: pondCompress(POND) });
-    const params = new URLSearchParams({ action:"save_settings", nick, data });
-    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+    const json = await gasJsonp({ action:"save_settings", nick, data: JSON.stringify({ S, p: pondCompress(POND) }) });
     const st = document.getElementById("cloud-status");
-    if (st) { st.style.color="var(--green)"; st.textContent="☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; }
+    if (st && json && json.ok) { st.style.color="var(--green)"; st.textContent="☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; }
   } catch(e) {
     const st = document.getElementById("cloud-status");
     if (st) { st.style.color="var(--amber)"; st.textContent="⚠ 자동 저장 실패 — 수동 저장 권장"; }

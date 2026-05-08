@@ -490,7 +490,7 @@ body {
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
   <button class="tab" onclick="switchTab('pond')">웅덩노트</button>
-  <button class="tab" onclick="switchTab('game')">미니게임</button>
+  <button class="tab" onclick="switchTab('game')">투자일지</button>
   <button class="tab" onclick="switchTab('war')">거시모니터</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
@@ -686,14 +686,58 @@ body {
   </div>
 </div>
 
-<!-- ── 미니게임 패널 ── -->
+<!-- ── 투자일지 패널 ── -->
 <div class="panel" id="panel-game">
-  <div style="text-align:center;padding:20px 0 14px;">
-    <div style="font-size:18px;font-weight:900;color:var(--text1);">💬 오늘의 투자 명언</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:4px;">빈칸에 들어갈 단어를 맞혀보세요</div>
+
+  <!-- 투자일지 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--text1);">📔 투자일지</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">매매 기록 · 감정 · 전략 메모</div>
+    </div>
+    <button onclick="diaryWrite()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">＋ 기록</button>
   </div>
 
-  <!-- 점수 -->
+  <!-- 작성 폼 -->
+  <div id="diary-form" style="display:none;background:var(--bg2);border:1.5px solid var(--blue);border-radius:14px;padding:14px;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <select id="diary-mood" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;">
+        <option value="😊">😊 좋음</option>
+        <option value="😐">😐 보통</option>
+        <option value="😰">😰 불안</option>
+        <option value="💪">💪 확신</option>
+        <option value="😤">😤 아쉬움</option>
+      </select>
+      <select id="diary-tag" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;">
+        <option value="매수">📥 매수</option>
+        <option value="매도">📤 매도</option>
+        <option value="관찰">👀 관찰</option>
+        <option value="전략">🧠 전략</option>
+        <option value="반성">🙏 반성</option>
+        <option value="기타">📝 기타</option>
+      </select>
+    </div>
+    <textarea id="diary-text" placeholder="오늘의 매매 기록, 시장 감상, 전략 메모..." rows="4"
+      style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;resize:none;line-height:1.6;margin-bottom:8px;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="diaryCancel()" style="flex:1;background:var(--bg3);border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
+      <button onclick="diarySubmit()" style="flex:2;background:var(--blue);border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:800;color:#fff;cursor:pointer;">저장</button>
+    </div>
+    <div id="diary-err" style="font-size:11px;color:var(--red);margin-top:6px;display:none;"></div>
+  </div>
+
+  <!-- 일지 목록 -->
+  <div id="diary-list"></div>
+  <button onclick="diaryExport()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;color:var(--text3);padding:8px;font-size:11px;cursor:pointer;font-weight:600;margin-top:4px;">📥 텍스트로 내보내기</button>
+
+  <!-- 구분선 -->
+  <div style="border-top:2px solid var(--border);margin:20px 0 16px;"></div>
+
+  <!-- 미니게임 -->
+  <div style="text-align:center;padding:0 0 12px;">
+    <div style="font-size:16px;font-weight:900;color:var(--text1);">💬 오늘의 투자 명언</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:3px;">빈칸에 들어갈 단어를 맞혀보세요</div>
+  </div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
       <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">점수</div>
@@ -708,27 +752,14 @@ body {
       <div id="game-accuracy" style="font-size:22px;font-weight:900;color:var(--amber);">-</div>
     </div>
   </div>
-
-  <!-- 명언 카드 -->
   <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;">
     <div style="font-size:10px;color:var(--text3);margin-bottom:12px;font-weight:600;" id="game-author">— 작자</div>
-    <div style="font-size:16px;font-weight:700;color:var(--text1);line-height:1.9;text-align:center;" id="game-quote">
-      새 게임 시작 버튼을 눌러주세요
-    </div>
+    <div style="font-size:16px;font-weight:700;color:var(--text1);line-height:1.9;text-align:center;" id="game-quote">새 게임 시작 버튼을 눌러주세요</div>
   </div>
-
-  <!-- 보기 버튼 -->
   <div id="game-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"></div>
-
-  <!-- 피드백 -->
   <div id="game-feedback" style="display:none;border-radius:10px;padding:12px;margin-bottom:10px;"></div>
-
-  <button id="game-next-btn" onclick="gameNext()" style="display:none;width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">
-    다음 명언 →
-  </button>
-  <button onclick="gameStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text2);cursor:pointer;">
-    🔄 새 게임
-  </button>
+  <button id="game-next-btn" onclick="gameNext()" style="display:none;width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">다음 명언 →</button>
+  <button onclick="gameStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text2);cursor:pointer;">🔄 새 게임</button>
   <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;">정답 +10점 · 3연속 보너스 +5점</div>
 </div>
 
@@ -1314,6 +1345,7 @@ function switchTab(id) {
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
   if (id === "war") loadComments();
+  if (id === "game") diaryLoad();
   if (id === "rules") { renderHiddenHoldings(); calcTQQQLOC(); calcSOXLLOC(); }
   if (id === "game") gameStart();
 }
@@ -3188,6 +3220,92 @@ async function runPondAI() {
 // ════════════════════════════════════════
 // 💬 투자 명언 빈칸 맞추기
 // ════════════════════════════════════════
+// ════════════════════════════════════════
+// 📔 투자일지 (localStorage)
+// ════════════════════════════════════════
+let DIARY = [];
+
+function diaryLoadLocal() {
+  try { DIARY = JSON.parse(localStorage.getItem("qld_diary") || "[]"); } catch { DIARY = []; }
+}
+function diarySaveLocal() {
+  localStorage.setItem("qld_diary", JSON.stringify(DIARY));
+}
+
+function diaryWrite() {
+  document.getElementById("diary-form").style.display = "block";
+  document.getElementById("diary-text").focus();
+}
+function diaryCancel() {
+  document.getElementById("diary-form").style.display = "none";
+  document.getElementById("diary-text").value = "";
+  document.getElementById("diary-err").style.display = "none";
+}
+function diarySubmit() {
+  const text  = (document.getElementById("diary-text").value || "").trim();
+  const mood  = document.getElementById("diary-mood").value;
+  const tag   = document.getElementById("diary-tag").value;
+  const errEl = document.getElementById("diary-err");
+  errEl.style.display = "none";
+  if (!text) { errEl.textContent = "내용을 입력해주세요"; errEl.style.display = "block"; return; }
+  const now = new Date();
+  const timeStr = now.getFullYear() + "-"
+    + String(now.getMonth()+1).padStart(2,"0") + "-"
+    + String(now.getDate()).padStart(2,"0") + " "
+    + String(now.getHours()).padStart(2,"0") + ":"
+    + String(now.getMinutes()).padStart(2,"0");
+  DIARY.unshift({ id: Date.now(), time: timeStr, mood, tag, text });
+  diarySaveLocal();
+  diaryCancel();
+  diaryRenderLocal();
+}
+
+function diaryDelete(id) {
+  if (!confirm("이 일지를 삭제하시겠습니까?")) return;
+  DIARY = DIARY.filter(d => d.id !== id);
+  diarySaveLocal();
+  diaryRenderLocal();
+}
+
+function diaryLoad() {
+  diaryLoadLocal();
+  diaryRenderLocal();
+}
+
+function diaryExport() {
+  const txt = DIARY.map(e =>
+    "[" + e.time + "] " + e.mood + " " + e.tag + "\n" + e.text
+  ).join("\n\n---\n\n");
+  const blob = new Blob([txt], { type:"text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "투자일지_" + new Date().toISOString().slice(0,10) + ".txt";
+  a.click();
+}
+
+const MOOD_COLOR = { "😊":"#15803d","😐":"#6b7280","😰":"#dc2626","💪":"#2563eb","😤":"#d97706" };
+const TAG_BG    = { "매수":"#dcfce7","매도":"#fee2e2","관찰":"#e0f2fe","전략":"#ede9fe","반성":"#fef3c7","기타":"#f3f4f6" };
+const TAG_COLOR = { "매수":"#15803d","매도":"#dc2626","관찰":"#0284c7","전략":"#7c3aed","반성":"#b45309","기타":"#6b7280" };
+
+function diaryRenderLocal() {
+  const list = document.getElementById("diary-list");
+  if (!DIARY.length) {
+    list.innerHTML = '<div style="text-align:center;padding:30px 0;font-size:13px;color:var(--text3);">📝 첫 투자일지를 기록해보세요</div>';
+    return;
+  }
+  list.innerHTML = DIARY.map(e =>
+    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">'
+    + '<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">'
+    +   '<span style="font-size:15px;">' + e.mood + '</span>'
+    +   '<span style="background:' + (TAG_BG[e.tag]||"#f3f4f6") + ';color:' + (TAG_COLOR[e.tag]||"#6b7280") + ';border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;">' + e.tag + '</span>'
+    +   '<span style="font-size:10px;color:var(--text3);margin-left:auto;">' + e.time + '</span>'
+    +   '<button onclick="diaryDelete(' + e.id + ')" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:0 2px;">✕</button>'
+    + '</div>'
+    + '<div style="font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;">' + e.text.replace(/</g,"&lt;") + '</div>'
+    + '</div>'
+  ).join("");
+}
+
 const QUOTE_DATA = [
   // 워런 버핏
   { quote:"( ) 속에서 사고, 낙관 속에서 팔아라.", answer:"공포", choices:["공포","탐욕","희망","확신"], author:"워런 버핏", comment:"역발상 투자의 핵심. 남들이 두려워할 때가 최고의 매수 기회입니다." },

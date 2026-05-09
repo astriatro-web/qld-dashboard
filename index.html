@@ -733,6 +733,34 @@ body {
   <!-- 구분선 -->
   <div style="border-top:2px solid var(--border);margin:20px 0 16px;"></div>
 
+  <!-- 투자 레벨 테스트 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--text1);">🏆 투자자 레벨 테스트</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">30문항 · 심리·전략·리스크 자가진단</div>
+    </div>
+    <button onclick="levelTestStart()" style="background:var(--purple);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">시작</button>
+  </div>
+
+  <!-- 내 레벨 표시 -->
+  <div id="level-result-card" style="display:none;"></div>
+
+  <!-- 테스트 진행 -->
+  <div id="level-test-wrap" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span id="level-q-num" style="font-size:11px;font-weight:700;color:var(--text3);"></span>
+      <span id="level-q-cat" style="font-size:10px;color:var(--blue);font-weight:700;"></span>
+    </div>
+    <div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:14px;">
+      <div id="level-progress" style="height:100%;background:var(--purple);border-radius:2px;transition:width 0.3s;"></div>
+    </div>
+    <div id="level-q-text" style="font-size:14px;font-weight:700;color:var(--text1);line-height:1.7;margin-bottom:14px;min-height:48px;"></div>
+    <div id="level-q-options" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <!-- 구분선 -->
+  <div style="border-top:2px solid var(--border);margin:20px 0 16px;"></div>
+
   <!-- 미니게임 -->
   <div style="text-align:center;padding:0 0 12px;">
     <div style="font-size:16px;font-weight:900;color:var(--text1);">💬 오늘의 투자 명언</div>
@@ -1345,7 +1373,7 @@ function switchTab(id) {
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
   if (id === "war") loadComments();
-  if (id === "game") diaryLoad();
+  if (id === "game") { diaryLoad(); levelLoadSaved(); }
   if (id === "rules") { renderHiddenHoldings(); calcTQQQLOC(); calcSOXLLOC(); }
   if (id === "game") gameStart();
 }
@@ -3304,6 +3332,167 @@ function diaryRenderLocal() {
     + '<div style="font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;">' + e.text.replace(/</g,"&lt;") + '</div>'
     + '</div>'
   ).join("");
+}
+
+// ════════════════════════════════════════
+// 🏆 투자자 레벨 테스트
+// ════════════════════════════════════════
+const LEVEL_QUESTIONS = [
+  // ── 실전 경험 (10문항) ──
+  { cat:"💸 실전", q:"지금까지 투자로 실현한 누적 수익률은?", opts:["아직 손실 중","0~20%","20~100%","100% 이상"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"레버리지 ETF를 보유한 기간은?", opts:["아직 없거나 1개월 미만","1~6개월","6개월~2년","2년 이상"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"하락장(-30% 이상)을 실제로 버텨본 적 있나?", opts:["없다","버텼지만 결국 손절했다","버텨서 본전 회복했다","버텨서 큰 수익을 냈다"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"지금까지 가장 큰 단일 매매 손실은?", opts:["원금의 50% 이상 날림","20~50% 손실","10~20% 손실","10% 이하 또는 손실 없음"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"분할매수를 실제로 실행한 경험이 있나?", opts:["없다, 항상 일괄 매수","해봤지만 중간에 포기","대부분 지켰다","계획한 대로 완수했다"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"익절 후 그 종목이 추가로 50% 더 올랐던 경험이 있나?", opts:["없다","있고 엄청 후회했다","있지만 원칙대로 했다","있고 다음 진입 기회를 잡았다"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"2020년 코로나 폭락, 2022년 하락장 때 실제로?", opts:["투자를 몰랐다/패닉매도","전부 팔고 나왔다","버텼다","적극적으로 추가 매수했다"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"현재 포트폴리오의 총 평가액(수익 포함)은?", opts:["1000만원 미만","1000~5000만원","5000만~2억","2억 이상"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"레버리지 ETF 보유 중 -50% 이상 구간을 경험했나?", opts:["없다","있고 전량 매도했다","있고 버텼다","있고 추가 매수해서 수익 냈다"], scores:[1,2,3,4] },
+  { cat:"💸 실전", q:"매달 정기적으로 투자금을 넣고 있나?", opts:["아니다","가끔","거의 매달","자동화해서 반드시 매달"], scores:[1,2,3,4] },
+
+  // ── 매매 판단 (10문항) ──
+  { cat:"🎯 판단", q:"'지금 못 사면 영원히 못 살 것 같은 느낌'에 실제로 매수한 적?", opts:["자주 그렇게 산다","가끔 그런 적 있다","거의 없다","한 번도 없다"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"유튜브/리딩방 추천으로 산 종목의 수익률은?", opts:["주로 손실","반반","주로 수익","그런 방식으로 안 산다"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"손절 기준 없이 보유하다 -40% 이상 된 종목이 있나?", opts:["지금도 있다","과거에 있었다","거의 없다","한 번도 없다"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"'평단 낮추기'로 추가 매수했다가 더 큰 손실을 본 적?", opts:["자주 경험했다","한두 번 있다","거의 없다","없다, 원칙적 추가매수만 했다"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"본인의 실제 연평균 수익률(CAGR)을 계산해본 적 있나?", opts:["없다","대략 계산해봤다","정확히 계산해봤다","매년 기록하고 있다"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"시장이 폭락할 때 실제로 한 행동은?", opts:["패닉셀","관망","기존 계획 유지","계획대로 추가 매수"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"수익 중인 종목을 '더 오를 것 같아' 계획 외 추가 매수한 적?", opts:["자주 한다","가끔 한다","거의 안 한다","한 번도 없다"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"테마주/급등주를 쫓아 매수한 경험과 결과는?", opts:["자주 하고 주로 손실","가끔 하고 반반","거의 안 했다","한 번도 없다"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"투자 원금 대비 현재 총자산 배수는?", opts:["원금보다 적다","1~1.5배","1.5~3배","3배 이상"], scores:[1,2,3,4] },
+  { cat:"🎯 판단", q:"같은 실수를 두 번 이상 반복한 적 있나?", opts:["지금도 반복 중","여러 번 반복했다","한두 번 반복 후 고쳤다","실수를 기록해서 반복 안 했다"], scores:[1,2,3,4] },
+
+  // ── 멘탈/원칙 실전 (10문항) ──
+  { cat:"🧠 멘탈", q:"투자 때문에 잠 못 잔 날이 한 달에 며칠?", opts:["10일 이상","3~10일","1~3일","없다"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"계좌 수익률 확인 빈도는?", opts:["하루에도 수십 번","매일 여러 번","하루 1~2번","주 1~2회 이하"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"보유 종목 손실 중일 때 타 종목 수익률을 보며 배가 아팠던 적?", opts:["항상 그렇다","자주 그렇다","가끔 그렇다","거의 없다"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"투자 손실로 인해 일상생활(업무, 관계)에 지장이 생긴 적?", opts:["자주 있다","몇 번 있다","거의 없다","한 번도 없다"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"'이번엔 다르다'는 생각으로 원칙을 어긴 결과는?", opts:["크게 손실 봤다","손실 봤다","본전이었다","원칙을 어긴 적 없다"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"지인에게 종목 추천을 받거나 준 경험의 결과는?", opts:["추천받아 큰 손실","추천받아 손실","추천 자체를 안 한다","철저히 독립적으로 판단한다"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"투자 수익/손실이 자존감에 영향을 미치나?", opts:["수익=행복, 손실=우울 수준","꽤 영향 받는다","약간 영향 받는다","투자와 자존감이 분리돼 있다"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"본인 전략의 백테스트 결과 MDD를 알고 투자하나?", opts:["모른다","대략 안다","정확히 알고 있다","알고 실전 경험도 있다"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"투자 원칙을 어겼을 때 실제 결과는 어땠나?", opts:["주로 이익이었다","반반이었다","주로 손실이었다","원칙을 어긴 적 없다"], scores:[1,2,3,4] },
+  { cat:"🧠 멘탈", q:"10년 후 이 전략을 그대로 하고 있을 자신이 있나?", opts:["아니다","잘 모르겠다","아마도 그럴 것 같다","확신한다"], scores:[1,2,3,4] },
+];
+
+const LEVEL_GRADES = [
+  { min:0,  max:39,  lv:1,  name:"씨앗 투자자",    color:"#6b7280", emoji:"🌱", desc:"투자 첫걸음! 원칙 공부가 최우선입니다." },
+  { min:40, max:49,  lv:2,  name:"새싹 투자자",    color:"#84cc16", emoji:"🌿", desc:"기초는 알지만 감정 매매가 많아요." },
+  { min:50, max:59,  lv:3,  name:"학습 투자자",    color:"#22c55e", emoji:"📚", desc:"공부 중! 전략을 체계화할 시기입니다." },
+  { min:60, max:69,  lv:4,  name:"원칙 입문자",    color:"#10b981", emoji:"📋", desc:"원칙이 생기기 시작했어요. 꾸준히!" },
+  { min:70, max:79,  lv:5,  name:"전략 투자자",    color:"#0891b2", emoji:"🎯", desc:"전략이 있고 대체로 지킵니다." },
+  { min:80, max:89,  lv:6,  name:"숙련 투자자",    color:"#2563eb", emoji:"💼", desc:"심리와 전략의 균형을 잡아가고 있어요." },
+  { min:90, max:99,  lv:7,  name:"원칙 수호자",    color:"#7c3aed", emoji:"🛡️", desc:"흔들림 없는 원칙으로 시장을 대합니다." },
+  { min:100,max:109, lv:8,  name:"마스터 투자자",  color:"#9333ea", emoji:"⚡", desc:"리스크를 알고 기회를 잡는 수준입니다." },
+  { min:110,max:114, lv:9,  name:"투자 현인",      color:"#f59e0b", emoji:"🔮", desc:"시장의 심리와 구조를 깊이 이해합니다." },
+  { min:115,max:120, lv:10, name:"웅덩이 마스터",  color:"#dc2626", emoji:"🏆", desc:"120 POND 전략을 완전히 체화했습니다!" },
+];
+
+let levelQIdx = 0;
+let levelScores = [];
+
+function levelTestStart() {
+  levelQIdx = 0;
+  levelScores = [];
+  document.getElementById("level-result-card").style.display = "none";
+  document.getElementById("level-test-wrap").style.display = "block";
+  levelRenderQ();
+}
+
+function levelRenderQ() {
+  const q = LEVEL_QUESTIONS[levelQIdx];
+  document.getElementById("level-q-num").textContent = (levelQIdx+1) + " / " + LEVEL_QUESTIONS.length;
+  document.getElementById("level-q-cat").textContent = q.cat;
+  document.getElementById("level-q-text").textContent = q.q;
+  document.getElementById("level-progress").style.width = ((levelQIdx/LEVEL_QUESTIONS.length)*100) + "%";
+  const opts = document.getElementById("level-q-options");
+  opts.innerHTML = q.opts.map((o, i) =>
+    '<button onclick="levelAnswer(' + q.scores[i] + ')" style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;font-weight:500;color:var(--text1);cursor:pointer;text-align:left;line-height:1.4;">'
+    + '<span style="color:var(--blue);font-weight:700;margin-right:8px;">' + ["①","②","③","④"][i] + '</span>' + o
+    + '</button>'
+  ).join("");
+}
+
+function levelAnswer(score) {
+  levelScores.push(score);
+  levelQIdx++;
+  if (levelQIdx >= LEVEL_QUESTIONS.length) {
+    levelShowResult();
+  } else {
+    levelRenderQ();
+  }
+}
+
+function levelShowResult() {
+  document.getElementById("level-test-wrap").style.display = "none";
+  const total = levelScores.reduce((a,b) => a+b, 0);
+  const grade = LEVEL_GRADES.find(g => total >= g.min && total <= g.max) || LEVEL_GRADES[0];
+
+  // 카테고리별 점수
+  const psy = levelScores.slice(0,10).reduce((a,b)=>a+b,0);
+  const str = levelScores.slice(10,20).reduce((a,b)=>a+b,0);
+  const rsk = levelScores.slice(20,30).reduce((a,b)=>a+b,0);
+  const pct = n => Math.round((n/40)*100);
+
+  // localStorage 저장
+  const result = { lv: grade.lv, name: grade.name, total, psy, str, rsk, date: new Date().toLocaleDateString("ko-KR") };
+  localStorage.setItem("qld_level", JSON.stringify(result));
+
+  const card = document.getElementById("level-result-card");
+  card.style.display = "block";
+  card.innerHTML =
+    '<div style="background:var(--bg2);border:2px solid ' + grade.color + ';border-radius:16px;padding:18px;margin-bottom:12px;">'
+    + '<div style="text-align:center;margin-bottom:14px;">'
+    +   '<div style="font-size:36px;margin-bottom:4px;">' + grade.emoji + '</div>'
+    +   '<div style="font-size:11px;color:var(--text3);font-weight:700;letter-spacing:0.1em;">LV.' + grade.lv + ' / 10</div>'
+    +   '<div style="font-size:22px;font-weight:900;color:' + grade.color + ';margin:4px 0;">' + grade.name + '</div>'
+    +   '<div style="font-size:12px;color:var(--text2);line-height:1.6;">' + grade.desc + '</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:6px;margin-bottom:14px;">'
+    + levelBarItem("🧠 심리", psy, 40, "#7c3aed")
+    + levelBarItem("📋 전략", str, 40, "#2563eb")
+    + levelBarItem("⚠️ 리스크", rsk, 40, "#dc2626")
+    + '</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text3);margin-bottom:12px;">'
+    +   '<span>총점 <b style="color:' + grade.color + ';font-size:15px;">' + total + '</b>/120</span>'
+    +   '<span>' + result.date + '</span>'
+    + '</div>'
+    + '<button onclick="levelTestStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;">🔄 다시 테스트</button>'
+    + '</div>';
+}
+
+function levelBarItem(label, score, max, color) {
+  const pct = Math.round((score/max)*100);
+  return '<div style="flex:1;background:var(--bg3);border-radius:10px;padding:8px 10px;">'
+    + '<div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px;">' + label + '</div>'
+    + '<div style="height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden;margin-bottom:3px;">'
+    +   '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:3px;"></div>'
+    + '</div>'
+    + '<div style="font-size:11px;font-weight:800;color:' + color + ';">' + pct + '%</div>'
+    + '</div>';
+}
+
+// 탭 진입 시 저장된 결과 표시
+function levelLoadSaved() {
+  const saved = localStorage.getItem("qld_level");
+  if (!saved) return;
+  try {
+    const r = JSON.parse(saved);
+    const grade = LEVEL_GRADES.find(g => g.lv === r.lv) || LEVEL_GRADES[0];
+    const card = document.getElementById("level-result-card");
+    card.style.display = "block";
+    card.innerHTML =
+      '<div style="background:var(--bg2);border:1.5px solid ' + grade.color + '44;border-radius:14px;padding:14px;margin-bottom:10px;">'
+      + '<div style="display:flex;align-items:center;gap:10px;">'
+      +   '<span style="font-size:28px;">' + grade.emoji + '</span>'
+      +   '<div>'
+      +     '<div style="font-size:10px;color:var(--text3);">내 레벨 · ' + r.date + '</div>'
+      +     '<div style="font-size:16px;font-weight:900;color:' + grade.color + ';">LV.' + grade.lv + ' ' + grade.name + '</div>'
+      +     '<div style="font-size:11px;color:var(--text3);">총점 ' + r.total + '/120 · 심리 ' + r.psy + ' · 전략 ' + r.str + ' · 리스크 ' + r.rsk + '</div>'
+      +   '</div>'
+      + '</div>'
+      + '</div>';
+  } catch(e) {}
 }
 
 const QUOTE_DATA = [

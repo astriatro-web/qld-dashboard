@@ -2208,9 +2208,10 @@ function renderRebuy(d, dd, mode) {
 
 function renderStatic(d) {
   const el = elapsed();
-  // 모드에 따라 경과일 표시 구분
   const mode = d ? determineMode(d) : null;
-  const isStandby = mode && (mode.phase === "hold" || mode.phase.startsWith("sell"));
+  const isStandby = mode
+    ? (mode.phase === "hold" || mode.phase.startsWith("sell"))
+    : !!S.standbyDate; // d없어도 standbyDate 있으면 대기모드로 간주
   const sd = S.standbyDate || (d && d.standbyDate);
 
   if (isStandby && sd) {

@@ -1756,9 +1756,17 @@ function determineMode(d) {
         }
 
         // 경과일 구간별 멘트
-        const probMemo = standbyDays <= 30 ? "단기 조정" :
-                         standbyDays <= 90 ? "중기 조정" :
-                         standbyDays <= 180 ? "장기 조정" : "역사적 장기 대기";
+        const probMemo = standbyDays <= 10 ? "아직 초기 — 하락인지 조정인지 판단 이른 시점" :
+                         standbyDays <= 20 ? "단기 관망 구간 — 탄환 적립 시작, 섣부른 재진입 금물" :
+                         standbyDays <= 30 ? "조정 가능성 확인 중 — 120일선 재돌파 여부 주시" :
+                         standbyDays <= 45 ? "본격 조정 진입 — 탄환 풀 점검, 재진입 시나리오 준비" :
+                         standbyDays <= 60 ? "중기 하락 구간 — 역사적으로 절반 이상 이 구간서 회귀" :
+                         standbyDays <= 90 ? "회귀 확률 빠르게 상승 중 — 탄환 최대 적립, 매수 준비 완료" :
+                         standbyDays <= 120 ? "고확률 회귀 구간 — 역사적 하락장 대부분 이 구간서 종료" :
+                         standbyDays <= 180 ? "장기 조정 — 드문 케이스, 인내가 수익" :
+                         standbyDays <= 250 ? "역사적 장기 하락 — 2022년 수준, 역대급 매수 기회" :
+                         standbyDays <= 365 ? "극단적 장기 하락 — 역사상 손에 꼽는 수준, 최대 기회 구간" :
+                                              "전례 없는 장기 대기 — 시장 구조 변화 점검 필요";
         standbyInfo = `📅 대기 ${standbyDays}일 경과 (${sd} 진입) · 역사적 회귀 확률 ${prob}% · ${probMemo}`;
 
         // F&G 복합 점수
@@ -1778,10 +1786,12 @@ function determineMode(d) {
 
           const compColor = composite >= 70 ? "#15803d" :
                             composite >= 50 ? "#b45309" : "#6b7280";
-          const compMemo  = composite >= 75 ? "매수 재개 타이밍 근접 — 적극 준비" :
-                            composite >= 60 ? "조건 무르익는 중 — 탄환 점검 권장" :
-                            composite >= 45 ? "중간 신뢰 구간 — 추가 하락 가능성 상존" :
-                                              "아직 초기 단계 — 대기 지속";
+          const compMemo  = composite >= 85 ? "🚨 재진입 강력 권장 — 탄환 즉시 투입 준비" :
+                            composite >= 75 ? "📈 매수 재개 타이밍 근접 — 적극 준비" :
+                            composite >= 65 ? "⏳ 조건 무르익는 중 — 탄환 최대 적립" :
+                            composite >= 55 ? "🔍 신호 축적 중 — 탄환 점검 권장" :
+                            composite >= 40 ? "⚠️ 추가 하락 가능성 — 서두르지 말 것" :
+                                              "🌱 초기 대기 — 관망 유지";
 
           compositeInfo = `📊 복합 회귀 점수: ${composite}점/100 · 회귀확률 ${prob}% · 공포도 가중치 ${fgInverse}% · F&G ${fg} ${fgLabel} — ${compMemo}`;
         }
@@ -1842,11 +1852,24 @@ function calcScoreData(d) {
     fgLabel = fg<=20?"극단공포": fg<=40?"공포": fg<=60?"중립": fg<=80?"탐욕":"극단탐욕";
     composite = Math.round(prob * 0.6 + fgInverse * 0.4);
   }
-  const phaseMemo = standbyDays<=30?"단기 조정": standbyDays<=90?"중기 조정": standbyDays<=180?"장기 조정":"역사적 장기 대기";
+  const phaseMemo = standbyDays<=10  ? "아직 초기 — 하락인지 조정인지 판단 이른 시점" :
+                    standbyDays<=20  ? "단기 관망 구간 — 탄환 적립 시작, 섣부른 재진입 금물" :
+                    standbyDays<=30  ? "조정 가능성 확인 중 — 120일선 재돌파 여부 주시" :
+                    standbyDays<=45  ? "본격 조정 진입 — 탄환 풀 점검, 재진입 시나리오 준비" :
+                    standbyDays<=60  ? "중기 하락 구간 — 역사적으로 절반 이상 이 구간서 회귀" :
+                    standbyDays<=90  ? "회귀 확률 빠르게 상승 중 — 탄환 최대 적립, 매수 준비 완료" :
+                    standbyDays<=120 ? "고확률 회귀 구간 — 역사적 하락장 대부분 이 구간서 종료" :
+                    standbyDays<=180 ? "장기 조정 — 드문 케이스, 인내가 수익" :
+                    standbyDays<=250 ? "역사적 장기 하락 — 2022년 수준, 역대급 매수 기회" :
+                    standbyDays<=365 ? "극단적 장기 하락 — 역사상 손에 꼽는 수준, 최대 기회 구간" :
+                                       "전례 없는 장기 대기 — 시장 구조 변화 점검 필요";
   const compMemo = !composite ? null :
-    composite>=75?"매수 재개 타이밍 근접":
-    composite>=60?"조건 무르익는 중":
-    composite>=45?"추가 하락 가능성 상존":"아직 초기 단계";
+    composite>=85 ? "🚨 재진입 강력 권장 — 탄환 즉시 투입 준비" :
+    composite>=75 ? "📈 매수 재개 타이밍 근접 — 적극 준비" :
+    composite>=65 ? "⏳ 조건 무르익는 중 — 탄환 최대 적립" :
+    composite>=55 ? "🔍 신호 축적 중 — 탄환 점검 권장" :
+    composite>=40 ? "⚠️ 추가 하락 가능성 — 서두르지 말 것" :
+                    "🌱 초기 대기 — 관망 유지";
   return { standbyDays, sd, prob, phaseMemo, fg, fgInverse, fgLabel, composite, compMemo };
 }
 

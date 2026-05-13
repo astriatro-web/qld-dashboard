@@ -2208,8 +2208,17 @@ function renderRebuy(d, dd, mode) {
 
 function renderStatic(d) {
   const el = elapsed();
-  // 무한매수 — 잔여일/진행바 없음, 경과일만 표시
-  setText("v-elapsed", `${el}일차 (${S.entryDate||"시작일 미설정"} 시작)`);
+  // 모드에 따라 경과일 표시 구분
+  const mode = d ? determineMode(d) : null;
+  const isStandby = mode && (mode.phase === "hold" || mode.phase.startsWith("sell"));
+  const sd = S.standbyDate || (d && d.standbyDate);
+
+  if (isStandby && sd) {
+    const standbyEl = Math.max(0, Math.floor((new Date() - new Date(sd)) / 86400000));
+    setText("v-elapsed", `대기 ${standbyEl}일째 (${sd} 진입)`);
+  } else {
+    setText("v-elapsed", `${el}일차 (${S.entryDate||"시작일 미설정"} 시작)`);
+  }
   const qShares = S.qldDailyShares || 10;
   const sShares = S.ssoDailyShares || 5;
   if (d && d.qld && d.sso && d.usdkrw) {

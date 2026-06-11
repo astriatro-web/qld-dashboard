@@ -1006,6 +1006,12 @@ body {
   <div class="setting-group"><div class="setting-label">월 투자금액 (원)</div><input class="setting-input" type="number" id="s-monthlyBudget" placeholder="10000000" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">익절현금풀 잔액 (원)</div><input class="setting-input" type="number" id="s-profitCash" placeholder="0" oninput="saveSettings()"></div>
   <div class="setting-group">
+    <div class="setting-label">재투입 탄환 (원) — 조건 충족 시 분할매수할 금액</div>
+    <input class="setting-input" type="number" id="s-rebuyBullet" placeholder="0 (익절현금풀에서 이전)" oninput="saveSettings()">
+    <div style="font-size:10px;color:var(--text3);margin-top:4px;">조건 충족 → <b>${CFG.REBUY_SPLIT}일</b> 분할매수 · LOC 가이드에 자동 합산</div>
+  </div>
+  <div class="setting-group"><div class="setting-label">재투입 잔여일 (자동계산)</div><input class="setting-input" type="number" id="s-rebuyDaysLeft" placeholder="자동" oninput="saveSettings()"></div>
+  <div class="setting-group">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
       <div class="setting-label" style="margin-bottom:0;">Fear &amp; Greed 수동 입력 (0~100)</div>
       <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank"
@@ -1065,10 +1071,13 @@ body {
 const CFG = {
   SPLIT_DAYS: 75,
   QLD_RATIO: 0.70, SSO_RATIO: 0.30,
-  // 익절: +25%, +50%, +100% 각 10%
   SELL_GAP: [0.25, 0.50, 1.00], SELL_PCT: [0.10, 0.10, 0.10],
-  REBUY_DD: [0.20, 0.35, 0.50], REBUY_FG: [45, 30, 20],
-  REBUY_VIX: [20, 20, 20], REBUY_PCT: [0.30, 0.35, 0.35],
+  // 재투입 조건: 대기경과일 + F&G + VIX (3중 AND)
+  REBUY_DAYS: [30, 60, 90],      // 대기 경과일
+  REBUY_FG:   [40, 30, 20],      // F&G 이하
+  REBUY_VIX:  [20, 25, 30],      // VIX 이상
+  REBUY_PCT:  [0.30, 0.35, 0.35], // 익절현금풀 비율
+  REBUY_SPLIT: 10,               // 분할 일수
   WS_REBUY: 2,
 };
 
@@ -1102,11 +1111,13 @@ function getRULES() {
     },
     { title:"🔄 재투입 전략 (옵션 — 필수 아님)", color:"#14532d", bg:"#f0fdf4",
       items:[
-        ["⚠️ 옵션 전략","재투입은 필수 규칙이 아닙니다. 익절현금(SGOV)을 그대로 유지하는 것도 유효한 전략. 3중 조건이 부담스러우면 시행하지 않아도 됩니다."],
-        ["1차 (선택)","고점 -20% AND F&G≤45 AND VIX≥20 → 2일 연속 → 익절현금 30% 재투입"],
-        ["2차 (선택)","고점 -35% AND F&G≤30 AND VIX≥20 → 2일 연속 → 35% 재투입"],
-        ["3차 (선택)","고점 -50% AND F&G≤20 AND VIX≥20 → 2일 연속 → 35% 재투입"],
-        ["18개월 룰","재투입을 선택한 경우: 18개월 내 조건 미충족 시 F&G/VIX 무시 강제 투입"],
+        ["⚠️ 옵션 전략","재투입은 필수 규칙이 아닙니다. 익절현금(SGOV)을 그대로 유지하는 것도 유효한 전략."],
+        ["진입 기준","DD가 아닌 대기 경과일 기준 — 120일선 상방 유지 기간이 길수록 다음 하락 때 회귀 확률 상승"],
+        ["1차 (선택)","대기 30일+ AND F&G≤40 AND VIX≥20 → 2일 연속 → 익절현금 30%를 10일 분할매수"],
+        ["2차 (선택)","대기 60일+ AND F&G≤30 AND VIX≥25 → 2일 연속 → 35%를 10일 분할매수"],
+        ["3차 (선택)","대기 90일+ AND F&G≤20 AND VIX≥30 → 2일 연속 → 35%를 10일 분할매수"],
+        ["분할매수 이유","한 번에 넣으면 타이밍 리스크. 10일 분할로 평단 리스크 분산 + LOC 가이드에 자동 합산"],
+        ["18개월 룰","재투입 선택 시: 18개월 내 조건 미충족이면 F&G/VIX 무시 강제 투입"],
       ]
     },
     { title:"♾️ 무한매수 원칙", color:"#0c4a6e", bg:"#f0f9ff",
@@ -1131,6 +1142,8 @@ function loadSettings() {
   S.totalBullet   = S.totalBullet   || 100000000;
   S.monthlyBudget = S.monthlyBudget || 10000000;
   S.profitCash    = S.profitCash    || 0;
+  S.rebuyBullet   = S.rebuyBullet   || 0;
+  S.rebuyDaysLeft = S.rebuyDaysLeft || 0;
   S.fg            = S.fg            != null ? S.fg : null;
   S.gcCount       = S.gcCount       || 0;
   S.rebuyCount    = S.rebuyCount    || 0;
@@ -1154,6 +1167,8 @@ function loadSettings() {
   document.getElementById("s-totalBullet").value   = S.totalBullet;
   document.getElementById("s-monthlyBudget").value = S.monthlyBudget;
   document.getElementById("s-profitCash").value    = S.profitCash;
+  const rbEl2 = document.getElementById("s-rebuyBullet"); if(rbEl2) rbEl2.value = S.rebuyBullet || "";
+  const rdEl  = document.getElementById("s-rebuyDaysLeft"); if(rdEl) rdEl.value = S.rebuyDaysLeft || "";
   document.getElementById("s-fg").value            = S.fg != null ? S.fg : "";
   document.getElementById("s-gcCount").value       = S.gcCount;
   document.getElementById("s-rebuyCount").value    = S.rebuyCount;
@@ -1179,6 +1194,10 @@ function saveSettings() {
   S.totalBullet    = parseFloat(document.getElementById("s-totalBullet").value) || 100000000;
   S.monthlyBudget  = parseFloat(document.getElementById("s-monthlyBudget").value) || 10000000;
   S.profitCash     = parseFloat(document.getElementById("s-profitCash").value) || 0;
+  const rbEl3 = document.getElementById("s-rebuyBullet");
+  S.rebuyBullet    = rbEl3 ? (parseFloat(rbEl3.value) || 0) : (S.rebuyBullet || 0);
+  const rdEl2 = document.getElementById("s-rebuyDaysLeft");
+  S.rebuyDaysLeft  = rdEl2 ? (parseInt(rdEl2.value) || 0) : (S.rebuyDaysLeft || 0);
   const fgv        = document.getElementById("s-fg").value;
   S.fg             = fgv !== "" ? parseInt(fgv) : null;
   S.gcCount        = parseInt(document.getElementById("s-gcCount").value) || 0;
@@ -1455,11 +1474,28 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
   if (!qldPrice || !ssoPrice || !usdkrw) { container.innerHTML='<div class="loc-na">시세 조회 후 표시됩니다</div>'; return; }
   const qldShares = S.qldDailyShares || 10;
   const ssoShares = S.ssoDailyShares || 5;
-  const qldA = Math.round(qldShares * 0.6), qldB = qldShares - qldA;
+
+  // 재투입 분할매수 — 잔여일 있으면 오늘 투입금 계산
+  const rebuyBullet   = S.rebuyBullet   || 0;
+  const rebuyDaysLeft = S.rebuyDaysLeft || 0;
+  const rebuyDaily    = (rebuyBullet > 0 && rebuyDaysLeft > 0)
+    ? Math.round(rebuyBullet / rebuyDaysLeft)
+    : 0;
+  const rebuyQldShares = rebuyDaily > 0
+    ? Math.max(1, Math.floor(rebuyDaily / (qldPrice * usdkrw)))
+    : 0;
+
+  const totalQld = qldShares + rebuyQldShares;
+  const qldA = Math.round(totalQld * 0.6), qldB = totalQld - qldA;
   const ssoA = Math.round(ssoShares * 0.6), ssoB = ssoShares - ssoA;
   const f2 = n => n.toFixed(2);
+
+  const rebuyBadge = rebuyQldShares > 0
+    ? `<span style="background:#fef3c7;color:#b45309;border-radius:5px;padding:1px 7px;font-size:10px;font-weight:800;margin-left:6px;">+${rebuyQldShares}주 재투입 포함 (${rebuyDaysLeft}일 잔여)</span>`
+    : "";
+
   container.innerHTML = `
-    <div class="loc-ticker">QLD &nbsp;<span style="color:var(--text3);font-weight:400;">종가 $${f2(qldPrice)} → 오늘 ${qldShares}주</span></div>
+    <div class="loc-ticker">QLD &nbsp;<span style="color:var(--text3);font-weight:400;">종가 $${f2(qldPrice)} → 오늘 ${totalQld}주</span>${rebuyBadge}</div>
     <div class="loc-row type-a"><div class="loc-row-label"><span class="tag a">A</span>확실체결 LOC</div><div class="loc-row-right"><div class="loc-price a">$${f2(qldPrice*1.025)}</div><div class="loc-shares">${qldA}주 · ×1.025</div></div></div>
     <div class="loc-row type-b"><div class="loc-row-label"><span class="tag b">B</span>유리한가격 LOC</div><div class="loc-row-right"><div class="loc-price b">$${f2(qldPrice*0.990)}</div><div class="loc-shares">${qldB}주 · ×0.990</div></div></div>
     <hr class="loc-divider">
@@ -1520,11 +1556,11 @@ function autoCountStreak(d) {
   const gc = d.ma20 && d.ma60 ? d.ma20 > d.ma60 : false;
   const prevGC = streak.gcCount || 0;
   const newGC = gc ? Math.min(prevGC+1, 5) : 0;
-  const ddBase = d.qldHigh;
-  const dd = ddBase ? Math.max(0, (ddBase-d.qld)/ddBase) : 0;
+  const sdChk = S.standbyDate;
+  const standbyDaysChk = sdChk ? Math.max(0, Math.floor((new Date()-new Date(sdChk))/86400000)) : 0;
   let rebuyMet = false;
-  for (let i=0; i<CFG.REBUY_DD.length; i++) {
-    if (dd>=CFG.REBUY_DD[i] && d.fg!=null && d.fg<=CFG.REBUY_FG[i] && d.vix!=null && d.vix>=CFG.REBUY_VIX[i]) { rebuyMet=true; break; }
+  for (let i=0; i<CFG.REBUY_DAYS.length; i++) {
+    if (standbyDaysChk>=CFG.REBUY_DAYS[i] && d.fg!=null && d.fg<=CFG.REBUY_FG[i] && d.vix!=null && d.vix>=CFG.REBUY_VIX[i]) { rebuyMet=true; break; }
   }
   const newRebuy = rebuyMet ? Math.min((streak.rebuyCount||0)+1, 5) : 0;
   streak = { date:todayStr, gcCount:newGC, rebuyCount:newRebuy };
@@ -1638,16 +1674,21 @@ function determineMode(d) {
         `매수 재개: QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"})`
       ];
     }
-    if (S.profitCash>0 && S.rebuyCount>=CFG.WS_REBUY) {
+    if (S.rebuyBullet > 0 && S.rebuyDaysLeft > 0) {
+      const dailyRebuy = Math.round(S.rebuyBullet / S.rebuyDaysLeft);
+      actions.push(`🔄 재투입 진행 중 — 잔여 ${S.rebuyDaysLeft}일 · 오늘 ${Math.round(dailyRebuy/10000)}만원 LOC 합산됨`);
+    } else if (S.profitCash > 0 && S.rebuyCount >= CFG.WS_REBUY) {
+      const sd3 = S.standbyDate || (d && d.standbyDate);
+      const sd3Days = sd3 ? Math.max(0, Math.floor((new Date()-new Date(sd3))/86400000)) : 0;
       let rebuyTriggered = false;
-      for (let i=CFG.REBUY_DD.length-1; i>=0; i--) {
-        if (dd>=CFG.REBUY_DD[i] && d.fg!=null && d.fg<=CFG.REBUY_FG[i] && d.vix!=null && d.vix>=CFG.REBUY_VIX[i]) {
-          actions.push(`📌 [옵션] 재투입 ${i+1}차 조건 충족 — 익절현금풀 ${CFG.REBUY_PCT[i]*100}% → QLD 매수 (선택 사항)`);
+      for (let i=CFG.REBUY_DAYS.length-1; i>=0; i--) {
+        if (sd3Days>=CFG.REBUY_DAYS[i] && d.fg!=null && d.fg<=CFG.REBUY_FG[i] && d.vix!=null && d.vix>=CFG.REBUY_VIX[i]) {
+          actions.push(`📌 [옵션] 재투입 ${i+1}차 조건 충족 (대기${sd3Days}일) — 익절현금 ${CFG.REBUY_PCT[i]*100}% → ${CFG.REBUY_SPLIT}일 분할매수 (재투입 카드에서 시작)`);
           rebuyTriggered = true; break;
         }
       }
       if (!rebuyTriggered) {
-        actions.push(`💡 재투입 옵션: 조건 미충족 중 — 익절현금(SGOV) 그대로 유지`);
+        actions.push(`💡 재투입 옵션: 조건 미충족 — 익절현금(SGOV) 그대로 유지`);
       }
     }
   } else if (belowMA === true) {
@@ -1813,22 +1854,76 @@ function renderRebuy(d, dd, mode) {
   const rebuyContainer = document.getElementById("rebuyRows");
   if (!rebuyCard || !rebuyContainer) return;
   if (mode.phase==="hold"||mode.phase.startsWith("sell")) {
-    const ddBasisTxt = (S.qldAvg && S.qldAvg>0) ? "평단기준" : "52주고가기준";
+    const sd = S.standbyDate || (d && d.standbyDate);
+    const standbyDays = sd ? Math.max(0, Math.floor((new Date()-new Date(sd))/86400000)) : 0;
+    const hasBullet = S.profitCash > 0;
+
     rebuyContainer.innerHTML =
-      `<div style="font-size:10px;color:var(--text3);margin-bottom:6px;">DD ${ddBasisTxt} · 3중 AND 조건 · ${S.rebuyCount||0}일 연속 충족</div>` +
-      CFG.REBUY_DD.map((tdd,i) => {
-        const ddOk=dd>=tdd, fgOk=d.fg!=null&&d.fg<=CFG.REBUY_FG[i], vixOk=d.vix!=null&&d.vix>=CFG.REBUY_VIX[i];
-        const allOk = ddOk&&fgOk&&vixOk;
+      `<div style="font-size:10px;color:var(--text3);margin-bottom:8px;">대기 경과일 + F&G + VIX 3중 AND 조건 · ${S.rebuyCount||0}일 연속 충족</div>` +
+      CFG.REBUY_DAYS.map((tdays, i) => {
+        const daysOk = standbyDays >= tdays;
+        const fgOk   = d.fg != null && d.fg <= CFG.REBUY_FG[i];
+        const vixOk  = d.vix != null && d.vix >= CFG.REBUY_VIX[i];
+        const allOk  = daysOk && fgOk && vixOk;
+        const rebuyAmt = Math.round(S.profitCash * CFG.REBUY_PCT[i]);
+        const dailyAmt = Math.round(rebuyAmt / CFG.REBUY_SPLIT);
         const dc = c => `<div class="dot ${c}"></div>`;
-        return `<div class="rebuy-row" style="${allOk?"border-left:2.5px solid #16a34a;padding-left:6px;":""}">
-          <span>${i+1}차 -${tdd*100}% / F&G≤${CFG.REBUY_FG[i]} / VIX≥${CFG.REBUY_VIX[i]}</span>
-          <div class="dots">${dc(ddOk?"on":"off")}${dc(fgOk?"on":"off")}${dc(vixOk?"on":"off")}</div>
+        return `<div class="rebuy-row" style="${allOk?"border-left:2.5px solid #16a34a;padding-left:6px;background:#f0fdf4;border-radius:6px;":""}">
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:600;color:var(--text1);">${i+1}차 · 대기${tdays}일+ / F&G≤${CFG.REBUY_FG[i]} / VIX≥${CFG.REBUY_VIX[i]}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">익절현금 ${CFG.REBUY_PCT[i]*100}% → ${CFG.REBUY_SPLIT}일 분할 · 일 ${hasBullet?Math.round(dailyAmt/10000)+"만원":"—"}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+            <div class="dots">${dc(daysOk?"on":"off")}${dc(fgOk?"on":"off")}${dc(vixOk?"on":"off")}</div>
+            ${allOk && hasBullet ? `<button onclick="rebuyStart(${i})" style="background:#16a34a;color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:800;cursor:pointer;">▶ 시작</button>` : ""}
+          </div>
         </div>`;
-      }).join("");
+      }).join("") +
+      (S.rebuyBullet > 0 && S.rebuyDaysLeft > 0 ?
+        `<div style="background:#fef3c7;border:1.5px solid #fbbf24;border-radius:10px;padding:10px 12px;margin-top:8px;">
+          <div style="font-size:12px;font-weight:800;color:#b45309;margin-bottom:4px;">🔄 재투입 진행 중</div>
+          <div style="font-size:11px;color:var(--text2);">잔여 ${S.rebuyDaysLeft}일 · 잔액 ${Math.round(S.rebuyBullet/10000)}만원 · 일 ${Math.round(S.rebuyBullet/S.rebuyDaysLeft/10000)}만원</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button onclick="rebuyComplete()" style="flex:1;background:#16a34a;color:#fff;border:none;border-radius:7px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;">오늘 매수 완료</button>
+            <button onclick="rebuyStop()" style="flex:1;background:var(--bg3);border:none;border-radius:7px;padding:7px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;">중단</button>
+          </div>
+        </div>` : "");
     rebuyCard.style.display = "block";
   } else {
     rebuyCard.style.display = "none";
   }
+}
+
+function rebuyStart(idx) {
+  const amt = Math.round(S.profitCash * CFG.REBUY_PCT[idx]);
+  if (!amt || amt <= 0) { alert("익절현금풀이 없습니다"); return; }
+  if (!confirm(`${CFG.REBUY_PCT[idx]*100}% (${Math.round(amt/10000)}만원)을 ${CFG.REBUY_SPLIT}일 분할매수로 시작하시겠습니까?`)) return;
+  S.rebuyBullet   = amt;
+  S.rebuyDaysLeft = CFG.REBUY_SPLIT;
+  S.profitCash    = Math.max(0, S.profitCash - amt);
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  loadSettings();
+  if (MD) renderDashboard(MD);
+}
+
+function rebuyComplete() {
+  if (!S.rebuyDaysLeft || S.rebuyDaysLeft <= 0) return;
+  const dailyAmt = Math.round(S.rebuyBullet / S.rebuyDaysLeft);
+  S.rebuyBullet   = Math.max(0, S.rebuyBullet - dailyAmt);
+  S.rebuyDaysLeft = Math.max(0, S.rebuyDaysLeft - 1);
+  if (S.rebuyDaysLeft <= 0) { S.rebuyBullet = 0; }
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  loadSettings();
+  if (MD) renderDashboard(MD);
+}
+
+function rebuyStop() {
+  if (!confirm("재투입을 중단하고 잔액을 익절현금풀로 돌려드릴까요?")) return;
+  S.profitCash  = (S.profitCash || 0) + (S.rebuyBullet || 0);
+  S.rebuyBullet = 0; S.rebuyDaysLeft = 0;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  loadSettings();
+  if (MD) renderDashboard(MD);
 }
 
 function renderStatic(d) {

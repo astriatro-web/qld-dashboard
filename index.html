@@ -1990,6 +1990,8 @@ function renderStatic(d) {
   if (isStandby && sd) {
     const standbyEl = Math.max(0, Math.floor((new Date() - new Date(sd)) / 86400000));
     setText("v-elapsed", `대기 ${standbyEl}일째 (${sd} 진입)`);
+  } else if (isStandby && !sd) {
+    setText("v-elapsed", `대기중 — 새로고침하면 경과일 표시`);
   } else {
     setText("v-elapsed", `${el}일차 (${S.entryDate||"시작일 미설정"} 시작)`);
   }
@@ -3149,11 +3151,22 @@ async function cloudLoad() {
     if (parsed.S && parsed.p) { S=parsed.S; POND=pondDecompress(parsed.p); }
     else if (parsed.settings) { S=parsed.settings; POND=parsed.pond||[]; }
     else { S=parsed; }
+    // standbyDate 없으면 빈 문자열로 초기화
+    if (!S.standbyDate) S.standbyDate = "";
     localStorage.setItem("qld_s11", JSON.stringify(S));
     localStorage.setItem("qld_pond", JSON.stringify(POND));
     localStorage.setItem("qld_nick", nick);
-    loadSettings(); renderStatic(null); pondRender();
-    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ")";
+    // UI 전체 갱신
+    loadSettings();
+    if (MD) {
+      // MD 있으면 standbyDate 반영
+      if (MD.standbyDate) S.standbyDate = MD.standbyDate;
+      renderDashboard(MD);
+    } else {
+      renderStatic(null);
+    }
+    pondRender();
+    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ") — 새로고침하면 대기일 정확히 표시";
   } catch(e) { st.style.color="var(--red)"; st.textContent="❌ " + e.message; }
 }
 

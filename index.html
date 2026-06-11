@@ -490,7 +490,7 @@ body {
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
   <button class="tab" onclick="switchTab('pond')">웅덩노트</button>
-  <button class="tab" onclick="switchTab('game')">미니게임</button>
+  <button class="tab" onclick="switchTab('game')">투자일지</button>
   <button class="tab" onclick="switchTab('war')">거시모니터</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
@@ -684,13 +684,69 @@ body {
 </div>
 
 <!-- ── 미니게임 패널 ── -->
+<!-- ── 투자일지 패널 ── -->
 <div class="panel" id="panel-game">
-  <div style="text-align:center;padding:20px 0 14px;">
-    <div style="font-size:18px;font-weight:900;color:var(--text1);">💬 오늘의 투자 명언</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:4px;">빈칸에 들어갈 단어를 맞혀보세요</div>
+
+  <!-- 투자일지 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--text1);">📔 투자일지</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">매매 기록 · 감정 · 전략 메모</div>
+    </div>
+    <button onclick="diaryWrite()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">＋ 기록</button>
+  </div>
+  <div id="diary-form" style="display:none;background:var(--bg2);border:1.5px solid var(--blue);border-radius:14px;padding:14px;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <select id="diary-mood" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;">
+        <option value="😊">😊 좋음</option><option value="😐">😐 보통</option><option value="😰">😰 불안</option><option value="💪">💪 확신</option><option value="😤">😤 아쉬움</option>
+      </select>
+      <select id="diary-tag" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;">
+        <option value="매수">📥 매수</option><option value="매도">📤 매도</option><option value="관찰">👀 관찰</option><option value="전략">🧠 전략</option><option value="반성">🙏 반성</option><option value="기타">📝 기타</option>
+      </select>
+    </div>
+    <textarea id="diary-text" placeholder="오늘의 매매 기록, 시장 감상, 전략 메모..." rows="4"
+      style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;resize:none;line-height:1.6;margin-bottom:8px;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="diaryCancel()" style="flex:1;background:var(--bg3);border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
+      <button onclick="diarySubmit()" style="flex:2;background:var(--blue);border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:800;color:#fff;cursor:pointer;">저장</button>
+    </div>
+    <div id="diary-err" style="font-size:11px;color:var(--red);margin-top:6px;display:none;"></div>
+  </div>
+  <div id="diary-list"></div>
+  <button onclick="diaryExport()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;color:var(--text3);padding:8px;font-size:11px;cursor:pointer;font-weight:600;margin-top:4px;">📥 텍스트로 내보내기</button>
+
+  <!-- 구분선 -->
+  <div style="border-top:2px solid var(--border);margin:20px 0 16px;"></div>
+
+  <!-- 투자 레벨 테스트 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--text1);">🏆 투자자 레벨 테스트</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">15문항 · 실전 경험 기반 자가진단</div>
+    </div>
+    <button onclick="levelTestStart()" style="background:var(--purple);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">시작</button>
+  </div>
+  <div id="level-result-card" style="display:none;"></div>
+  <div id="level-test-wrap" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span id="level-q-num" style="font-size:11px;font-weight:700;color:var(--text3);"></span>
+      <span id="level-q-cat" style="font-size:10px;color:var(--blue);font-weight:700;"></span>
+    </div>
+    <div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:14px;">
+      <div id="level-progress" style="height:100%;background:var(--purple);border-radius:2px;transition:width 0.3s;"></div>
+    </div>
+    <div id="level-q-text" style="font-size:14px;font-weight:700;color:var(--text1);line-height:1.7;margin-bottom:14px;min-height:48px;"></div>
+    <div id="level-q-options" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
-  <!-- 점수 -->
+  <!-- 구분선 -->
+  <div style="border-top:2px solid var(--border);margin:20px 0 16px;"></div>
+
+  <!-- 명언 퀴즈 -->
+  <div style="text-align:center;padding:0 0 12px;">
+    <div style="font-size:16px;font-weight:900;color:var(--text1);">💬 오늘의 투자 명언</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:3px;">빈칸에 들어갈 단어를 맞혀보세요</div>
+  </div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
       <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">점수</div>
@@ -705,29 +761,17 @@ body {
       <div id="game-accuracy" style="font-size:22px;font-weight:900;color:var(--amber);">-</div>
     </div>
   </div>
-
-  <!-- 명언 카드 -->
   <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;">
     <div style="font-size:10px;color:var(--text3);margin-bottom:12px;font-weight:600;" id="game-author">— 작자</div>
-    <div style="font-size:16px;font-weight:700;color:var(--text1);line-height:1.9;text-align:center;" id="game-quote">
-      새 게임 시작 버튼을 눌러주세요
-    </div>
+    <div style="font-size:16px;font-weight:700;color:var(--text1);line-height:1.9;text-align:center;" id="game-quote">새 게임 시작 버튼을 눌러주세요</div>
   </div>
-
-  <!-- 보기 버튼 -->
   <div id="game-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"></div>
-
-  <!-- 피드백 -->
   <div id="game-feedback" style="display:none;border-radius:10px;padding:12px;margin-bottom:10px;"></div>
-
-  <button id="game-next-btn" onclick="gameNext()" style="display:none;width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">
-    다음 명언 →
-  </button>
-  <button onclick="gameStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text2);cursor:pointer;">
-    🔄 새 게임
-  </button>
+  <button id="game-next-btn" onclick="gameNext()" style="display:none;width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">다음 명언 →</button>
+  <button onclick="gameStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text2);cursor:pointer;">🔄 새 게임</button>
   <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;">정답 +10점 · 3연속 보너스 +5점</div>
 </div>
+
 
 <!-- ── 웅덩노트 패널 ── -->
 <div class="panel" id="panel-pond">
@@ -995,6 +1039,16 @@ body {
 
 <!-- ── 설정 패널 ── -->
 <div class="panel" id="panel-settings">
+  <!-- 클라우드 저장 -->
+  <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+    <div style="font-size:10px;color:var(--blue);font-weight:800;letter-spacing:0.1em;margin-bottom:10px;">☁ 클라우드 저장 (기기 연동)</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="s-nick" type="text" maxlength="20" placeholder="닉네임 입력" class="setting-input" style="flex:1;margin-bottom:0;">
+      <button onclick="cloudSave()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">저장</button>
+      <button onclick="cloudLoad()" style="background:var(--bg3);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">불러오기</button>
+    </div>
+    <div id="cloud-status" style="font-size:11px;color:var(--text3);min-height:16px;"></div>
+  </div>
   <div style="background:var(--blue-lt);border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
     <div style="font-size:10px;color:var(--blue);font-weight:800;letter-spacing:0.1em;margin-bottom:4px;">⚙ 기본 설정</div>
     <div style="font-size:11px;color:var(--text3);line-height:1.7;">저장은 자동으로 됩니다 (localStorage)</div>
@@ -1928,8 +1982,17 @@ function rebuyStop() {
 
 function renderStatic(d) {
   const el = elapsed();
-  // 무한매수 — 잔여일/진행바 없음, 경과일만 표시
-  setText("v-elapsed", `${el}일차 (${S.entryDate||"시작일 미설정"} 시작)`);
+  const mode = d ? determineMode(d) : null;
+  const isStandby = mode
+    ? (mode.phase === "hold" || mode.phase.startsWith("sell"))
+    : !!S.standbyDate;
+  const sd = S.standbyDate || (d && d.standbyDate);
+  if (isStandby && sd) {
+    const standbyEl = Math.max(0, Math.floor((new Date() - new Date(sd)) / 86400000));
+    setText("v-elapsed", `대기 ${standbyEl}일째 (${sd} 진입)`);
+  } else {
+    setText("v-elapsed", `${el}일차 (${S.entryDate||"시작일 미설정"} 시작)`);
+  }
   const qShares = S.qldDailyShares || 10;
   const sShares = S.ssoDailyShares || 5;
   if (d && d.qld && d.sso && d.usdkrw) {
@@ -3032,14 +3095,246 @@ function gameNext() {
   gameRender();
 }
 
+// ════════════════════════════════════════
+// 클라우드 저장
+// ════════════════════════════════════════
+let _cloudSyncTimer = null;
+
+function pondCompress(pond) {
+  return pond.map(p => ({
+    id:p.id,t:p.ticker,n:p.name!==p.ticker?p.name:undefined,
+    ds:p.dailyShares,bd:p.buyDays||[],s:p.status,
+    b:(p.buys||[]).map(b=>[b.date,b.shares,b.price||0,b.memo||undefined]),
+    sl:(p.sells||[]),ca:p.closedAt,aa:p.addedAt,
+    s1:p.sell1Done||undefined,s2:p.sell2Done||undefined,
+  }));
+}
+function pondDecompress(arr) {
+  return arr.map(p => ({
+    id:p.id,ticker:p.t,name:p.n||p.t,
+    dailyShares:p.ds,buyDays:p.bd||[],status:p.s,
+    buys:(p.b||[]).map(b=>({date:b[0],shares:b[1],price:b[2]||null,memo:b[3]||''})),
+    sells:p.sl||[],closedAt:p.ca,addedAt:p.aa,
+    sell1Done:!!p.s1,sell2Done:!!p.s2,currentPrice:null,ma120:null,
+  }));
+}
+
+async function cloudSave() {
+  const nick = document.getElementById("s-nick").value.trim();
+  const st   = document.getElementById("cloud-status");
+  if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
+  saveSettings();
+  st.style.color="var(--text3)"; st.textContent="⏳ 저장 중...";
+  try {
+    const data = JSON.stringify({ S, p: pondCompress(POND) });
+    const params = new URLSearchParams({ action:"save_settings", nick, data });
+    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"no-cors" });
+    localStorage.setItem("qld_nick", nick);
+    st.style.color="var(--green)"; st.textContent="✅ 저장 요청 완료 (" + nick + ")";
+  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ " + e.message; }
+}
+
+async function cloudLoad() {
+  const nick = document.getElementById("s-nick").value.trim();
+  const st   = document.getElementById("cloud-status");
+  if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
+  st.style.color="var(--text3)"; st.textContent="⏳ 불러오는 중...";
+  try {
+    const params = new URLSearchParams({ action:"load_settings", nick });
+    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+    const json = await res.json();
+    if (!json.ok) { st.style.color="var(--red)"; st.textContent="❌ 오류: "+(json.error||""); return; }
+    if (!json.data) { st.style.color="var(--amber)"; st.textContent="⚠ 저장된 데이터 없음"; return; }
+    const parsed = JSON.parse(json.data);
+    if (parsed.S && parsed.p) { S=parsed.S; POND=pondDecompress(parsed.p); }
+    else if (parsed.settings) { S=parsed.settings; POND=parsed.pond||[]; }
+    else { S=parsed; }
+    localStorage.setItem("qld_s11", JSON.stringify(S));
+    localStorage.setItem("qld_pond", JSON.stringify(POND));
+    localStorage.setItem("qld_nick", nick);
+    loadSettings(); renderStatic(null); pondRender();
+    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ")";
+  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ " + e.message; }
+}
+
+async function cloudAutoSync(nick) {
+  try {
+    const data = JSON.stringify({ S, p: pondCompress(POND) });
+    const params = new URLSearchParams({ action:"save_settings", nick, data });
+    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"no-cors" });
+    const st = document.getElementById("cloud-status");
+    if (st) { st.style.color="var(--green)"; st.textContent="☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; }
+  } catch(e) {}
+}
+
+// ════════════════════════════════════════
+// 📔 투자일지 (localStorage)
+// ════════════════════════════════════════
+let DIARY = [];
+function diaryLoadLocal() { try { DIARY=JSON.parse(localStorage.getItem("qld_diary")||"[]"); } catch { DIARY=[]; } }
+function diarySaveLocal() { localStorage.setItem("qld_diary", JSON.stringify(DIARY)); }
+function diaryWrite() { document.getElementById("diary-form").style.display="block"; document.getElementById("diary-text").focus(); }
+function diaryCancel() { document.getElementById("diary-form").style.display="none"; document.getElementById("diary-text").value=""; document.getElementById("diary-err").style.display="none"; }
+function diarySubmit() {
+  const text=(document.getElementById("diary-text").value||"").trim();
+  const mood=document.getElementById("diary-mood").value;
+  const tag=document.getElementById("diary-tag").value;
+  const errEl=document.getElementById("diary-err");
+  errEl.style.display="none";
+  if (!text) { errEl.textContent="내용을 입력해주세요"; errEl.style.display="block"; return; }
+  const now=new Date();
+  const ts=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0")+" "+String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+  DIARY.unshift({id:Date.now(),time:ts,mood,tag,text});
+  diarySaveLocal(); diaryCancel(); diaryRenderLocal();
+}
+function diaryDelete(id) {
+  if (!confirm("삭제하시겠습니까?")) return;
+  DIARY=DIARY.filter(d=>d.id!==id); diarySaveLocal(); diaryRenderLocal();
+}
+function diaryLoad() { diaryLoadLocal(); diaryRenderLocal(); }
+function diaryExport() {
+  const txt=DIARY.map(e=>"["+e.time+"] "+e.mood+" "+e.tag+"\n"+e.text).join("\n\n---\n\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain;charset=utf-8"}));
+  a.download="투자일지_"+new Date().toISOString().slice(0,10)+".txt"; a.click();
+}
+const TAG_BG2    = {"매수":"#dcfce7","매도":"#fee2e2","관찰":"#e0f2fe","전략":"#ede9fe","반성":"#fef3c7","기타":"#f3f4f6"};
+const TAG_COLOR2 = {"매수":"#15803d","매도":"#dc2626","관찰":"#0284c7","전략":"#7c3aed","반성":"#b45309","기타":"#6b7280"};
+function diaryRenderLocal() {
+  const list=document.getElementById("diary-list");
+  if (!list) return;
+  if (!DIARY.length) { list.innerHTML='<div style="text-align:center;padding:30px 0;font-size:13px;color:var(--text3);">📝 첫 투자일지를 기록해보세요</div>'; return; }
+  list.innerHTML=DIARY.map(e=>
+    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">'
+    +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">'
+    +'<span style="font-size:15px;">'+e.mood+'</span>'
+    +'<span style="background:'+(TAG_BG2[e.tag]||"#f3f4f6")+';color:'+(TAG_COLOR2[e.tag]||"#6b7280")+';border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;">'+e.tag+'</span>'
+    +'<span style="font-size:10px;color:var(--text3);margin-left:auto;">'+e.time+'</span>'
+    +'<button onclick="diaryDelete('+e.id+')" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:0 2px;">✕</button>'
+    +'</div>'
+    +'<div style="font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;">'+e.text.replace(/</g,"&lt;")+'</div>'
+    +'</div>'
+  ).join("");
+}
+
+// ════════════════════════════════════════
+// 🏆 투자자 레벨 테스트
+// ════════════════════════════════════════
+const LEVEL_QUESTIONS = [
+  {cat:"💸 실전",q:"최근 하락장에서 내가 한 행동은?",opts:["패닉셀했다","그냥 버텼다","추가 매수했다","계획대로 분할 매수했다"],scores:[1,2,3,4]},
+  {cat:"💸 실전",q:"현재까지 투자 누적 수익률은?",opts:["손실 중","0~30%","30~100%","100% 이상"],scores:[1,2,3,4]},
+  {cat:"💸 실전",q:"레버리지 ETF -50% 구간을 실제로 경험했나?",opts:["경험 없음","있고 팔았다","있고 버텼다","있고 추가 매수했다"],scores:[1,2,3,4]},
+  {cat:"💸 실전",q:"유튜브/SNS 추천으로 산 종목 결과는?",opts:["주로 손실","반반","주로 수익","그렇게 안 산다"],scores:[1,2,3,4]},
+  {cat:"💸 실전",q:"투자 원금 대비 현재 총자산은?",opts:["원금보다 적다","비슷하다","1.5~3배","3배 이상"],scores:[1,2,3,4]},
+  {cat:"🎯 판단",q:"본인 전략의 MDD(최대낙폭)를 알고 투자하나?",opts:["모른다","대략 안다","정확히 안다","알고 실전 경험도 있다"],scores:[1,2,3,4]},
+  {cat:"🎯 판단",q:"'지금 안 사면 늦을 것 같아' 충동 매수한 적?",opts:["자주 한다","가끔 한다","거의 없다","한 번도 없다"],scores:[1,2,3,4]},
+  {cat:"🎯 판단",q:"명확한 매수/매도 원칙이 있나?",opts:["없다","막연히 있다","있지만 자주 어긴다","있고 거의 지킨다"],scores:[1,2,3,4]},
+  {cat:"🎯 판단",q:"같은 실수를 반복한 적 있나?",opts:["반복 중","여러 번 반복","한두 번 후 고쳤다","기록해서 안 반복한다"],scores:[1,2,3,4]},
+  {cat:"🎯 판단",q:"투자 성과를 정기적으로 기록/복기하나?",opts:["안 한다","가끔","수익률만 본다","매매일지 작성한다"],scores:[1,2,3,4]},
+  {cat:"🧠 멘탈",q:"계좌 확인 빈도는?",opts:["하루 수십 번","매일 여러 번","하루 1~2번","주 1~2회 이하"],scores:[1,2,3,4]},
+  {cat:"🧠 멘탈",q:"투자 손실로 잠 못 잔 날이 한 달에?",opts:["10일 이상","3~10일","1~3일","없다"],scores:[1,2,3,4]},
+  {cat:"🧠 멘탈",q:"원칙을 어겼을 때 실제 결과는?",opts:["크게 손실","손실","본전","원칙 어긴 적 없다"],scores:[1,2,3,4]},
+  {cat:"🧠 멘탈",q:"수익/손실이 일상 기분에 영향을 미치나?",opts:["크게 영향","꽤 영향","약간","거의 없다"],scores:[1,2,3,4]},
+  {cat:"🧠 멘탈",q:"지금 전략을 10년 뒤에도 하고 있을 자신 있나?",opts:["없다","모르겠다","아마도","확신한다"],scores:[1,2,3,4]},
+];
+const LEVEL_GRADES = [
+  {min:0, max:19,lv:1,name:"씨앗 투자자",  color:"#6b7280",emoji:"🌱",desc:"투자 첫걸음! 원칙 공부가 최우선입니다."},
+  {min:20,max:24,lv:2,name:"새싹 투자자",  color:"#84cc16",emoji:"🌿",desc:"기초는 있지만 감정 매매가 많아요."},
+  {min:25,max:29,lv:3,name:"학습 투자자",  color:"#22c55e",emoji:"📚",desc:"공부 중! 전략을 체계화할 시기예요."},
+  {min:30,max:34,lv:4,name:"원칙 입문자",  color:"#10b981",emoji:"📋",desc:"원칙이 생기기 시작했어요. 꾸준히!"},
+  {min:35,max:39,lv:5,name:"전략 투자자",  color:"#0891b2",emoji:"🎯",desc:"전략이 있고 대체로 지킵니다."},
+  {min:40,max:44,lv:6,name:"숙련 투자자",  color:"#2563eb",emoji:"💼",desc:"심리와 전략의 균형을 잡아가고 있어요."},
+  {min:45,max:49,lv:7,name:"원칙 수호자",  color:"#7c3aed",emoji:"🛡️",desc:"흔들림 없는 원칙으로 시장을 대합니다."},
+  {min:50,max:54,lv:8,name:"마스터 투자자",color:"#9333ea",emoji:"⚡",desc:"리스크를 알고 기회를 잡는 수준입니다."},
+  {min:55,max:57,lv:9,name:"투자 현인",    color:"#f59e0b",emoji:"🔮",desc:"시장의 심리와 구조를 깊이 이해합니다."},
+  {min:58,max:60,lv:10,name:"웅덩이 마스터",color:"#dc2626",emoji:"🏆",desc:"120 POND 전략을 완전히 체화했습니다!"},
+];
+let levelQIdx=0, levelScores=[];
+function levelTestStart() {
+  levelQIdx=0; levelScores=[];
+  document.getElementById("level-result-card").style.display="none";
+  document.getElementById("level-test-wrap").style.display="block";
+  levelRenderQ();
+}
+function levelRenderQ() {
+  const q=LEVEL_QUESTIONS[levelQIdx];
+  document.getElementById("level-q-num").textContent=(levelQIdx+1)+" / "+LEVEL_QUESTIONS.length;
+  document.getElementById("level-q-cat").textContent=q.cat;
+  document.getElementById("level-q-text").textContent=q.q;
+  document.getElementById("level-progress").style.width=((levelQIdx/LEVEL_QUESTIONS.length)*100)+"%";
+  document.getElementById("level-q-options").innerHTML=q.opts.map((o,i)=>
+    '<button onclick="levelAnswer('+q.scores[i]+')" style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;font-weight:500;color:var(--text1);cursor:pointer;text-align:left;line-height:1.4;margin-bottom:4px;">'
+    +'<span style="color:var(--blue);font-weight:700;margin-right:8px;">'+["①","②","③","④"][i]+'</span>'+o+'</button>'
+  ).join("");
+}
+function levelAnswer(score) {
+  levelScores.push(score); levelQIdx++;
+  if (levelQIdx>=LEVEL_QUESTIONS.length) levelShowResult();
+  else levelRenderQ();
+}
+function levelShowResult() {
+  document.getElementById("level-test-wrap").style.display="none";
+  const total=levelScores.reduce((a,b)=>a+b,0);
+  const grade=LEVEL_GRADES.find(g=>total>=g.min&&total<=g.max)||LEVEL_GRADES[0];
+  const psy=levelScores.slice(0,5).reduce((a,b)=>a+b,0);
+  const str=levelScores.slice(5,10).reduce((a,b)=>a+b,0);
+  const rsk=levelScores.slice(10,15).reduce((a,b)=>a+b,0);
+  const result={lv:grade.lv,name:grade.name,total,psy,str,rsk,date:new Date().toLocaleDateString("ko-KR")};
+  localStorage.setItem("qld_level",JSON.stringify(result));
+  const card=document.getElementById("level-result-card");
+  card.style.display="block";
+  card.innerHTML='<div style="background:var(--bg2);border:2px solid '+grade.color+';border-radius:16px;padding:18px;margin-bottom:12px;">'
+    +'<div style="text-align:center;margin-bottom:14px;">'
+    +'<div style="font-size:36px;margin-bottom:4px;">'+grade.emoji+'</div>'
+    +'<div style="font-size:11px;color:var(--text3);font-weight:700;">LV.'+grade.lv+' / 10</div>'
+    +'<div style="font-size:22px;font-weight:900;color:'+grade.color+';margin:4px 0;">'+grade.name+'</div>'
+    +'<div style="font-size:12px;color:var(--text2);line-height:1.6;">'+grade.desc+'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:6px;margin-bottom:12px;">'
+    +levelBarItem("💸 실전",psy,20,"#dc2626")+levelBarItem("🎯 판단",str,20,"#2563eb")+levelBarItem("🧠 멘탈",rsk,20,"#7c3aed")
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--text3);text-align:right;margin-bottom:12px;">총점 <b style="color:'+grade.color+';font-size:15px;">'+total+'</b>/60 · '+result.date+'</div>'
+    +'<button onclick="levelTestStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;">🔄 다시 테스트</button>'
+    +'</div>';
+}
+function levelBarItem(label,score,max,color) {
+  const pct=Math.round((score/max)*100);
+  return '<div style="flex:1;background:var(--bg3);border-radius:10px;padding:8px 10px;">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px;">'+label+'</div>'
+    +'<div style="height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden;margin-bottom:3px;">'
+    +'<div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:3px;"></div></div>'
+    +'<div style="font-size:11px;font-weight:800;color:'+color+';">'+pct+'%</div></div>';
+}
+function levelLoadSaved() {
+  const saved=localStorage.getItem("qld_level");
+  if (!saved) return;
+  try {
+    const r=JSON.parse(saved);
+    const grade=LEVEL_GRADES.find(g=>g.lv===r.lv)||LEVEL_GRADES[0];
+    const card=document.getElementById("level-result-card");
+    if (!card) return;
+    card.style.display="block";
+    card.innerHTML='<div style="background:var(--bg2);border:1.5px solid '+grade.color+'44;border-radius:14px;padding:14px;margin-bottom:10px;">'
+      +'<div style="display:flex;align-items:center;gap:10px;">'
+      +'<span style="font-size:28px;">'+grade.emoji+'</span>'
+      +'<div><div style="font-size:10px;color:var(--text3);">내 레벨 · '+r.date+'</div>'
+      +'<div style="font-size:16px;font-weight:900;color:'+grade.color+';">LV.'+grade.lv+' '+grade.name+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);">총점 '+r.total+'/60 · 실전 '+r.psy+' · 판단 '+r.str+' · 멘탈 '+r.rsk+'</div>'
+      +'</div></div></div>';
+  } catch(e) {}
+}
+
 const _origSwitchTab = window.switchTab;
 window.switchTab = function(id) {
   _origSwitchTab(id);
   if (id === "pond") { pondLoad(); pondRender(); }
+  if (id === "game") { diaryLoad(); levelLoadSaved(); }
 };
 
 // 초기화
 pondLoad();
+const _savedNick = localStorage.getItem("qld_nick");
+if (_savedNick) { const nEl=document.getElementById("s-nick"); if(nEl) nEl.value=_savedNick; }
 
 document.getElementById("pwInput").addEventListener("focus", () => { document.getElementById("pwErr").style.display="none"; });
 </script>

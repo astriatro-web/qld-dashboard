@@ -932,6 +932,7 @@ body {
     <div style="font-size:11px;color:var(--text3);line-height:1.7;">입력하면 이 기기에 자동 저장됩니다 (localStorage)</div>
   </div>
   <div class="setting-group"><div class="setting-label">매수 시작일</div><input class="setting-input" type="text" id="s-entryDate" placeholder="2026-03-01" oninput="saveSettings()"></div>
+  <div class="setting-group"><div class="setting-label">대기모드 시작일 — 자동감지 (수동 덮어쓰기 가능)</div><input class="setting-input" type="text" id="s-standbyManual" placeholder="자동감지 중 · 직접 입력 시 우선 적용" oninput="saveSettings(); if(MD) renderDashboard(MD);"><div style="font-size:10px;color:var(--text3);margin-top:4px;">평소엔 비워두세요. 차트에서 QLD가 120일선을 돌파한 종가일을 자동으로 찾아 셉니다. 자동값이 틀렸을 때만 날짜(예: 2026-04-13)를 직접 넣으면 그 값이 우선합니다.</div></div>
   <div class="setting-group"><div class="setting-label">QLD 매일 매수 주수</div><input class="setting-input" type="number" id="s-qldDaily" placeholder="10" min="1" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">SSO 매일 매수 주수</div><input class="setting-input" type="number" id="s-ssoDaily" placeholder="5" min="1" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">탄환 총액 (원)</div><input class="setting-input" type="number" id="s-totalBullet" placeholder="100000000" oninput="saveSettings()"></div>
@@ -1018,10 +1019,27 @@ const WAR_GRADES = {
 };
 
 // ── 날짜 헬퍼 (타임존 안전 · 대기일수 정확 계산) ──
+function inferYear(mon, day) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let cand = new Date(now.getFullYear(), mon-1, day);
+  if (cand - today > 0) cand = new Date(now.getFullYear()-1, mon-1, day); // 미래면 작년
+  return cand;
+}
 function parseLocalDate(s) {
   if (!s) return null;
-  const m = String(s).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (s instanceof Date) return isNaN(s) ? null : new Date(s.getFullYear(), s.getMonth(), s.getDate());
+  s = String(s).trim();
+  let m;
+  // YYYY-MM-DD / YYYY/MM/DD / YYYY.MM.DD / "YYYY. M. D"
+  m = s.match(/(\d{4})[.\-\/]\s*(\d{1,2})[.\-\/]\s*(\d{1,2})/);
   if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  // 연도 없는 M/D, M-D, M.D → 연도 추정
+  m = s.match(/^(\d{1,2})[.\-\/](\d{1,2})$/);
+  if (m) return inferYear(+m[1], +m[2]);
+  // 한국어 "M월 D일"
+  m = s.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/);
+  if (m) return inferYear(+m[1], +m[2]);
   const d = new Date(s);
   return isNaN(d) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
@@ -1031,6 +1049,36 @@ function daysSince(s) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.max(0, Math.round((today - d) / 86400000));
+}
+function fmtISO(d) {
+  if (!d) return "";
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+// 차트 데이터로 120일선 돌파 종가일 자동 감지
+// = 가장 최근 '종가 < MA120'였던 날의 바로 다음 거래일
+function detectStandbyStart() {
+  const ch = (MD && MD.chart6m) || (MD && MD.chart2m) || null;
+  if (!ch || !ch.closes || !ch.ma120 || !ch.dates) return "";
+  const closes = ch.closes, ma = ch.ma120, dates = ch.dates;
+  const n = Math.min(closes.length, ma.length, dates.length);
+  if (n < 2) return "";
+  let lastBelow = -1;
+  for (let i = n - 1; i >= 0; i--) {
+    if (closes[i] != null && ma[i] != null && closes[i] < ma[i]) { lastBelow = i; break; }
+  }
+  if (lastBelow === -1) return "";        // 창 전체가 120일선 위 → 돌파일이 창 밖
+  if (lastBelow === n - 1) return "";      // 현재가 120일선 아래 → 매수모드 (대기 아님)
+  const raw = dates[lastBelow + 1];        // 돌파 종가일
+  const pd = parseLocalDate(raw);
+  return pd ? fmtISO(pd) : (raw || "");
+}
+// 대기모드 시작일 결정: 수동 지정 > 차트 자동감지 > GAS > 저장값
+function standbyStart(d) {
+  const manual = (S.standbyManual || "").trim();
+  if (manual) return manual;
+  const auto = detectStandbyStart();
+  if (auto) return auto;
+  return (d && d.standbyDate) || S.standbyDate || "";
 }
 
 // ── 전략 원칙 데이터 ──
@@ -1095,6 +1143,7 @@ function loadSettings() {
   try { S = JSON.parse(localStorage.getItem("qld_s11") || "{}"); } catch { S = {}; }
   S.entryDate     = S.entryDate     || "2026-03-01";
   S.standbyDate   = S.standbyDate   || "";
+  S.standbyManual = S.standbyManual || "";
   S.totalBullet   = S.totalBullet   || 100000000;
   S.monthlyBudget = S.monthlyBudget || 10000000;
   S.profitCash    = S.profitCash    || 0;
@@ -1116,6 +1165,7 @@ function loadSettings() {
 
   const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
   setVal("s-entryDate", S.entryDate);
+  setVal("s-standbyManual", S.standbyManual || "");
   setVal("s-totalBullet", S.totalBullet);
   setVal("s-monthlyBudget", S.monthlyBudget);
   setVal("s-profitCash", S.profitCash);
@@ -1139,6 +1189,7 @@ function loadSettings() {
 function saveSettings() {
   const getVal = id => { const el = document.getElementById(id); return el ? el.value : ""; };
   S.entryDate      = getVal("s-entryDate").trim();
+  S.standbyManual  = getVal("s-standbyManual").trim();
   S.totalBullet    = parseFloat(getVal("s-totalBullet")) || 100000000;
   S.monthlyBudget  = parseFloat(getVal("s-monthlyBudget")) || 10000000;
   S.profitCash     = parseFloat(getVal("s-profitCash")) || 0;
@@ -1227,7 +1278,7 @@ function renderDualChart(chart2m, chart6m) {
   const ssoAvg = S.ssoAvg || null;
 
   // 복합 회귀 점수 배지
-  const sd = MD?.standbyDate || S.standbyDate;
+  const sd = standbyStart(MD);
   const fg = MD?.fg;
   let scoreText = null;
   if (sd && MD?.qld && MD?.ma120 && MD.qld > MD.ma120) {
@@ -1467,7 +1518,7 @@ function autoCountStreak(d) {
   const gc = d.ma20 && d.ma60 ? d.ma20 > d.ma60 : false;
   const prevGC = streak.gcCount || 0;
   const newGC = gc ? Math.min(prevGC+1, 5) : 0;
-  const sdChk = S.standbyDate;
+  const sdChk = standbyStart(d);
   const standbyDaysChk = sdChk ? daysSince(sdChk) : 0;
   let rebuyMet = false;
   for (let i=0; i<CFG.REBUY_DAYS.length; i++) {
@@ -1522,7 +1573,7 @@ function determineMode(d) {
       // 대기모드 경과일 계산
       let standbyInfo = "";
       let compositeInfo = "";
-      const sd = d.standbyDate || S.standbyDate;
+      const sd = standbyStart(d);
       if (sd) {
         const standbyDays = daysSince(sd);
 
@@ -1585,7 +1636,7 @@ function determineMode(d) {
       const dailyRebuy = Math.round(S.rebuyBullet / S.rebuyDaysLeft);
       actions.push(`🔄 재투입 진행 중 — 잔여 ${S.rebuyDaysLeft}일 · 오늘 ${Math.round(dailyRebuy/10000)}만원 LOC 합산됨`);
     } else if (S.profitCash > 0 && S.rebuyCount >= CFG.WS_REBUY) {
-      const sd3 = S.standbyDate || (d && d.standbyDate);
+      const sd3 = standbyStart(d);
       const sd3Days = sd3 ? daysSince(sd3) : 0;
       let rebuyTriggered = false;
       for (let i=CFG.REBUY_DAYS.length-1; i>=0; i--) {
@@ -1732,7 +1783,7 @@ function renderRebuy(d, dd, mode) {
   const rebuyContainer = document.getElementById("rebuyRows");
   if (!rebuyCard || !rebuyContainer) return;
   if (mode.phase==="hold"||mode.phase.startsWith("sell")) {
-    const sd = S.standbyDate || (d && d.standbyDate);
+    const sd = standbyStart(d);
     const standbyDays = sd ? daysSince(sd) : 0;
     const hasBullet = S.profitCash > 0;
 
@@ -1809,8 +1860,8 @@ function renderStatic(d) {
   const mode = d ? determineMode(d) : null;
   const isStandby = mode
     ? (mode.phase === "hold" || mode.phase.startsWith("sell"))
-    : !!S.standbyDate;
-  const sd = S.standbyDate || (d && d.standbyDate);
+    : !!(S.standbyManual || S.standbyDate);
+  const sd = standbyStart(d);
   if (isStandby && sd) {
     const standbyEl = daysSince(sd);
     setText("v-elapsed", `대기 ${standbyEl}일째 (${sd} 진입)`);

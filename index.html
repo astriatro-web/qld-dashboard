@@ -477,7 +477,7 @@ body {
 <div id="appWrap" style="display:none;">
 <div class="header">
   <div>
-    <div class="header-sub">QLD · SSO · TQQQ · SOXL · 코덱스 · GLDM</div>
+    <div class="header-sub">QLD · SSO · TQQQ · SOXL</div>
     <div class="header-title">120 POND Strategy</div>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="fetchAll()">
@@ -490,7 +490,6 @@ body {
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
   <button class="tab" onclick="switchTab('pond')">웅덩노트</button>
-  <button class="tab" onclick="switchTab('game')">투자일지</button>
   <button class="tab" onclick="switchTab('war')">거시모니터</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
@@ -575,7 +574,7 @@ body {
   </div>
 </div>
 
-<!-- ── 전략원칙 패널 (전략원칙 + 특공대 합병) ── -->
+<!-- ── 전략원칙 패널 ── -->
 <div class="panel" id="panel-rules">
   <div id="guideBox" style="background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.25);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -594,7 +593,7 @@ body {
   <!-- 10년 백테스트 테이블 -->
   <div class="card" style="margin-bottom:12px;">
     <div class="card-label">📊 10년 백테스트 결과 요약 (직접 검증)</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">기간: 2016~2026 · 코덱스/GLDM: ~2026.04.20 기준</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">기간: 2016~2026</div>
     <div style="overflow-x:auto;">
       <table class="bt-table">
         <thead>
@@ -605,8 +604,6 @@ body {
           <tr class="highlight"><td>QLD</td><td>웅덩(120) 10주</td><td>120일</td><td class="num">191.27%</td><td class="cagr">11.3%</td></tr>
           <tr class="highlight-blue"><td>TQQQ</td><td>웅덩(200) 5→6→7…</td><td>200일</td><td class="num">294.01%</td><td class="cagr">14.7%</td></tr>
           <tr class="highlight-blue"><td>SOXL</td><td>웅덩(300) 5→6→7…</td><td>300일</td><td class="num">408.84%</td><td class="cagr">17.7%</td></tr>
-          <tr style="background:#fff7ed;"><td>GLDM</td><td>웅덩(120) 5주</td><td>120일</td><td class="num">170.26%</td><td class="cagr">10.45%</td></tr>
-          <tr style="background:#fef9ee;"><td style="color:#b45309;font-weight:700;">코덱스<br><span style="font-size:9px;color:var(--text3);">122630</span></td><td>웅덩(120) 5주</td><td>120일</td><td class="num" style="color:#b45309;font-weight:800;">582.95%</td><td class="cagr" style="color:#b45309;">21.18%</td></tr>
         </tbody>
       </table>
     </div>
@@ -657,121 +654,12 @@ body {
     </div>
   </div>
 
-  <!-- 코덱스 -->
-  <div class="strategy-block">
-    <div class="strategy-header" style="background:#fef9ee;color:#b45309;">
-      <span class="hidden-badge" style="background:#fef3c7;color:#b45309;border:1px solid rgba(180,83,9,0.3);">🇰🇷 코덱스 레버리지</span> 120일선 하단 매일 5주
-    </div>
-    <div class="strategy-row"><div class="s-label">종목</div><div class="s-desc">122630 · KODEX 레버리지 (코스피200 2배) · 국내 ETF · 원화 투자</div></div>
-    <div class="strategy-row"><div class="s-label">백테스트</div><div class="s-desc">CAGR <b style="color:#b45309;">21.18%</b> · ROI <b style="color:#b45309;">582.95%</b> — 국내 지수 레버리지 중 최고 성과</div></div>
-    <div class="strategy-row"><div class="s-label">주의</div><div class="s-desc">코스피200 2배 레버리지 · MDD -70% 수준 · 국내 시장(9시~15시30분) 매수</div></div>
-  </div>
-
-  <!-- GLDM -->
-  <div class="strategy-block">
-    <div class="strategy-header" style="background:#f0fdf4;color:#15803d;">
-      <span class="hidden-badge" style="background:#dcfce7;color:#15803d;border:1px solid rgba(21,128,61,0.3);">🥇 GLDM 금 ETF</span> 120일선 하단 매일 5주
-    </div>
-    <div class="strategy-row"><div class="s-label">종목</div><div class="s-desc">GLDM · SPDR Gold MiniShares · 금 현물 ETF · 운용보수 0.10%</div></div>
-    <div class="strategy-row"><div class="s-label">백테스트</div><div class="s-desc">CAGR <b style="color:#15803d;">10.45%</b> · ROI 170.26% — 주식 하락장 역상관으로 포트 변동성 완충</div></div>
-  </div>
-
   <!-- 보유 현황 -->
   <div class="card" style="margin-top:8px;">
     <div class="card-label">특공대 보유 현황</div>
     <div id="hiddenHoldingRows"><div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div></div>
   </div>
 </div>
-
-<!-- ── 미니게임 패널 ── -->
-<!-- ── 투자일지 패널 ── -->
-<div class="panel" id="panel-game">
-
-  <!-- 투자일지 -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-    <div>
-      <div style="font-size:15px;font-weight:800;color:var(--text1);">📔 투자일지</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">매매 기록 · 감정 · 전략 메모</div>
-    </div>
-    <button onclick="diaryWrite()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">＋ 기록</button>
-  </div>
-  <div id="diary-form" style="display:none;background:var(--bg2);border:1.5px solid var(--blue);border-radius:14px;padding:14px;margin-bottom:12px;">
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
-      <select id="diary-mood" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;">
-        <option value="😊">😊 좋음</option><option value="😐">😐 보통</option><option value="😰">😰 불안</option><option value="💪">💪 확신</option><option value="😤">😤 아쉬움</option>
-      </select>
-      <select id="diary-tag" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;">
-        <option value="매수">📥 매수</option><option value="매도">📤 매도</option><option value="관찰">👀 관찰</option><option value="전략">🧠 전략</option><option value="반성">🙏 반성</option><option value="기타">📝 기타</option>
-      </select>
-    </div>
-    <textarea id="diary-text" placeholder="오늘의 매매 기록, 시장 감상, 전략 메모..." rows="4"
-      style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-size:13px;font-family:inherit;color:var(--text1);outline:none;resize:none;line-height:1.6;margin-bottom:8px;"></textarea>
-    <div style="display:flex;gap:8px;">
-      <button onclick="diaryCancel()" style="flex:1;background:var(--bg3);border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
-      <button onclick="diarySubmit()" style="flex:2;background:var(--blue);border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:800;color:#fff;cursor:pointer;">저장</button>
-    </div>
-    <div id="diary-err" style="font-size:11px;color:var(--red);margin-top:6px;display:none;"></div>
-  </div>
-  <div id="diary-list"></div>
-  <button onclick="diaryExport()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;color:var(--text3);padding:8px;font-size:11px;cursor:pointer;font-weight:600;margin-top:4px;">📥 텍스트로 내보내기</button>
-
-  <!-- 구분선 -->
-  <div style="border-top:2px solid var(--border);margin:20px 0 16px;"></div>
-
-  <!-- 투자 레벨 테스트 -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <div>
-      <div style="font-size:15px;font-weight:800;color:var(--text1);">🏆 투자자 레벨 테스트</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">15문항 · 실전 경험 기반 자가진단</div>
-    </div>
-    <button onclick="levelTestStart()" style="background:var(--purple);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">시작</button>
-  </div>
-  <div id="level-result-card" style="display:none;"></div>
-  <div id="level-test-wrap" style="display:none;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <span id="level-q-num" style="font-size:11px;font-weight:700;color:var(--text3);"></span>
-      <span id="level-q-cat" style="font-size:10px;color:var(--blue);font-weight:700;"></span>
-    </div>
-    <div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:14px;">
-      <div id="level-progress" style="height:100%;background:var(--purple);border-radius:2px;transition:width 0.3s;"></div>
-    </div>
-    <div id="level-q-text" style="font-size:14px;font-weight:700;color:var(--text1);line-height:1.7;margin-bottom:14px;min-height:48px;"></div>
-    <div id="level-q-options" style="display:flex;flex-direction:column;gap:8px;"></div>
-  </div>
-
-  <!-- 구분선 -->
-  <div style="border-top:2px solid var(--border);margin:20px 0 16px;"></div>
-
-  <!-- 명언 퀴즈 -->
-  <div style="text-align:center;padding:0 0 12px;">
-    <div style="font-size:16px;font-weight:900;color:var(--text1);">💬 오늘의 투자 명언</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:3px;">빈칸에 들어갈 단어를 맞혀보세요</div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">점수</div>
-      <div id="game-score" style="font-size:22px;font-weight:900;color:var(--blue);">0</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">연속정답</div>
-      <div id="game-streak" style="font-size:22px;font-weight:900;color:var(--green);">0</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">정답률</div>
-      <div id="game-accuracy" style="font-size:22px;font-weight:900;color:var(--amber);">-</div>
-    </div>
-  </div>
-  <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;">
-    <div style="font-size:10px;color:var(--text3);margin-bottom:12px;font-weight:600;" id="game-author">— 작자</div>
-    <div style="font-size:16px;font-weight:700;color:var(--text1);line-height:1.9;text-align:center;" id="game-quote">새 게임 시작 버튼을 눌러주세요</div>
-  </div>
-  <div id="game-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"></div>
-  <div id="game-feedback" style="display:none;border-radius:10px;padding:12px;margin-bottom:10px;"></div>
-  <button id="game-next-btn" onclick="gameNext()" style="display:none;width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">다음 명언 →</button>
-  <button onclick="gameStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;color:var(--text2);cursor:pointer;">🔄 새 게임</button>
-  <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;">정답 +10점 · 3연속 보너스 +5점</div>
-</div>
-
 
 <!-- ── 웅덩노트 패널 ── -->
 <div class="panel" id="panel-pond">
@@ -1039,19 +927,9 @@ body {
 
 <!-- ── 설정 패널 ── -->
 <div class="panel" id="panel-settings">
-  <!-- 클라우드 저장 -->
-  <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
-    <div style="font-size:10px;color:var(--blue);font-weight:800;letter-spacing:0.1em;margin-bottom:10px;">☁ 클라우드 저장 (기기 연동)</div>
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
-      <input id="s-nick" type="text" maxlength="20" placeholder="닉네임 입력" class="setting-input" style="flex:1;margin-bottom:0;">
-      <button onclick="cloudSave()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">저장</button>
-      <button onclick="cloudLoad()" style="background:var(--bg3);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">불러오기</button>
-    </div>
-    <div id="cloud-status" style="font-size:11px;color:var(--text3);min-height:16px;"></div>
-  </div>
   <div style="background:var(--blue-lt);border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
     <div style="font-size:10px;color:var(--blue);font-weight:800;letter-spacing:0.1em;margin-bottom:4px;">⚙ 기본 설정</div>
-    <div style="font-size:11px;color:var(--text3);line-height:1.7;">저장은 자동으로 됩니다 (localStorage)</div>
+    <div style="font-size:11px;color:var(--text3);line-height:1.7;">입력하면 이 기기에 자동 저장됩니다 (localStorage)</div>
   </div>
   <div class="setting-group"><div class="setting-label">매수 시작일</div><input class="setting-input" type="text" id="s-entryDate" placeholder="2026-03-01" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">QLD 매일 매수 주수</div><input class="setting-input" type="number" id="s-qldDaily" placeholder="10" min="1" oninput="saveSettings()"></div>
@@ -1062,7 +940,7 @@ body {
   <div class="setting-group">
     <div class="setting-label">재투입 탄환 (원) — 조건 충족 시 분할매수할 금액</div>
     <input class="setting-input" type="number" id="s-rebuyBullet" placeholder="0 (익절현금풀에서 이전)" oninput="saveSettings()">
-    <div style="font-size:10px;color:var(--text3);margin-top:4px;">조건 충족 → <b>${CFG.REBUY_SPLIT}일</b> 분할매수 · LOC 가이드에 자동 합산</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:4px;">조건 충족 → <b>10일</b> 분할매수 · LOC 가이드에 자동 합산</div>
   </div>
   <div class="setting-group"><div class="setting-label">재투입 잔여일 (자동계산)</div><input class="setting-input" type="number" id="s-rebuyDaysLeft" placeholder="자동" oninput="saveSettings()"></div>
   <div class="setting-group">
@@ -1088,8 +966,6 @@ body {
     <div style="font-size:10px;color:var(--purple);letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">⚡ 히든전략 보유 수량</div>
     <div class="setting-group"><div class="setting-label">TQQQ 보유 주수</div><input class="setting-input" type="number" id="s-tqqqHeld" placeholder="0" oninput="saveSettings()"></div>
     <div class="setting-group"><div class="setting-label">SOXL 보유 주수</div><input class="setting-input" type="number" id="s-soxlHeld" placeholder="0" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">코덱스 레버리지(122630) 보유 주수</div><input class="setting-input" type="number" id="s-kodexHeld" placeholder="0" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">GLDM 보유 주수</div><input class="setting-input" type="number" id="s-gldmHeld" placeholder="0" oninput="saveSettings()"></div>
   </div>
 
   <div style="border-top:1px solid var(--border);margin:4px 0 12px;padding-top:12px;">
@@ -1098,8 +974,6 @@ body {
     <div class="setting-group"><div class="setting-label">SSO 평단가 ($)</div><input class="setting-input" type="number" id="s-ssoAvg" placeholder="예: 80.20" step="0.01" oninput="saveSettings()"></div>
     <div class="setting-group"><div class="setting-label">TQQQ 평단가 ($)</div><input class="setting-input" type="number" id="s-tqqqAvg" placeholder="예: 40.00" step="0.01" oninput="saveSettings()"></div>
     <div class="setting-group"><div class="setting-label">SOXL 평단가 ($)</div><input class="setting-input" type="number" id="s-soxlAvg" placeholder="예: 15.00" step="0.01" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">코덱스 레버리지 평단가 (원)</div><input class="setting-input" type="number" id="s-kodexAvg" placeholder="예: 12500" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">GLDM 평단가 ($)</div><input class="setting-input" type="number" id="s-gldmAvg" placeholder="예: 42.00" step="0.01" oninput="saveSettings()"></div>
     <div class="info-box" style="margin-top:0;margin-bottom:12px;">
       평단가 입력 시 <b style="color:var(--amber);">+25%/+50%/+100%</b> 트리거 자동 판단.<br>
       익절 시 해당 비율의 10%씩 매도 → SGOV 보관.
@@ -1143,9 +1017,37 @@ const WAR_GRADES = {
   GRAY:   { label:"⚪ GRAY — 특이사항 없음",     color:"gray",   adjMult:1.0,  adjNote:"매수량 정상 유지" },
 };
 
+// ── 날짜 헬퍼 (타임존 안전 · 대기일수 정확 계산) ──
+function parseLocalDate(s) {
+  if (!s) return null;
+  const m = String(s).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  const d = new Date(s);
+  return isNaN(d) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function daysSince(s) {
+  const d = parseLocalDate(s);
+  if (!d) return 0;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(0, Math.round((today - d) / 86400000));
+}
+
 // ── 전략 원칙 데이터 ──
 function getRULES() {
   return [
+    { title:"📌 QLD 매수법 — 가장 중요한 핵심", color:"#1e3a8a", bg:"#eff4ff",
+      items:[
+        ["한 줄 요약","QLD 주가가 120일 이동평균선 '아래'에 있는 동안, 매일 정해진 수량(기본 10주)을 기계적으로 매수한다. 이게 전부입니다."],
+        ["왜 120일선인가","120일선 = 약 6개월 평균가. 단기선(20·60일)은 잦은 속임수(휩소)로 매수가 너무 빈번하고, 장기선(200일)은 진입이 늦습니다. 10년 데이터상 QLD가 120일선 아래로 내려간 구간(2015·2018·2020·2022)은 모두 결국 회복했습니다."],
+        ["언제 사나 (진입)","대시보드 새로고침 → '현재 모드'가 '매수 진행 중 ♾️'으로 뜨면 매수 구간입니다 (= 현재가 < MA120). 120일선 위로 올라오면 자동으로 '대기모드'로 바뀌고 매수를 멈춥니다."],
+        ["얼마나 사나 (수량)","매일 QLD 10주 + SSO 5주 (7:3 비중). 시작일·수량은 설정탭에서 조정합니다. 하루치 금액은 대시보드 '일일 투입금'에 자동 표시됩니다."],
+        ["어떻게 주문하나 (LOC)","대시보드 'LOC 주문 가이드'를 그대로 사용. A(확실체결, 종가×1.025) : B(유리한가격, 종가×0.990) = 6:4로 나눠 LOC(종가 기준) 주문을 겁니다. → 확실히 사면서도 일부는 더 싸게 잡는 방식."],
+        ["기간 제한 없음 (무한매수)","하락이 길어져도 멈추지 않습니다. 탄환(SGOV)이 떨어지면 매달 들어오는 월 투자금으로 자연스럽게 이어 매수. '더 떨어지면 더 싸게 산다'가 핵심 — 하락은 위기가 아니라 평단을 낮추는 기회입니다."],
+        ["멈출 때 (대기모드)","120일선 위로 올라오면 신규 매수 중단 → 현금을 SGOV에 적립하며 다음 하락(웅덩이)을 기다립니다."],
+        ["절대 하지 말 것","뇌동매매 금지. 빠질까봐 미리 팔거나, 무서워서 매수를 거르는 행위 금지. 규칙은 대시보드가 판단하고 사람은 그대로 실행만 — 이것이 이 전략의 전부입니다."],
+      ]
+    },
     { title:"🎯 전략 개요 — QLD+SSO 핵심", color:"#1e3a8a", bg:"#eff4ff",
       items:[
         ["QLD (나스닥 2배)","120일 이동평균선 하방 시 매일 10주 매수. 10년 백테스트 CAGR 11.3% (웅덩이 5주 기준). 2배 레버리지로 MDD -70% 수준에서 장기 보유 현실적."],
@@ -1199,105 +1101,85 @@ function loadSettings() {
   S.rebuyBullet   = S.rebuyBullet   || 0;
   S.rebuyDaysLeft = S.rebuyDaysLeft || 0;
   S.fg            = S.fg            != null ? S.fg : null;
-  S.gcCount       = S.gcCount       || 0;
   S.rebuyCount    = S.rebuyCount    || 0;
   S.qldHeld       = S.qldHeld       || 0;
   S.ssoHeld       = S.ssoHeld       || 0;
   S.sgovHeld      = S.sgovHeld      || 0;
   S.tqqqHeld      = S.tqqqHeld      || 0;
   S.soxlHeld      = S.soxlHeld      || 0;
-  S.kodexHeld     = S.kodexHeld     || 0;
-  S.gldmHeld      = S.gldmHeld      || 0;
   S.qldAvg        = S.qldAvg        || null;
   S.ssoAvg        = S.ssoAvg        || null;
   S.tqqqAvg       = S.tqqqAvg       || null;
   S.soxlAvg       = S.soxlAvg       || null;
-  S.kodexAvg      = S.kodexAvg      || null;
-  S.gldmAvg       = S.gldmAvg       || null;
   S.qldDailyShares = S.qldDailyShares || 10;
   S.ssoDailyShares = S.ssoDailyShares || 5;
 
-  document.getElementById("s-entryDate").value     = S.entryDate;
-  document.getElementById("s-totalBullet").value   = S.totalBullet;
-  document.getElementById("s-monthlyBudget").value = S.monthlyBudget;
-  document.getElementById("s-profitCash").value    = S.profitCash;
-  const rbEl2 = document.getElementById("s-rebuyBullet"); if(rbEl2) rbEl2.value = S.rebuyBullet || "";
-  const rdEl  = document.getElementById("s-rebuyDaysLeft"); if(rdEl) rdEl.value = S.rebuyDaysLeft || "";
-  document.getElementById("s-fg").value            = S.fg != null ? S.fg : "";
-  document.getElementById("s-gcCount").value       = S.gcCount;
-  document.getElementById("s-rebuyCount").value    = S.rebuyCount;
-  document.getElementById("s-qldHeld").value       = S.qldHeld;
-  document.getElementById("s-ssoHeld").value       = S.ssoHeld;
-  document.getElementById("s-sgovHeld").value      = S.sgovHeld;
-  document.getElementById("s-tqqqHeld").value      = S.tqqqHeld;
-  document.getElementById("s-soxlHeld").value      = S.soxlHeld;
-  document.getElementById("s-kodexHeld").value     = S.kodexHeld;
-  document.getElementById("s-gldmHeld").value      = S.gldmHeld;
-  document.getElementById("s-qldAvg").value        = S.qldAvg || "";
-  document.getElementById("s-ssoAvg").value        = S.ssoAvg || "";
-  document.getElementById("s-tqqqAvg").value       = S.tqqqAvg || "";
-  document.getElementById("s-soxlAvg").value       = S.soxlAvg || "";
-  document.getElementById("s-kodexAvg").value      = S.kodexAvg || "";
-  document.getElementById("s-gldmAvg").value       = S.gldmAvg || "";
-  document.getElementById("s-qldDaily").value      = S.qldDailyShares;
-  document.getElementById("s-ssoDaily").value      = S.ssoDailyShares;
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  setVal("s-entryDate", S.entryDate);
+  setVal("s-totalBullet", S.totalBullet);
+  setVal("s-monthlyBudget", S.monthlyBudget);
+  setVal("s-profitCash", S.profitCash);
+  setVal("s-rebuyBullet", S.rebuyBullet || "");
+  setVal("s-rebuyDaysLeft", S.rebuyDaysLeft || "");
+  setVal("s-fg", S.fg != null ? S.fg : "");
+  setVal("s-rebuyCount", S.rebuyCount);
+  setVal("s-qldHeld", S.qldHeld);
+  setVal("s-ssoHeld", S.ssoHeld);
+  setVal("s-sgovHeld", S.sgovHeld);
+  setVal("s-tqqqHeld", S.tqqqHeld);
+  setVal("s-soxlHeld", S.soxlHeld);
+  setVal("s-qldAvg", S.qldAvg || "");
+  setVal("s-ssoAvg", S.ssoAvg || "");
+  setVal("s-tqqqAvg", S.tqqqAvg || "");
+  setVal("s-soxlAvg", S.soxlAvg || "");
+  setVal("s-qldDaily", S.qldDailyShares);
+  setVal("s-ssoDaily", S.ssoDailyShares);
 }
 
 function saveSettings() {
-  S.entryDate      = document.getElementById("s-entryDate").value.trim();
-  S.totalBullet    = parseFloat(document.getElementById("s-totalBullet").value) || 100000000;
-  S.monthlyBudget  = parseFloat(document.getElementById("s-monthlyBudget").value) || 10000000;
-  S.profitCash     = parseFloat(document.getElementById("s-profitCash").value) || 0;
-  const rbEl3 = document.getElementById("s-rebuyBullet");
-  S.rebuyBullet    = rbEl3 ? (parseFloat(rbEl3.value) || 0) : (S.rebuyBullet || 0);
-  const rdEl2 = document.getElementById("s-rebuyDaysLeft");
-  S.rebuyDaysLeft  = rdEl2 ? (parseInt(rdEl2.value) || 0) : (S.rebuyDaysLeft || 0);
-  const fgv        = document.getElementById("s-fg").value;
+  const getVal = id => { const el = document.getElementById(id); return el ? el.value : ""; };
+  S.entryDate      = getVal("s-entryDate").trim();
+  S.totalBullet    = parseFloat(getVal("s-totalBullet")) || 100000000;
+  S.monthlyBudget  = parseFloat(getVal("s-monthlyBudget")) || 10000000;
+  S.profitCash     = parseFloat(getVal("s-profitCash")) || 0;
+  S.rebuyBullet    = parseFloat(getVal("s-rebuyBullet")) || 0;
+  S.rebuyDaysLeft  = parseInt(getVal("s-rebuyDaysLeft")) || 0;
+  const fgv        = getVal("s-fg");
   S.fg             = fgv !== "" ? parseInt(fgv) : null;
-  S.gcCount        = parseInt(document.getElementById("s-gcCount").value) || 0;
-  S.rebuyCount     = parseInt(document.getElementById("s-rebuyCount").value) || 0;
-  S.qldHeld        = parseInt(document.getElementById("s-qldHeld").value) || 0;
-  S.ssoHeld        = parseInt(document.getElementById("s-ssoHeld").value) || 0;
-  S.sgovHeld       = parseInt(document.getElementById("s-sgovHeld").value) || 0;
-  S.tqqqHeld       = parseInt(document.getElementById("s-tqqqHeld").value) || 0;
-  S.soxlHeld       = parseInt(document.getElementById("s-soxlHeld").value) || 0;
-  S.kodexHeld      = parseInt(document.getElementById("s-kodexHeld").value) || 0;
-  S.gldmHeld       = parseInt(document.getElementById("s-gldmHeld").value) || 0;
-  S.qldDailyShares = parseInt(document.getElementById("s-qldDaily").value) || 10;
-  S.ssoDailyShares = parseInt(document.getElementById("s-ssoDaily").value) || 5;
-  const qa = document.getElementById("s-qldAvg").value;
-  const sa = document.getElementById("s-ssoAvg").value;
-  const ta = document.getElementById("s-tqqqAvg").value;
-  const soa = document.getElementById("s-soxlAvg").value;
-  const ka = document.getElementById("s-kodexAvg").value;
-  const ga = document.getElementById("s-gldmAvg").value;
+  S.rebuyCount     = parseInt(getVal("s-rebuyCount")) || 0;
+  S.qldHeld        = parseInt(getVal("s-qldHeld")) || 0;
+  S.ssoHeld        = parseInt(getVal("s-ssoHeld")) || 0;
+  S.sgovHeld       = parseInt(getVal("s-sgovHeld")) || 0;
+  S.tqqqHeld       = parseInt(getVal("s-tqqqHeld")) || 0;
+  S.soxlHeld       = parseInt(getVal("s-soxlHeld")) || 0;
+  S.qldDailyShares = parseInt(getVal("s-qldDaily")) || 10;
+  S.ssoDailyShares = parseInt(getVal("s-ssoDaily")) || 5;
+  const qa = getVal("s-qldAvg");
+  const sa = getVal("s-ssoAvg");
+  const ta = getVal("s-tqqqAvg");
+  const soa = getVal("s-soxlAvg");
   S.qldAvg   = qa  ? parseFloat(qa)  : null;
   S.ssoAvg   = sa  ? parseFloat(sa)  : null;
   S.tqqqAvg  = ta  ? parseFloat(ta)  : null;
   S.soxlAvg  = soa ? parseFloat(soa) : null;
-  S.kodexAvg = ka  ? parseFloat(ka)  : null;
-  S.gldmAvg  = ga  ? parseFloat(ga)  : null;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   renderStatic(null);
 }
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","pond","game","war","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","rules","pond","war","settings"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
   if (id === "war") loadComments();
   if (id === "rules") { renderHiddenHoldings(); calcTQQQLOC(); calcSOXLLOC(); }
-  if (id === "game") gameStart();
 }
 
 // ── 대시보드 QLD 미니 차트 ──
 let chartInst2m = null, chartInst6m = null;
 
 function buildChartDatasets(chart, qldAvg, ssoAvg) {
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark"
-    || window.matchMedia("(prefers-color-scheme:dark)").matches;
   const belowMA = (chart.closes||[]).map((c,i) =>
     chart.ma120 && chart.ma120[i] != null && c < chart.ma120[i] ? c : null
   );
@@ -1335,10 +1217,8 @@ function buildChartOptions(textC, gridC) {
 }
 
 function renderDualChart(chart2m, chart6m) {
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark"
-    || window.matchMedia("(prefers-color-scheme:dark)").matches;
-  const gridC = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
-  const textC = isDark ? "#6b7280" : "#9ca3af";
+  const gridC = "rgba(0,0,0,0.05)";
+  const textC = "#9ca3af";
 
   if (chartInst2m) { chartInst2m.destroy(); chartInst2m = null; }
   if (chartInst6m) { chartInst6m.destroy(); chartInst6m = null; }
@@ -1351,7 +1231,7 @@ function renderDualChart(chart2m, chart6m) {
   const fg = MD?.fg;
   let scoreText = null;
   if (sd && MD?.qld && MD?.ma120 && MD.qld > MD.ma120) {
-    const days = Math.max(0, Math.floor((new Date()-new Date(sd))/86400000));
+    const days = daysSince(sd);
     const pt = [[0,0],[20,24],[30,41],[60,53],[90,71],[120,76],[180,76],[250,88],[365,94],[999,100]];
     let prob = 100;
     for (let i=0;i<pt.length-1;i++) {
@@ -1382,7 +1262,7 @@ const fgLbl  = v => v<=20?"극단공포":v<=40?"공포":v<=60?"중립":v<=80?"�
 const vixLbl = v => !v?"N/A":v>=40?"극단공포":v>=30?"높은공포":v>=20?"주의":"안정";
 const fgClr  = v => v<=25?"#dc2626":v<=45?"#d97706":v<=60?"var(--text2)":"#16a34a";
 const vixClr = v => v>=30?"#dc2626":v>=20?"#d97706":"#16a34a";
-const elapsed   = () => !S.entryDate ? 0 : Math.max(0, Math.floor((new Date()-new Date(S.entryDate))/86400000));
+const elapsed   = () => S.entryDate ? daysSince(S.entryDate) : 0;
 const splitDays = () => S.splitDays || CFG.SPLIT_DAYS;
 
 function setText(id, text, color) {
@@ -1410,14 +1290,11 @@ function renderHiddenHoldings() {
 
   const tqqqP  = MD.tqqq   || null;
   const soxlP  = MD.soxl   || null;
-  const gldmP  = MD.gldm   || null;  // GAS에서 추가 시 자동 반영
   const usdkrw = MD.usdkrw || 1380;
   const th = S.tqqqHeld  || 0;
   const sh = S.soxlHeld  || 0;
-  const kh = S.kodexHeld || 0;
-  const gh = S.gldmHeld  || 0;
 
-  if (!th && !sh && !kh && !gh) {
+  if (!th && !sh) {
     container.innerHTML='<div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div>'; return;
   }
 
@@ -1446,26 +1323,6 @@ function renderHiddenHoldings() {
       <div style="color:var(--text2);">SOXL <span style="font-size:11px;color:var(--text3);">${sh}주</span> ${pnlChip(soxlP, S.soxlAvg)}</div>
       <div style="text-align:right;font-weight:700;">$${Math.round(usd).toLocaleString()}</div>
       <div style="text-align:right;font-weight:700;">${fw(Math.round(usd*usdkrw))}만</div>
-    </div>`;
-  }
-  if (gh > 0 && gldmP) {
-    const usd = gh * gldmP;
-    html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
-      <div style="color:#15803d;">GLDM <span style="font-size:11px;color:var(--text3);">${gh}주</span> ${pnlChip(gldmP, S.gldmAvg)}</div>
-      <div style="text-align:right;font-weight:700;">$${Math.round(usd).toLocaleString()}</div>
-      <div style="text-align:right;font-weight:700;">${fw(Math.round(usd*usdkrw))}만</div>
-    </div>`;
-  } else if (gh > 0) {
-    html += `<div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--border);color:#15803d;">
-      GLDM ${gh}주 · ${pnlChip(null, S.gldmAvg)} <span style="color:var(--text3);font-size:11px;">(GAS에 GLDM 추가 시 시세 자동 반영)</span></div>`;
-  }
-  if (kh > 0) {
-    // 코덱스는 원화 종목 — 원화 평단가 기준 손익 표시
-    const kodexPnl = S.kodexAvg ? pnlChip(S.kodexAvg * 1, S.kodexAvg) : ""; // 실시간 없음
-    html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
-      <div style="color:#b45309;">코덱스 <span style="font-size:11px;color:var(--text3);">${kh}주</span></div>
-      <div style="text-align:right;font-weight:700;font-size:11px;color:var(--text3);">원화전용</div>
-      <div style="text-align:right;font-size:11px;color:var(--text3);">${S.kodexAvg ? `평단 ${S.kodexAvg.toLocaleString()}원` : "평단 미입력"}</div>
     </div>`;
   }
   container.innerHTML = html;
@@ -1611,7 +1468,7 @@ function autoCountStreak(d) {
   const prevGC = streak.gcCount || 0;
   const newGC = gc ? Math.min(prevGC+1, 5) : 0;
   const sdChk = S.standbyDate;
-  const standbyDaysChk = sdChk ? Math.max(0, Math.floor((new Date()-new Date(sdChk))/86400000)) : 0;
+  const standbyDaysChk = sdChk ? daysSince(sdChk) : 0;
   let rebuyMet = false;
   for (let i=0; i<CFG.REBUY_DAYS.length; i++) {
     if (standbyDaysChk>=CFG.REBUY_DAYS[i] && d.fg!=null && d.fg<=CFG.REBUY_FG[i] && d.vix!=null && d.vix>=CFG.REBUY_VIX[i]) { rebuyMet=true; break; }
@@ -1619,8 +1476,7 @@ function autoCountStreak(d) {
   const newRebuy = rebuyMet ? Math.min((streak.rebuyCount||0)+1, 5) : 0;
   streak = { date:todayStr, gcCount:newGC, rebuyCount:newRebuy };
   localStorage.setItem("qld_streak", JSON.stringify(streak));
-  S.gcCount = newGC; S.rebuyCount = newRebuy;
-  const gcEl = document.getElementById("s-gcCount"); if(gcEl) gcEl.value = newGC;
+  S.rebuyCount = newRebuy;
   const rbEl = document.getElementById("s-rebuyCount"); if(rbEl) rbEl.value = newRebuy;
 }
 
@@ -1668,8 +1524,7 @@ function determineMode(d) {
       let compositeInfo = "";
       const sd = d.standbyDate || S.standbyDate;
       if (sd) {
-        const standbyMs = new Date() - new Date(sd);
-        const standbyDays = Math.max(0, Math.floor(standbyMs / 86400000));
+        const standbyDays = daysSince(sd);
 
         // 나스닥100 역사 기반 회귀 확률 — 선형 보간
         const probTable = [
@@ -1695,7 +1550,6 @@ function determineMode(d) {
         // F&G 복합 점수
         const fg = d.fg;
         if (fg != null) {
-          // F&G 역지수: 공포일수록 높게 (바닥 가능성)
           const fgInverse = fg <= 20 ? 90 :
                             fg <= 40 ? Math.round(90 - (fg - 20) * (20/20)) :
                             fg <= 60 ? Math.round(70 - (fg - 40) * (20/20)) :
@@ -1704,7 +1558,6 @@ function determineMode(d) {
           const fgLabel = fg <= 20 ? "극단공포" : fg <= 40 ? "공포" :
                           fg <= 60 ? "중립" : fg <= 80 ? "탐욕" : "극단탐욕";
 
-          // 복합점수 = 회귀확률 60% + F&G역지수 40%
           const composite = Math.round(prob * 0.6 + fgInverse * 0.4);
 
           const compColor = composite >= 70 ? "#15803d" :
@@ -1733,7 +1586,7 @@ function determineMode(d) {
       actions.push(`🔄 재투입 진행 중 — 잔여 ${S.rebuyDaysLeft}일 · 오늘 ${Math.round(dailyRebuy/10000)}만원 LOC 합산됨`);
     } else if (S.profitCash > 0 && S.rebuyCount >= CFG.WS_REBUY) {
       const sd3 = S.standbyDate || (d && d.standbyDate);
-      const sd3Days = sd3 ? Math.max(0, Math.floor((new Date()-new Date(sd3))/86400000)) : 0;
+      const sd3Days = sd3 ? daysSince(sd3) : 0;
       let rebuyTriggered = false;
       for (let i=CFG.REBUY_DAYS.length-1; i>=0; i--) {
         if (sd3Days>=CFG.REBUY_DAYS[i] && d.fg!=null && d.fg<=CFG.REBUY_FG[i] && d.vix!=null && d.vix>=CFG.REBUY_VIX[i]) {
@@ -1816,7 +1669,7 @@ function renderHiddenAlerts(d) {
 
   const alerts = [];
 
-  // TQQQ: 200일 이평선 필요 (ma200tqqq 없으면 TQQQ 가격과 비교 불가 → 표시만)
+  // TQQQ: 200일 이평선 필요
   if (d.tqqq) {
     const tqqq200 = d.ma200tqqq || null;
     if (tqqq200 && d.tqqq < tqqq200) {
@@ -1827,7 +1680,6 @@ function renderHiddenAlerts(d) {
         action: "특공대 진입 조건 충족! 히든전략 탭에서 이번 주 매수량 확인"
       });
     } else if (!tqqq200 && d.tqqq) {
-      // MA200 데이터 없을 때 — 단순 가격 표시
       alerts.push({
         color: "var(--purple)", bg: "var(--purple-lt)",
         icon: "⚡", ticker: "TQQQ",
@@ -1857,34 +1709,6 @@ function renderHiddenAlerts(d) {
     }
   }
 
-  // 코덱스(122630): 120일 이평선
-  if (d.kodex) {
-    const k120 = d.ma120kodex || null;
-    if (k120 && d.kodex < k120) {
-      alerts.push({
-        color: "#b45309", bg: "#fef9ee",
-        icon: "🇰🇷", ticker: "코덱스 122630",
-        msg: `${Math.round(d.kodex).toLocaleString()}원 < MA120 ${Math.round(k120).toLocaleString()}원 — 120일선 하방 ✓`,
-        action: "매일 5주 매수 진입 조건 충족! 히든전략 탭 참고"
-      });
-    }
-    // 120일선 위면 알림 없음 (정상 대기)
-  }
-
-  // GLDM: 120일 이평선
-  if (d.gldm) {
-    const g120 = d.ma120gldm || null;
-    if (g120 && d.gldm < g120) {
-      alerts.push({
-        color: "#15803d", bg: "#f0fdf4",
-        icon: "🥇", ticker: "GLDM",
-        msg: `$${d.gldm.toFixed(2)} < MA120 $${g120.toFixed(2)} — 120일선 하방 ✓`,
-        action: "매일 5주 매수 진입 조건 충족! 히든전략 탭 참고"
-      });
-    }
-    // 120일선 위면 알림 없음
-  }
-
   if (alerts.length === 0) {
     alertCard.style.display = "none";
     return;
@@ -1909,7 +1733,7 @@ function renderRebuy(d, dd, mode) {
   if (!rebuyCard || !rebuyContainer) return;
   if (mode.phase==="hold"||mode.phase.startsWith("sell")) {
     const sd = S.standbyDate || (d && d.standbyDate);
-    const standbyDays = sd ? Math.max(0, Math.floor((new Date()-new Date(sd))/86400000)) : 0;
+    const standbyDays = sd ? daysSince(sd) : 0;
     const hasBullet = S.profitCash > 0;
 
     rebuyContainer.innerHTML =
@@ -1988,7 +1812,7 @@ function renderStatic(d) {
     : !!S.standbyDate;
   const sd = S.standbyDate || (d && d.standbyDate);
   if (isStandby && sd) {
-    const standbyEl = Math.max(0, Math.floor((new Date() - new Date(sd)) / 86400000));
+    const standbyEl = daysSince(sd);
     setText("v-elapsed", `대기 ${standbyEl}일째 (${sd} 진입)`);
   } else if (isStandby && !sd) {
     setText("v-elapsed", `대기중 — 새로고침하면 경과일 표시`);
@@ -2000,8 +1824,8 @@ function renderStatic(d) {
   if (d && d.qld && d.sso && d.usdkrw) {
     const daily = Math.round(qShares*d.qld*d.usdkrw + sShares*d.sso*d.usdkrw);
     setText("v-daily", `약 ${Math.round(daily/10000)}만원`);
-    const mode = determineMode(d);
-    if (mode.phase==="hold"||mode.phase.startsWith("sell")) setText("v-shares","대기중 — 매수 없음","var(--text3)");
+    const mode2 = determineMode(d);
+    if (mode2.phase==="hold"||mode2.phase.startsWith("sell")) setText("v-shares","대기중 — 매수 없음","var(--text3)");
     else setText("v-shares", `QLD ${qShares}주 + SSO ${sShares}주`);
   } else {
     setText("v-daily", `QLD ${qShares}주 · SSO ${sShares}주 기준`);
@@ -2016,10 +1840,10 @@ function renderRules() {
   const html = getRULES().map(sec => `
     <div class="strategy-block">
       <div class="strategy-header" style="background:${sec.bg};color:${sec.color};">${sec.title}</div>
-      ${sec.items.map(([l,d]) => `
+      ${sec.items.map(([l,desc]) => `
         <div class="strategy-row">
           <div class="s-label">${l}</div>
-          <div class="s-desc">${d}</div>
+          <div class="s-desc">${desc}</div>
         </div>`).join("")}
     </div>`).join("");
   let container = document.getElementById("rules-content");
@@ -2079,7 +1903,7 @@ function renderWarResult(r, dailyBase, qldPrice, ssoPrice, usdkrw) {
   document.getElementById("wk-main-theme").textContent = r.main_theme || r.oil_price || "—";
   document.getElementById("wk-sub-theme").textContent = r.sub_theme || r.nego_status || "—";
   document.getElementById("wk-market-signal").textContent = r.market_signal || r.hormuz || "—";
-  document.getElementById("warFacts").innerHTML = (r.facts||[]).map(f=>`<li class="war-fact"><span class="war-fact-dot">▸</span><span>${f}</span></li>`).join("");
+  document.getElementById("warFacts").innerHTML = (r.facts||[]).map(fa=>`<li class="war-fact"><span class="war-fact-dot">▸</span><span>${fa}</span></li>`).join("");
   document.getElementById("aiJudgment").textContent = r.judgment || "";
 
   const adjCard = document.getElementById("adjCard");
@@ -2226,10 +2050,11 @@ loadSettings(); renderStatic(null); renderRules();
     document.getElementById("pwInput").focus();
   }
 })();
+
 // ════════════════════════════════════════
 // 웅덩노트
 // ════════════════════════════════════════
-let POND = []; // [{id, ticker, name, dailyShares, status:'active'|'closed', buys:[{date,shares,price,memo}], ma120, currentPrice, closedAt}]
+let POND = [];
 let pondBuyTargetId = null;
 
 function pondLoad() {
@@ -2359,7 +2184,6 @@ function pondRender() {
     const belowMA  = item.currentPrice && item.ma120 && item.currentPrice < item.ma120;
     const aboveMA  = item.currentPrice && item.ma120 && item.currentPrice >= item.ma120;
 
-    // 누적 통계 — sells 반영
     const sells = item.sells || [];
     const totalBuyShares  = item.buys.reduce((a,b) => a + b.shares, 0);
     const soldShares      = sells.reduce((a,b) => a + b.shares, 0);
@@ -2372,13 +2196,11 @@ function pondRender() {
     const recoveredAmt    = sells.filter(s=>s.price).reduce((a,b) => a + b.shares*b.price, 0);
     const recoveredPct    = totalInvested ? (recoveredAmt / totalInvested * 100).toFixed(1) : null;
 
-    // 익절 조건
     const sell1Trigger = avgCost && item.currentPrice && pnlPct >= 15 && !(item.sell1Done);
     const sell2Trigger = avgCost && item.currentPrice && pnlPct >= 30 && item.sell1Done && !(item.sell2Done);
     const sell1Shares  = avgCost ? Math.round(totalBuyShares * 0.25) : 0;
     const sell2Shares  = avgCost ? Math.round(totalBuyShares * 0.25) : 0;
 
-    // 신호 배지
     let signalBadge = "";
     if (!item.currentPrice) {
       signalBadge = `<span style="background:#f3f4f6;color:#6b7280;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">시세없음</span>`;
@@ -2397,7 +2219,6 @@ function pondRender() {
     const today = new Date().toLocaleDateString("ko-KR");
     const boughtToday = item.buys.some(b => b.date === today);
 
-    // 매수 기록 — 스크롤 박스 + 각 행 매도 버튼
     const allBuysHtml = [...item.buys].map((b, origIdx) => ({ b, origIdx }))
       .reverse().map(({ b, origIdx }) => {
         const pnl = b.price && item.currentPrice
@@ -2417,7 +2238,6 @@ function pondRender() {
       ? `<div style="max-height:150px;overflow-y:scroll;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:8px;padding:4px 8px;background:var(--bg3);">${allBuysHtml}</div>`
       : `<div style="padding:0 2px;">${allBuysHtml}</div>`;
 
-    // 매도 기록
     const recentSells = sells.slice(-3).reverse().map(s =>
       `<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border);">
         <span style="color:var(--text3);">${s.date}</span>
@@ -2425,7 +2245,6 @@ function pondRender() {
       </div>`
     ).join("");
 
-    // 원금 회수율 카드
     const recoveryCard = recoveredPct ? `
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:7px 10px;font-size:11px;margin-bottom:8px;">
         💰 원금 회수: <b style="color:#15803d;">${recoveredPct}%</b>
@@ -2498,7 +2317,7 @@ function pondRender() {
   const isWeekendToday = todayDow === 0 || todayDow === 6;
   let dailyTotal = 0; let hasPrice = false;
   POND.filter(p => p.status === "active").forEach(item => {
-    if (isWeekendToday) return; // 주말은 0
+    if (isWeekendToday) return;
     const days = item.buyDays || [];
     const isBuyDay = days.length === 0 || days.includes(todayDow);
     if (item.currentPrice && item.dailyShares && isBuyDay) {
@@ -2595,7 +2414,7 @@ function pondGetSelectedDays(containerId) {
       days.push(parseInt(b.dataset.day));
     }
   });
-  return days; // 빈 배열 = 매일
+  return days;
 }
 function pondSetDayButtons(containerId, days) {
   const btns = document.querySelectorAll(`#${containerId} button[data-day]`);
@@ -2796,7 +2615,6 @@ function pondBuySellConfirm() {
     shares: sellShares, price: sellPrice,
     buyPrice, pnlPct, buyDate: b?.date || "", stage: "individual"
   });
-  // 매수 기록 주수 차감 or 삭제
   if (sellShares >= b.shares) {
     item.buys.splice(pondBuySellBuyIdx, 1);
   } else {
@@ -2823,7 +2641,6 @@ async function pondRefreshAll() {
 function pondAIOpen() {
   const modal = document.getElementById("pond-ai-modal");
   modal.style.display = "flex";
-  // 등록 종목 빠른선택 칩
   const qp = document.getElementById("pond-ai-quickpick");
   const active = POND.filter(p => p.status === "active");
   qp.innerHTML = active.length
@@ -2864,12 +2681,10 @@ async function runPondAI() {
   result.style.display = "block";
 
   try {
-    // 해당 티커가 POND에 등록돼 있으면 보유 데이터 포함
     const item = POND.find(p => p.ticker === ticker && p.status === "active");
     let tickerData = { ticker };
     let chartData = null;
 
-    // 차트 데이터 항상 GAS에서 조회
     try {
       const priceRes = await fetch(`${GAS_URL}?action=ticker_price&ticker=${ticker}`, { method:"GET", mode:"cors", redirect:"follow" });
       const priceData = await priceRes.json();
@@ -2894,11 +2709,8 @@ async function runPondAI() {
         dailyShares: item.dailyShares,
         sell1Done: !!item.sell1Done, sell2Done: !!item.sell2Done
       };
-    } else {
-      // tickerData already set above
     }
 
-    // 차트 렌더링
     if (chartData) {
       const avgCostForChart = tickerData.avgCost || null;
       renderPondChart(ticker, chartData, avgCostForChart);
@@ -2943,411 +2755,14 @@ async function runPondAI() {
   }
 }
 
-// ════════════════════════════════════════
-// 💬 투자 명언 빈칸 맞추기
-// ════════════════════════════════════════
-const QUOTE_DATA = [
-  // 워런 버핏
-  { quote:"( ) 속에서 사고, 낙관 속에서 팔아라.", answer:"공포", choices:["공포","탐욕","희망","확신"], author:"워런 버핏", comment:"역발상 투자의 핵심. 남들이 두려워할 때가 최고의 매수 기회입니다." },
-  { quote:"분산투자는 ( )에 대한 보호책이다.", answer:"무지", choices:["무지","손실","리스크","변동성"], author:"워런 버핏", comment:"무엇을 사는지 안다면 분산할 필요가 없다는 집중투자 관점의 명언." },
-  { quote:"최고의 투자는 ( )에 투자하는 것이다.", answer:"자기 자신", choices:["자기 자신","부동산","주식","채권"], author:"워런 버핏", comment:"지식과 역량에 대한 투자는 절대 빼앗기지 않는 자산입니다." },
-  { quote:"내가 가장 좋아하는 보유 기간은 ( )이다.", answer:"영원히", choices:["영원히","10년","5년","1년"], author:"워런 버핏", comment:"장기 보유의 가치 — 레버리지 ETF 장기 보유가 익절보다 높은 수익률을 내는 이유입니다." },
-  { quote:"좋은 기업을 ( ) 가격에 사는 것이 평범한 기업을 훌륭한 가격에 사는 것보다 낫다.", answer:"공정한", choices:["공정한","싼","비싼","적당한"], author:"워런 버핏", comment:"기업의 질이 가격보다 중요합니다." },
-  { quote:"주가가 ( )% 하락했을 때 패닉하지 않는다면, 당신은 좋은 투자자다.", answer:"50", choices:["50","30","20","70"], author:"워런 버핏", comment:"QLD MDD -70%에서 버틸 수 있는 사람만이 웅덩이 전략의 과실을 얻을 수 있습니다." },
-  { quote:"( )을 이해 못하는 사업에는 절대 투자하지 마라.", answer:"자신이", choices:["자신이","남들이","전문가가","시장이"], author:"워런 버핏", comment:"능력범위(Circle of Competence) 안에서만 투자해야 합니다." },
-  { quote:"( )은 투자자의 가장 큰 적이다.", answer:"감정", choices:["감정","시간","정보","시장"], author:"워런 버핏", comment:"두려움과 탐욕이라는 감정이 최적의 매수·매도 타이밍을 놓치게 만듭니다." },
-  { quote:"리스크는 자신이 무엇을 하는지 ( ) 때 발생한다.", answer:"모를", choices:["모를","알","느낄","예측할"], author:"워런 버핏", comment:"리스크는 무지에서 나옵니다. 아는 것에만 투자하세요." },
-  { quote:"( )을 잃는 것은 큰 문제가 아니다. 그것을 되찾을 기회를 잃는 것이 진짜 손실이다.", answer:"돈", choices:["돈","시간","기회","용기"], author:"워런 버핏", comment:"손실 자체보다 시장에서 이탈하는 것이 더 위험합니다." },
-  { quote:"멋진 기업을 ( ) 가격에 사는 것이 훌륭한 전략이다.", answer:"합리적인", choices:["합리적인","가장 싼","높은","낮은"], author:"워런 버핏", comment:"가격에만 집중하다 좋은 기업을 놓치는 것이 더 큰 손실입니다." },
-  { quote:"시간은 훌륭한 기업의 ( )이고, 평범한 기업의 적이다.", answer:"친구", choices:["친구","적","조력자","파트너"], author:"워런 버핏", comment:"좋은 자산은 시간이 지날수록 가치가 커집니다." },
-  { quote:"두려움과 ( ), 이 두 감정이 시장을 움직인다.", answer:"탐욕", choices:["탐욕","희망","기대","확신"], author:"워런 버핏", comment:"공포탐욕지수(Fear & Greed Index)는 이 두 감정을 수치화한 것입니다." },
-  { quote:"( )는 숨겨진 세금이다.", answer:"인플레이션", choices:["인플레이션","소득세","거래세","운용보수"], author:"워런 버핏", comment:"인플레이션이 현금 보유의 실질 가치를 갉아먹습니다. 주식 투자가 인플레 헤지 수단입니다." },
-  // 벤저민 그레이엄
-  { quote:"주가는 단기적으로는 ( )이지만, 장기적으로는 저울이다.", answer:"투표기", choices:["투표기","거울","계산기","온도계"], author:"벤저민 그레이엄", comment:"단기는 감정(인기투표), 장기는 실제 가치(무게)를 반영한다는 가치투자의 핵심." },
-  { quote:"투자에서 ( )는 적이 아니라 기회다.", answer:"변동성", choices:["변동성","손실","공포","시간"], author:"벤저민 그레이엄", comment:"변동성은 웅덩이 전략의 존재 이유입니다. 하락할수록 더 많이 살 수 있습니다." },
-  { quote:"투자자의 가장 큰 ( )는 주식 그 자체가 아니라 투자자 자신이다.", answer:"적", choices:["적","친구","약점","실수"], author:"벤저민 그레이엄", comment:"시장이 아니라 자신의 감정과 판단이 수익률을 결정합니다." },
-  { quote:"( )란 다른 사람들이 비관적일 때 사고, 낙관적일 때 파는 것이다.", answer:"투자", choices:["투자","투기","헤징","트레이딩"], author:"벤저민 그레이엄", comment:"가치투자의 본질은 역발상입니다." },
-  // 피터 린치
-  { quote:"시장이 ( )할 때 팔고 싶다면, 처음부터 사지 말아야 한다.", answer:"폭락", choices:["폭락","상승","횡보","반등"], author:"피터 린치", comment:"하락 견딜 자신이 없다면 투자하지 마라. 120 POND 전략의 무한매수 정신과 일맥상통합니다." },
-  { quote:"( )을 사지 말고 사업체를 사라.", answer:"주식", choices:["주식","차트","숫자","희망"], author:"피터 린치", comment:"주가 차트가 아닌, 그 뒤의 실제 사업을 이해하고 투자하라는 의미입니다." },
-  { quote:"당신이 투자한 이유가 사라지기 전까지는 ( )하지 마라.", answer:"매도", choices:["매도","매수","홀드","걱정"], author:"피터 린치", comment:"원칙 없는 매도가 가장 큰 손실을 낳습니다." },
-  { quote:"주식 시장에서 ( )는 시간이 지나면 항상 돌아온다.", answer:"기회", choices:["기회","손실","공포","탐욕"], author:"피터 린치", comment:"인내하며 기다리면 반드시 좋은 매수 기회가 찾아옵니다." },
-  { quote:"( )을 알면 주식 시장은 예측 가능하다.", answer:"기업", choices:["기업","차트","경제","금리"], author:"피터 린치", comment:"기업 실적과 사업 이해가 주식 투자의 핵심입니다." },
-  // 존 보글
-  { quote:"시장을 ( )하려 하지 마라. 시장에 참여하라.", answer:"예측", choices:["예측","통제","분석","이해"], author:"존 보글", comment:"타이밍보다 시장에 꾸준히 머무는 것이 중요합니다." },
-  { quote:"( )은 투자자의 적이다. 비용을 최소화하라.", answer:"비용", choices:["비용","세금","변동성","시간"], author:"존 보글", comment:"운용보수, 거래비용이 장기 복리 수익률을 갉아먹습니다." },
-  { quote:"단순함은 ( )의 궁극적인 형태다.", answer:"투자", choices:["투자","지식","지혜","전략"], author:"존 보글", comment:"복잡한 전략보다 단순하게 꾸준히 투자하는 것이 가장 강력합니다." },
-  // 찰리 멍거
-  { quote:"( )은 투자의 가장 강력한 무기다.", answer:"인내", choices:["인내","분석","타이밍","정보"], author:"찰리 멍거", comment:"120 POND 전략의 핵심 — 흔들리지 않고 계속 매수하는 인내가 수익을 만듭니다." },
-  { quote:"( )에 대한 이해 없이는 올바른 투자를 할 수 없다.", answer:"심리학", choices:["심리학","회계","경제학","통계학"], author:"찰리 멍거", comment:"투자에서 가장 중요한 것은 인간 심리의 편향을 이해하는 것입니다." },
-  { quote:"크게 성공하고 싶다면 ( )를 피하는 것만으로도 충분하다.", answer:"큰 실수", choices:["큰 실수","작은 손실","변동성","타이밍"], author:"찰리 멍거", comment:"공격적으로 수익을 추구하기보다 큰 실수를 피하는 수비적 전략이 장기 성과를 만듭니다." },
-  { quote:"모든 지혜는 ( )에서 나온다.", answer:"역사", choices:["역사","경험","책","스승"], author:"찰리 멍거", comment:"과거 시장 역사를 공부하면 현재 상황을 더 명확히 볼 수 있습니다." },
-  // 존 템플턴
-  { quote:"( )이 가장 좋은 매수 타이밍이다.", answer:"최고의 공포", choices:["최고의 공포","최고의 탐욕","가장 평온할 때","뉴스가 좋을 때"], author:"존 템플턴", comment:"대공황, 코로나, 금융위기 — 역사상 가장 좋은 매수 기회는 모두 공포의 정점이었습니다." },
-  { quote:"강세장은 ( ) 속에서 태어나고 탐욕 속에서 죽는다.", answer:"비관론", choices:["비관론","낙관론","공포","희망"], author:"존 템플턴", comment:"시장이 가장 어두울 때 씨앗이 뿌려집니다." },
-  { quote:"주식 시장의 가장 무서운 말은 '( )'이다.", answer:"이번엔 다르다", choices:["이번엔 다르다","지금 사야 해","이미 늦었어","곧 오를 거야"], author:"존 템플턴", comment:"사후확증편향 — 지나고 나면 당연해 보이지만, 당시엔 아무도 몰랐습니다." },
-  // 앙드레 코스톨라니
-  { quote:"주식을 사고 ( )을 먹어라. 그리고 잊어버려라.", answer:"수면제", choices:["수면제","커피","밥","약"], author:"앙드레 코스톨라니", comment:"매수 후 단기 변동에 흔들리지 말고 장기 보유하라는 뜻입니다." },
-  { quote:"( )이 많으면 주가는 오른다.", answer:"바보", choices:["바보","천재","돈","주식"], author:"앙드레 코스톨라니", comment:"결국 주가는 시장 참여자의 심리(바보의 수)에 의해 움직인다는 역설적 통찰." },
-  // 월가 격언
-  { quote:"황소도 돈을 벌고 곰도 돈을 번다. ( )만 못 번다.", answer:"돼지", choices:["돼지","닭","개미","고양이"], author:"월가 격언", comment:"과욕 부리지 말라는 말. 조급하게 더 벌려다 모두 잃는 투자자를 돼지에 비유합니다." },
-  { quote:"트렌드는 당신의 ( )이다.", answer:"친구", choices:["친구","적","스승","장애물"], author:"월가 격언", comment:"추세를 거스르지 말고 따르라는 모멘텀 투자의 기본 원칙." },
-  { quote:"( )에서는 모두가 천재처럼 보인다.", answer:"강세장", choices:["강세장","약세장","횡보장","폭락장"], author:"월가 격언", comment:"좋은 시절엔 모두 수익을 냅니다. 진짜 실력은 하락장에서 드러납니다." },
-  { quote:"시장은 당신이 ( )할 수 있는 것보다 더 오래 비이성적 상태를 유지할 수 있다.", answer:"버틸", choices:["버틸","예측","분석","이해"], author:"존 메이너드 케인스", comment:"숏 포지션의 위험성. 웅덩이 전략의 무한매수가 '버티기'에 초점을 맞추는 이유입니다." },
-  { quote:"시장에서 ( )는 없다.", answer:"공짜 점심", choices:["공짜 점심","리스크","기회","손실"], author:"경제학 격언", comment:"모든 수익에는 그에 상응하는 리스크가 존재합니다." },
-  { quote:"( )이 클수록 수익도 크다.", answer:"리스크", choices:["리스크","시간","인내","지식"], author:"월가 격언", comment:"하이 리스크 하이 리턴. SOXL CAGR 17.7%는 MDD -90% 이상의 리스크를 감수한 대가입니다." },
-  // 레이 달리오
-  { quote:"( )에 투자하지 않는 것이 가장 위험한 투자다.", answer:"자기 자신", choices:["자기 자신","주식","부동산","금"], author:"레이 달리오", comment:"지속적인 학습과 역량 개발이 최고의 투자입니다." },
-  { quote:"( ) 포트폴리오가 모든 날씨에 작동하는 유일한 방법이다.", answer:"분산된", choices:["분산된","집중된","레버리지","방어적"], author:"레이 달리오", comment:"올웨더 전략의 핵심 — 어떤 경제 환경에서도 버틸 수 있는 균형 잡힌 포트폴리오." },
-  // 기타 명언
-  { quote:"복리는 세계 ( ) 불가사의다.", answer:"여덟 번째", choices:["여덟 번째","일곱 번째","아홉 번째","열 번째"], author:"알버트 아인슈타인 (속설)", comment:"복리의 마법 — QLD 장기 보유의 핵심 근거입니다. 시간이 돈을 만듭니다." },
-  { quote:"( )하는 것이 아무것도 안 하는 것보다 더 위험할 수 있다.", answer:"과도하게 거래", choices:["과도하게 거래","장기투자","분할매수","기다리는"], author:"투자 격언", comment:"잦은 매매(오버트레이딩)는 수수료와 세금으로 수익률을 갉아먹습니다." },
-  { quote:"계란을 한 ( )에 담지 마라.", answer:"바구니", choices:["바구니","상자","봉투","그릇"], author:"고대 격언", comment:"분산투자의 기본 원칙. 단, 워런 버핏은 '집중투자하고 잘 지켜봐라'고 역설하기도 했습니다." },
-  // 120 POND 연계
-  { quote:"120일선 하방에서 매일 ( )하는 것이 웅덩이 전략의 핵심이다.", answer:"분할매수", choices:["분할매수","전량매수","관망","분석"], author:"120 POND", comment:"하락장에서 매일 꾸준히 사 모으는 것이 평단을 낮추는 가장 강력한 방법입니다." },
-  { quote:"웅덩이 전략에서 ( )은 다음 웅덩이를 위한 총알이다.", answer:"SGOV", choices:["SGOV","현금","채권","달러"], author:"120 POND", comment:"120일선 위에서는 SGOV에 현금을 쌓아 다음 웅덩이 진입을 준비합니다." },
-  { quote:"레버리지 ETF에서 ( )이 가장 강력한 무기다.", answer:"시간", choices:["시간","레버리지","타이밍","분석"], author:"120 POND", comment:"시간은 복리의 가장 강력한 조력자입니다. 장기 보유가 레버리지의 복리 효과를 극대화합니다." },
-  { quote:"하락장은 ( )의 세일 기간이다.", answer:"레버리지 ETF", choices:["레버리지 ETF","현금","채권","금"], author:"120 POND", comment:"주가가 내릴수록 같은 돈으로 더 많이 살 수 있습니다. 하락을 두려워하지 말고 기회로 보세요." },
-];
-
-let gameState = {
-  questions:[], idx:0, score:0, streak:0,
-  total:0, correct:0, answered:false
-};
-
-function gameStart() {
-  gameState.questions = [...QUOTE_DATA].sort(()=>Math.random()-0.5);
-  gameState.idx=0; gameState.score=0; gameState.streak=0;
-  gameState.total=0; gameState.correct=0; gameState.answered=false;
-  document.getElementById("game-score").textContent="0";
-  document.getElementById("game-streak").textContent="0";
-  document.getElementById("game-accuracy").textContent="-";
-  document.getElementById("game-feedback").style.display="none";
-  document.getElementById("game-next-btn").style.display="none";
-  gameRender();
-}
-
-function gameRender() {
-  const q = gameState.questions[gameState.idx];
-  if (!q) {
-    document.getElementById("game-quote").textContent="🎉 모든 명언을 완료했어요!";
-    document.getElementById("game-author").textContent=`최종 점수 ${gameState.score}점 · 정답률 ${Math.round(gameState.correct/gameState.total*100)}%`;
-    document.getElementById("game-btns").innerHTML="";
-    return;
-  }
-  document.getElementById("game-author").textContent=`— ${q.author}`;
-  // ( ) 를 빈칸 박스로 표시
-  document.getElementById("game-quote").innerHTML =
-    q.quote.replace(/\( \)/g, `<span style="display:inline-block;background:var(--blue);color:#fff;border-radius:6px;padding:1px 14px;font-size:14px;letter-spacing:1px;vertical-align:middle;">?</span>`);
-
-  // 보기 셔플
-  const shuffled = [...q.choices].sort(()=>Math.random()-0.5);
-  document.getElementById("game-btns").innerHTML = shuffled.map(c =>
-    `<button onclick="gameAnswer('${c.replace(/'/g,"\\'")}');event.stopPropagation();"
-      style="background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;color:var(--text1);cursor:pointer;line-height:1.4;">${c}</button>`
-  ).join("");
-}
-
-function gameAnswer(ans) {
-  if (gameState.answered) return;
-  gameState.answered=true; gameState.total++;
-  const q = gameState.questions[gameState.idx];
-  const isRight = ans === q.answer;
-
-  // 정답 보기 색상 처리
-  document.querySelectorAll("#game-btns button").forEach(btn => {
-    btn.disabled = true;
-    if (btn.textContent === q.answer) {
-      btn.style.background="#dcfce7"; btn.style.borderColor="#86efac"; btn.style.color="#15803d";
-    } else if (btn.textContent === ans && !isRight) {
-      btn.style.background="#fee2e2"; btn.style.borderColor="#fca5a5"; btn.style.color="#dc2626";
-    }
-  });
-
-  // 빈칸에 정답 표시
-  document.getElementById("game-quote").innerHTML =
-    q.quote.replace(/\( \)/g, `<span style="display:inline-block;background:${isRight?"#15803d":"#dc2626"};color:#fff;border-radius:6px;padding:1px 14px;font-size:14px;font-weight:800;vertical-align:middle;">${q.answer}</span>`);
-
-  if (isRight) {
-    gameState.correct++; gameState.streak++;
-    const bonus = gameState.streak>=3 ? Math.floor(gameState.streak/3)*5 : 0;
-    gameState.score += 10+bonus;
-    document.getElementById("game-feedback").style.cssText="display:block;background:#dcfce7;border:1.5px solid #86efac;border-radius:10px;padding:12px;margin-bottom:10px;";
-    document.getElementById("game-feedback").innerHTML=
-      `<div style="font-size:13px;font-weight:800;color:#15803d;margin-bottom:5px;">✅ 정답! +10점${bonus?` +${bonus}점 🔥`:""} · ${gameState.streak}연속</div>
-       <div style="font-size:11px;color:#166534;line-height:1.6;">${q.comment}</div>`;
-  } else {
-    gameState.streak=0;
-    document.getElementById("game-feedback").style.cssText="display:block;background:#fee2e2;border:1.5px solid #fca5a5;border-radius:10px;padding:12px;margin-bottom:10px;";
-    document.getElementById("game-feedback").innerHTML=
-      `<div style="font-size:13px;font-weight:800;color:#dc2626;margin-bottom:5px;">❌ 오답 — 정답은 <b>${q.answer}</b></div>
-       <div style="font-size:11px;color:#991b1b;line-height:1.6;">${q.comment}</div>`;
-  }
-
-  document.getElementById("game-score").textContent=gameState.score;
-  document.getElementById("game-streak").textContent=gameState.streak;
-  document.getElementById("game-accuracy").textContent=Math.round(gameState.correct/gameState.total*100)+"%";
-  document.getElementById("game-next-btn").style.display="block";
-}
-
-function gameNext() {
-  gameState.idx++; gameState.answered=false;
-  document.getElementById("game-feedback").style.display="none";
-  document.getElementById("game-next-btn").style.display="none";
-  gameRender();
-}
-
-// ════════════════════════════════════════
-// 클라우드 저장
-// ════════════════════════════════════════
-let _cloudSyncTimer = null;
-
-function pondCompress(pond) {
-  return pond.map(p => ({
-    id:p.id,t:p.ticker,n:p.name!==p.ticker?p.name:undefined,
-    ds:p.dailyShares,bd:p.buyDays||[],s:p.status,
-    b:(p.buys||[]).map(b=>[b.date,b.shares,b.price||0,b.memo||undefined]),
-    sl:(p.sells||[]),ca:p.closedAt,aa:p.addedAt,
-    s1:p.sell1Done||undefined,s2:p.sell2Done||undefined,
-  }));
-}
-function pondDecompress(arr) {
-  return arr.map(p => ({
-    id:p.id,ticker:p.t,name:p.n||p.t,
-    dailyShares:p.ds,buyDays:p.bd||[],status:p.s,
-    buys:(p.b||[]).map(b=>({date:b[0],shares:b[1],price:b[2]||null,memo:b[3]||''})),
-    sells:p.sl||[],closedAt:p.ca,addedAt:p.aa,
-    sell1Done:!!p.s1,sell2Done:!!p.s2,currentPrice:null,ma120:null,
-  }));
-}
-
-async function cloudSave() {
-  const nick = document.getElementById("s-nick").value.trim();
-  const st   = document.getElementById("cloud-status");
-  if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
-  saveSettings();
-  st.style.color="var(--text3)"; st.textContent="⏳ 저장 중...";
-  try {
-    const data = JSON.stringify({ S, p: pondCompress(POND) });
-    const params = new URLSearchParams({ action:"save_settings", nick, data });
-    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"no-cors" });
-    localStorage.setItem("qld_nick", nick);
-    st.style.color="var(--green)"; st.textContent="✅ 저장 요청 완료 (" + nick + ")";
-  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ " + e.message; }
-}
-
-async function cloudLoad() {
-  const nick = document.getElementById("s-nick").value.trim();
-  const st   = document.getElementById("cloud-status");
-  if (!nick) { st.style.color="var(--red)"; st.textContent="❌ 닉네임을 입력해주세요"; return; }
-  st.style.color="var(--text3)"; st.textContent="⏳ 불러오는 중...";
-  try {
-    const params = new URLSearchParams({ action:"load_settings", nick });
-    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
-    const json = await res.json();
-    if (!json.ok) { st.style.color="var(--red)"; st.textContent="❌ 오류: "+(json.error||""); return; }
-    if (!json.data) { st.style.color="var(--amber)"; st.textContent="⚠ 저장된 데이터 없음"; return; }
-    const parsed = JSON.parse(json.data);
-    if (parsed.S && parsed.p) { S=parsed.S; POND=pondDecompress(parsed.p); }
-    else if (parsed.settings) { S=parsed.settings; POND=parsed.pond||[]; }
-    else { S=parsed; }
-    // standbyDate 없으면 빈 문자열로 초기화
-    if (!S.standbyDate) S.standbyDate = "";
-    localStorage.setItem("qld_s11", JSON.stringify(S));
-    localStorage.setItem("qld_pond", JSON.stringify(POND));
-    localStorage.setItem("qld_nick", nick);
-    // UI 전체 갱신
-    loadSettings();
-    if (MD) {
-      // MD 있으면 standbyDate 반영
-      if (MD.standbyDate) S.standbyDate = MD.standbyDate;
-      renderDashboard(MD);
-    } else {
-      renderStatic(null);
-    }
-    pondRender();
-    st.style.color="var(--green)"; st.textContent="✅ 불러오기 완료 (" + nick + ") — 새로고침하면 대기일 정확히 표시";
-  } catch(e) { st.style.color="var(--red)"; st.textContent="❌ " + e.message; }
-}
-
-async function cloudAutoSync(nick) {
-  try {
-    const data = JSON.stringify({ S, p: pondCompress(POND) });
-    const params = new URLSearchParams({ action:"save_settings", nick, data });
-    await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"no-cors" });
-    const st = document.getElementById("cloud-status");
-    if (st) { st.style.color="var(--green)"; st.textContent="☁ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")"; }
-  } catch(e) {}
-}
-
-// ════════════════════════════════════════
-// 📔 투자일지 (localStorage)
-// ════════════════════════════════════════
-let DIARY = [];
-function diaryLoadLocal() { try { DIARY=JSON.parse(localStorage.getItem("qld_diary")||"[]"); } catch { DIARY=[]; } }
-function diarySaveLocal() { localStorage.setItem("qld_diary", JSON.stringify(DIARY)); }
-function diaryWrite() { document.getElementById("diary-form").style.display="block"; document.getElementById("diary-text").focus(); }
-function diaryCancel() { document.getElementById("diary-form").style.display="none"; document.getElementById("diary-text").value=""; document.getElementById("diary-err").style.display="none"; }
-function diarySubmit() {
-  const text=(document.getElementById("diary-text").value||"").trim();
-  const mood=document.getElementById("diary-mood").value;
-  const tag=document.getElementById("diary-tag").value;
-  const errEl=document.getElementById("diary-err");
-  errEl.style.display="none";
-  if (!text) { errEl.textContent="내용을 입력해주세요"; errEl.style.display="block"; return; }
-  const now=new Date();
-  const ts=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0")+" "+String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
-  DIARY.unshift({id:Date.now(),time:ts,mood,tag,text});
-  diarySaveLocal(); diaryCancel(); diaryRenderLocal();
-}
-function diaryDelete(id) {
-  if (!confirm("삭제하시겠습니까?")) return;
-  DIARY=DIARY.filter(d=>d.id!==id); diarySaveLocal(); diaryRenderLocal();
-}
-function diaryLoad() { diaryLoadLocal(); diaryRenderLocal(); }
-function diaryExport() {
-  const txt=DIARY.map(e=>"["+e.time+"] "+e.mood+" "+e.tag+"\n"+e.text).join("\n\n---\n\n");
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain;charset=utf-8"}));
-  a.download="투자일지_"+new Date().toISOString().slice(0,10)+".txt"; a.click();
-}
-const TAG_BG2    = {"매수":"#dcfce7","매도":"#fee2e2","관찰":"#e0f2fe","전략":"#ede9fe","반성":"#fef3c7","기타":"#f3f4f6"};
-const TAG_COLOR2 = {"매수":"#15803d","매도":"#dc2626","관찰":"#0284c7","전략":"#7c3aed","반성":"#b45309","기타":"#6b7280"};
-function diaryRenderLocal() {
-  const list=document.getElementById("diary-list");
-  if (!list) return;
-  if (!DIARY.length) { list.innerHTML='<div style="text-align:center;padding:30px 0;font-size:13px;color:var(--text3);">📝 첫 투자일지를 기록해보세요</div>'; return; }
-  list.innerHTML=DIARY.map(e=>
-    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">'
-    +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">'
-    +'<span style="font-size:15px;">'+e.mood+'</span>'
-    +'<span style="background:'+(TAG_BG2[e.tag]||"#f3f4f6")+';color:'+(TAG_COLOR2[e.tag]||"#6b7280")+';border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;">'+e.tag+'</span>'
-    +'<span style="font-size:10px;color:var(--text3);margin-left:auto;">'+e.time+'</span>'
-    +'<button onclick="diaryDelete('+e.id+')" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:0 2px;">✕</button>'
-    +'</div>'
-    +'<div style="font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;">'+e.text.replace(/</g,"&lt;")+'</div>'
-    +'</div>'
-  ).join("");
-}
-
-// ════════════════════════════════════════
-// 🏆 투자자 레벨 테스트
-// ════════════════════════════════════════
-const LEVEL_QUESTIONS = [
-  {cat:"💸 실전",q:"최근 하락장에서 내가 한 행동은?",opts:["패닉셀했다","그냥 버텼다","추가 매수했다","계획대로 분할 매수했다"],scores:[1,2,3,4]},
-  {cat:"💸 실전",q:"현재까지 투자 누적 수익률은?",opts:["손실 중","0~30%","30~100%","100% 이상"],scores:[1,2,3,4]},
-  {cat:"💸 실전",q:"레버리지 ETF -50% 구간을 실제로 경험했나?",opts:["경험 없음","있고 팔았다","있고 버텼다","있고 추가 매수했다"],scores:[1,2,3,4]},
-  {cat:"💸 실전",q:"유튜브/SNS 추천으로 산 종목 결과는?",opts:["주로 손실","반반","주로 수익","그렇게 안 산다"],scores:[1,2,3,4]},
-  {cat:"💸 실전",q:"투자 원금 대비 현재 총자산은?",opts:["원금보다 적다","비슷하다","1.5~3배","3배 이상"],scores:[1,2,3,4]},
-  {cat:"🎯 판단",q:"본인 전략의 MDD(최대낙폭)를 알고 투자하나?",opts:["모른다","대략 안다","정확히 안다","알고 실전 경험도 있다"],scores:[1,2,3,4]},
-  {cat:"🎯 판단",q:"'지금 안 사면 늦을 것 같아' 충동 매수한 적?",opts:["자주 한다","가끔 한다","거의 없다","한 번도 없다"],scores:[1,2,3,4]},
-  {cat:"🎯 판단",q:"명확한 매수/매도 원칙이 있나?",opts:["없다","막연히 있다","있지만 자주 어긴다","있고 거의 지킨다"],scores:[1,2,3,4]},
-  {cat:"🎯 판단",q:"같은 실수를 반복한 적 있나?",opts:["반복 중","여러 번 반복","한두 번 후 고쳤다","기록해서 안 반복한다"],scores:[1,2,3,4]},
-  {cat:"🎯 판단",q:"투자 성과를 정기적으로 기록/복기하나?",opts:["안 한다","가끔","수익률만 본다","매매일지 작성한다"],scores:[1,2,3,4]},
-  {cat:"🧠 멘탈",q:"계좌 확인 빈도는?",opts:["하루 수십 번","매일 여러 번","하루 1~2번","주 1~2회 이하"],scores:[1,2,3,4]},
-  {cat:"🧠 멘탈",q:"투자 손실로 잠 못 잔 날이 한 달에?",opts:["10일 이상","3~10일","1~3일","없다"],scores:[1,2,3,4]},
-  {cat:"🧠 멘탈",q:"원칙을 어겼을 때 실제 결과는?",opts:["크게 손실","손실","본전","원칙 어긴 적 없다"],scores:[1,2,3,4]},
-  {cat:"🧠 멘탈",q:"수익/손실이 일상 기분에 영향을 미치나?",opts:["크게 영향","꽤 영향","약간","거의 없다"],scores:[1,2,3,4]},
-  {cat:"🧠 멘탈",q:"지금 전략을 10년 뒤에도 하고 있을 자신 있나?",opts:["없다","모르겠다","아마도","확신한다"],scores:[1,2,3,4]},
-];
-const LEVEL_GRADES = [
-  {min:0, max:19,lv:1,name:"씨앗 투자자",  color:"#6b7280",emoji:"🌱",desc:"투자 첫걸음! 원칙 공부가 최우선입니다."},
-  {min:20,max:24,lv:2,name:"새싹 투자자",  color:"#84cc16",emoji:"🌿",desc:"기초는 있지만 감정 매매가 많아요."},
-  {min:25,max:29,lv:3,name:"학습 투자자",  color:"#22c55e",emoji:"📚",desc:"공부 중! 전략을 체계화할 시기예요."},
-  {min:30,max:34,lv:4,name:"원칙 입문자",  color:"#10b981",emoji:"📋",desc:"원칙이 생기기 시작했어요. 꾸준히!"},
-  {min:35,max:39,lv:5,name:"전략 투자자",  color:"#0891b2",emoji:"🎯",desc:"전략이 있고 대체로 지킵니다."},
-  {min:40,max:44,lv:6,name:"숙련 투자자",  color:"#2563eb",emoji:"💼",desc:"심리와 전략의 균형을 잡아가고 있어요."},
-  {min:45,max:49,lv:7,name:"원칙 수호자",  color:"#7c3aed",emoji:"🛡️",desc:"흔들림 없는 원칙으로 시장을 대합니다."},
-  {min:50,max:54,lv:8,name:"마스터 투자자",color:"#9333ea",emoji:"⚡",desc:"리스크를 알고 기회를 잡는 수준입니다."},
-  {min:55,max:57,lv:9,name:"투자 현인",    color:"#f59e0b",emoji:"🔮",desc:"시장의 심리와 구조를 깊이 이해합니다."},
-  {min:58,max:60,lv:10,name:"웅덩이 마스터",color:"#dc2626",emoji:"🏆",desc:"120 POND 전략을 완전히 체화했습니다!"},
-];
-let levelQIdx=0, levelScores=[];
-function levelTestStart() {
-  levelQIdx=0; levelScores=[];
-  document.getElementById("level-result-card").style.display="none";
-  document.getElementById("level-test-wrap").style.display="block";
-  levelRenderQ();
-}
-function levelRenderQ() {
-  const q=LEVEL_QUESTIONS[levelQIdx];
-  document.getElementById("level-q-num").textContent=(levelQIdx+1)+" / "+LEVEL_QUESTIONS.length;
-  document.getElementById("level-q-cat").textContent=q.cat;
-  document.getElementById("level-q-text").textContent=q.q;
-  document.getElementById("level-progress").style.width=((levelQIdx/LEVEL_QUESTIONS.length)*100)+"%";
-  document.getElementById("level-q-options").innerHTML=q.opts.map((o,i)=>
-    '<button onclick="levelAnswer('+q.scores[i]+')" style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;font-weight:500;color:var(--text1);cursor:pointer;text-align:left;line-height:1.4;margin-bottom:4px;">'
-    +'<span style="color:var(--blue);font-weight:700;margin-right:8px;">'+["①","②","③","④"][i]+'</span>'+o+'</button>'
-  ).join("");
-}
-function levelAnswer(score) {
-  levelScores.push(score); levelQIdx++;
-  if (levelQIdx>=LEVEL_QUESTIONS.length) levelShowResult();
-  else levelRenderQ();
-}
-function levelShowResult() {
-  document.getElementById("level-test-wrap").style.display="none";
-  const total=levelScores.reduce((a,b)=>a+b,0);
-  const grade=LEVEL_GRADES.find(g=>total>=g.min&&total<=g.max)||LEVEL_GRADES[0];
-  const psy=levelScores.slice(0,5).reduce((a,b)=>a+b,0);
-  const str=levelScores.slice(5,10).reduce((a,b)=>a+b,0);
-  const rsk=levelScores.slice(10,15).reduce((a,b)=>a+b,0);
-  const result={lv:grade.lv,name:grade.name,total,psy,str,rsk,date:new Date().toLocaleDateString("ko-KR")};
-  localStorage.setItem("qld_level",JSON.stringify(result));
-  const card=document.getElementById("level-result-card");
-  card.style.display="block";
-  card.innerHTML='<div style="background:var(--bg2);border:2px solid '+grade.color+';border-radius:16px;padding:18px;margin-bottom:12px;">'
-    +'<div style="text-align:center;margin-bottom:14px;">'
-    +'<div style="font-size:36px;margin-bottom:4px;">'+grade.emoji+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);font-weight:700;">LV.'+grade.lv+' / 10</div>'
-    +'<div style="font-size:22px;font-weight:900;color:'+grade.color+';margin:4px 0;">'+grade.name+'</div>'
-    +'<div style="font-size:12px;color:var(--text2);line-height:1.6;">'+grade.desc+'</div>'
-    +'</div>'
-    +'<div style="display:flex;gap:6px;margin-bottom:12px;">'
-    +levelBarItem("💸 실전",psy,20,"#dc2626")+levelBarItem("🎯 판단",str,20,"#2563eb")+levelBarItem("🧠 멘탈",rsk,20,"#7c3aed")
-    +'</div>'
-    +'<div style="font-size:11px;color:var(--text3);text-align:right;margin-bottom:12px;">총점 <b style="color:'+grade.color+';font-size:15px;">'+total+'</b>/60 · '+result.date+'</div>'
-    +'<button onclick="levelTestStart()" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;">🔄 다시 테스트</button>'
-    +'</div>';
-}
-function levelBarItem(label,score,max,color) {
-  const pct=Math.round((score/max)*100);
-  return '<div style="flex:1;background:var(--bg3);border-radius:10px;padding:8px 10px;">'
-    +'<div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px;">'+label+'</div>'
-    +'<div style="height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden;margin-bottom:3px;">'
-    +'<div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:3px;"></div></div>'
-    +'<div style="font-size:11px;font-weight:800;color:'+color+';">'+pct+'%</div></div>';
-}
-function levelLoadSaved() {
-  const saved=localStorage.getItem("qld_level");
-  if (!saved) return;
-  try {
-    const r=JSON.parse(saved);
-    const grade=LEVEL_GRADES.find(g=>g.lv===r.lv)||LEVEL_GRADES[0];
-    const card=document.getElementById("level-result-card");
-    if (!card) return;
-    card.style.display="block";
-    card.innerHTML='<div style="background:var(--bg2);border:1.5px solid '+grade.color+'44;border-radius:14px;padding:14px;margin-bottom:10px;">'
-      +'<div style="display:flex;align-items:center;gap:10px;">'
-      +'<span style="font-size:28px;">'+grade.emoji+'</span>'
-      +'<div><div style="font-size:10px;color:var(--text3);">내 레벨 · '+r.date+'</div>'
-      +'<div style="font-size:16px;font-weight:900;color:'+grade.color+';">LV.'+grade.lv+' '+grade.name+'</div>'
-      +'<div style="font-size:11px;color:var(--text3);">총점 '+r.total+'/60 · 실전 '+r.psy+' · 판단 '+r.str+' · 멘탈 '+r.rsk+'</div>'
-      +'</div></div></div>';
-  } catch(e) {}
-}
-
 const _origSwitchTab = window.switchTab;
 window.switchTab = function(id) {
   _origSwitchTab(id);
   if (id === "pond") { pondLoad(); pondRender(); }
-  if (id === "game") { diaryLoad(); levelLoadSaved(); }
 };
 
 // 초기화
 pondLoad();
-const _savedNick = localStorage.getItem("qld_nick");
-if (_savedNick) { const nEl=document.getElementById("s-nick"); if(nEl) nEl.value=_savedNick; }
 
 document.getElementById("pwInput").addEventListener("focus", () => { document.getElementById("pwErr").style.display="none"; });
 </script>

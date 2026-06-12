@@ -1072,13 +1072,15 @@ function detectStandbyStart() {
   const pd = parseLocalDate(raw);
   return pd ? fmtISO(pd) : (raw || "");
 }
-// 대기모드 시작일 결정: 수동 지정 > 차트 자동감지 > GAS > 저장값
+// 대기모드 시작일 결정: 수동 지정 > GAS 역산(전체 데이터) > 차트 자동감지(폴백) > 저장값
 function standbyStart(d) {
   const manual = (S.standbyManual || "").trim();
   if (manual) return manual;
-  const auto = detectStandbyStart();
+  const gas = (d && d.standbyDate) || S.standbyDate || "";
+  if (gas) return gas;
+  const auto = detectStandbyStart();   // GAS가 못 줄 때만 차트로 직접 감지
   if (auto) return auto;
-  return (d && d.standbyDate) || S.standbyDate || "";
+  return "";
 }
 
 // ── 전략 원칙 데이터 ──
@@ -1468,7 +1470,7 @@ function renderLOC(qldPrice, ssoPrice, usdkrw) {
 }
 
 // ── GAS URL ──
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwnOCiKqXezo8QcpPyLNOcrVQMBxL8NCN5MsrA4aQzzAXxRs2fkIJmr9y8c1ElbUPaSdA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxhYlpp3Iq-iK-84cejY2uMIU6IybsgRlJ-SNx16OmmTPc4i4fBF8QFjYZURwV4hnpItA/exec";
 
 async function fetchAll() {
   const btn = document.getElementById("btnRefresh");

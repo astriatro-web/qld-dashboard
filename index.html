@@ -490,6 +490,7 @@ body {
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
   <button class="tab" onclick="switchTab('pond')">웅덩노트</button>
+  <button class="tab" onclick="switchTab('swing')">단기스캔</button>
   <button class="tab" onclick="switchTab('war')">거시모니터</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
@@ -835,6 +836,40 @@ body {
       <button onclick="pondEditConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">저장</button>
     </div>
   </div>
+</div>
+
+<!-- ── 단기스캔 패널 ── -->
+<div class="panel" id="panel-swing">
+  <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:16px;padding:16px;margin-bottom:14px;color:#fff;">
+    <div style="font-size:15px;font-weight:900;margin-bottom:4px;">⚡ 단기 스윙 스캔</div>
+    <div style="font-size:11px;opacity:0.9;line-height:1.6;">관심 2배 레버리지 티커를 등록하고 스캔하면, 일봉 스토캐스틱·RSI를 자동 계산해 <b>과매도(매수) 종목을 위에</b> 띄웁니다. 차트를 하나씩 누를 필요 없어요.</div>
+  </div>
+
+  <!-- 티커 추가 -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <input id="swing-ticker-input" type="text" placeholder="티커 입력 (예: SOXL, TQQQ, QLD)" onkeydown="if(event.key==='Enter')swingAddTicker()"
+      style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:14px;color:var(--text1);outline:none;text-transform:uppercase;">
+    <button onclick="swingAddTicker()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:0 16px;font-size:13px;font-weight:700;cursor:pointer;">추가</button>
+  </div>
+
+  <!-- 스캔 버튼 -->
+  <button id="btnSwingScan" onclick="swingScan()" style="width:100%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">
+    <span id="swingScanIcon">🔍</span> 오늘의 과매도 스캔
+  </button>
+  <div id="swing-updated" style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:14px;"></div>
+
+  <!-- 기준 안내 -->
+  <div style="font-size:10px;color:var(--text3);background:var(--bg3);border-radius:8px;padding:8px 10px;margin-bottom:14px;line-height:1.7;">
+    🟢 과매도(매수 검토): 스토캐스틱 %K ≤ <b id="swing-low-lbl">20</b> &nbsp;·&nbsp; 🔴 과매수(매도 검토): %K ≥ <b id="swing-high-lbl">80</b><br>
+    RSI는 보조 확인용 (30 이하 과매도 / 70 이상 과매수). 일봉 종가 기준 · 다음날 매매 신호.
+  </div>
+
+  <div id="swing-empty" style="text-align:center;padding:30px 16px;color:var(--text3);font-size:13px;line-height:1.8;">
+    관심 티커를 추가하고 <b>스캔</b>을 눌러보세요.<br>
+    <span style="font-size:11px;">2배 레버리지 예시: QLD · SSO · 또는 보고 계신 종목들</span>
+  </div>
+
+  <div id="swing-list"></div>
 </div>
 
 <!-- ── 거시모니터 패널 ── -->
@@ -1221,7 +1256,7 @@ function saveSettings() {
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","pond","war","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","rules","pond","swing","war","settings"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
@@ -2808,14 +2843,143 @@ async function runPondAI() {
   }
 }
 
+// ════════════════════════════════════════
+// 단기 스윙 스캔
+// ════════════════════════════════════════
+const SWING_LOW  = 20;   // 과매도 기준 (%K 이하 → 매수 검토)
+const SWING_HIGH = 80;   // 과매수 기준 (%K 이상 → 매도 검토)
+let SWING = [];
+
+function swingLoad() {
+  try { SWING = JSON.parse(localStorage.getItem("qld_swing") || "[]"); } catch { SWING = []; }
+}
+function swingSave() { localStorage.setItem("qld_swing", JSON.stringify(SWING)); }
+
+function swingAddTicker() {
+  const inp = document.getElementById("swing-ticker-input");
+  const t = (inp.value || "").trim().toUpperCase();
+  if (!t) return;
+  if (!SWING.find(x => x.ticker === t)) {
+    SWING.push({ ticker: t, data: null });
+    swingSave();
+  }
+  inp.value = "";
+  swingRender();
+}
+function swingRemove(ticker) {
+  SWING = SWING.filter(x => x.ticker !== ticker);
+  swingSave();
+  swingRender();
+}
+
+async function swingScan() {
+  if (!SWING.length) return;
+  const btn = document.getElementById("btnSwingScan");
+  const icon = document.getElementById("swingScanIcon");
+  btn.disabled = true;
+  let done = 0;
+  for (const item of SWING) {
+    icon.textContent = `${done}/${SWING.length}`;
+    try {
+      const params = new URLSearchParams({ action: "ticker_price", ticker: item.ticker });
+      const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
+      const d = await res.json();
+      item.data = d.ok ? d : { error: d.error || "조회 실패" };
+    } catch(e) {
+      item.data = { error: e.message };
+    }
+    done++;
+    swingRender();
+  }
+  swingSave();
+  btn.disabled = false; icon.textContent = "🔍";
+  document.getElementById("swing-updated").textContent = new Date().toLocaleTimeString("ko-KR") + " 스캔 완료";
+}
+
+function swingSignal(k) {
+  if (k == null) return { label:"데이터없음", cls:"none", rank:5 };
+  if (k <= SWING_LOW)  return { label:"과매도 · 매수 검토", cls:"buy",  rank:0 };
+  if (k >= SWING_HIGH) return { label:"과매수 · 매도 검토", cls:"sell", rank:2 };
+  return { label:"중립", cls:"neutral", rank:1 };
+}
+
+function swingRender() {
+  const list  = document.getElementById("swing-list");
+  const empty = document.getElementById("swing-empty");
+  if (!SWING.length) { list.innerHTML = ""; empty.style.display = "block"; return; }
+  empty.style.display = "none";
+
+  // 신호 우선순위(과매도 먼저) → %K 오름차순 정렬
+  const sorted = [...SWING].sort((a, b) => {
+    const ka = a.data && a.data.ok ? a.data.stochK : null;
+    const kb = b.data && b.data.ok ? b.data.stochK : null;
+    const ra = swingSignal(ka).rank, rb = swingSignal(kb).rank;
+    if (ra !== rb) return ra - rb;
+    if (ka == null) return 1; if (kb == null) return -1;
+    return ka - kb;
+  });
+
+  const colors = {
+    buy:     { bg:"#f0fdf4", bd:"#86efac", tx:"#15803d", dot:"🟢" },
+    sell:    { bg:"#fef2f2", bd:"#fca5a5", tx:"#dc2626", dot:"🔴" },
+    neutral: { bg:"var(--bg2)", bd:"var(--border)", tx:"var(--text3)", dot:"⚪" },
+    none:    { bg:"var(--bg3)", bd:"var(--border)", tx:"var(--text3)", dot:"⚪" },
+  };
+
+  list.innerHTML = sorted.map(item => {
+    const d = item.data;
+    if (!d || !d.ok) {
+      const err = d && d.error ? d.error : "미스캔";
+      return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:15px;font-weight:800;color:var(--text1);">${item.ticker}</span>
+        <span style="font-size:11px;color:var(--text3);">${err==="미스캔"?"스캔 전":"오류: "+err}</span>
+        <button onclick="swingRemove('${item.ticker}')" style="background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer;">✕</button>
+      </div>`;
+    }
+    const k = d.stochK, dv = d.stochD, r = d.rsi;
+    const sig = swingSignal(k);
+    const c = colors[sig.cls];
+    const rsiColor = r == null ? "var(--text3)" : r <= 30 ? "#15803d" : r >= 70 ? "#dc2626" : "var(--text2)";
+    const cur = d.currency === "KRW" ? Math.round(d.current).toLocaleString()+"원"
+             : d.currency && d.currency !== "USD" ? d.current.toLocaleString()+" "+d.currency
+             : "$"+d.current;
+    return `<div style="background:${c.bg};border:1.5px solid ${c.bd};border-radius:13px;padding:13px 14px;margin-bottom:9px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
+        <span style="font-size:16px;">${c.dot}</span>
+        <span style="font-size:16px;font-weight:900;color:var(--text1);">${item.ticker}</span>
+        <span style="background:${c.bg};color:${c.tx};border:1px solid ${c.bd};border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800;">${sig.label}</span>
+        <span style="font-size:12px;color:var(--text2);margin-left:auto;">${cur}</span>
+        <button onclick="swingRemove('${item.ticker}')" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:0 2px;">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div style="text-align:center;background:rgba(0,0,0,0.03);border-radius:8px;padding:7px 4px;">
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">스토캐스틱 %K</div>
+          <div style="font-size:16px;font-weight:900;color:${c.tx};">${k!=null?k:"—"}</div>
+        </div>
+        <div style="text-align:center;background:rgba(0,0,0,0.03);border-radius:8px;padding:7px 4px;">
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">%D</div>
+          <div style="font-size:16px;font-weight:800;color:var(--text2);">${dv!=null?dv:"—"}</div>
+        </div>
+        <div style="text-align:center;background:rgba(0,0,0,0.03);border-radius:8px;padding:7px 4px;">
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">RSI</div>
+          <div style="font-size:16px;font-weight:800;color:${rsiColor};">${r!=null?r:"—"}</div>
+        </div>
+      </div>
+      ${sig.cls==="buy" && r!=null && r<=30 ? `<div style="font-size:10px;color:#15803d;margin-top:7px;font-weight:700;">✓✓ 스토캐스틱·RSI 동반 과매도 — 신호 강함</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
 const _origSwitchTab = window.switchTab;
 window.switchTab = function(id) {
   _origSwitchTab(id);
   if (id === "pond") { pondLoad(); pondRender(); }
+  if (id === "swing") { swingLoad(); swingRender(); }
 };
 
 // 초기화
 pondLoad();
+swingLoad();
 
 document.getElementById("pwInput").addEventListener("focus", () => { document.getElementById("pwErr").style.display="none"; });
 </script>

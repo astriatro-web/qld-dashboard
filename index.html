@@ -871,7 +871,8 @@ body {
   <!-- 기준 안내 -->
   <div style="font-size:10px;color:var(--text3);background:var(--bg3);border-radius:8px;padding:8px 10px;margin-bottom:14px;line-height:1.7;">
     🟢 <b>강력 추천</b> = 분야 우상향 + 일봉 %K ≤ 20 &nbsp;·&nbsp; 🟡 과매도지만 추세 약함(관망) &nbsp;·&nbsp; 🔴 과매수(%K ≥ 80, 매도)<br>
-    분야 미지정 종목은 추세 필터 없이 일봉 신호만 봅니다. 일봉 종가 기준 · 다음날 매매.
+    분야 미지정 종목은 추세 필터 없이 일봉 신호만 봅니다. 일봉 종가 기준 · 다음날 매매.<br>
+    <span style="display:inline-block;margin-top:5px;">📊 추세 별칭(지속 주수): 상승 🌱새싹→📈상승→🔥강세→🚀주도주→👑대장 · 하락 ⚠️조정→📉약세→🧊침체→🕳️수렁→🗑️쓰레기통</span>
   </div>
 
   <div id="swing-empty" style="text-align:center;padding:30px 16px;color:var(--text3);font-size:13px;line-height:1.8;">
@@ -3026,15 +3027,40 @@ function swingDecide(item) {
   const k = d.stochK;
   if (k == null) return { label:"데이터부족", cls:"none", rank:8 };
   const sec = item.sectorId ? SWING.sectors.find(s => s.id === item.sectorId) : null;
-  const trendUp = sec && sec.trend && sec.trend.ok ? sec.trend.trend === "up" : null;
+  const tr = sec && sec.trend && sec.trend.ok ? sec.trend : null;
+  const above  = tr ? tr.above  : null;
+  const rising = tr ? tr.rising : null;
   if (k >= SWING_HIGH) return { label:"과매수 · 매도 검토", cls:"sell", rank:5 };
   if (k <= SWING_LOW) {
-    if (!sec)              return { label:"과매도 · 매수 (분야 미지정)", cls:"buy", rank:2 };
-    if (trendUp === true)  return { label:"강력 매수 · 우상향 눌림목", cls:"strong", rank:0 };
-    if (trendUp === false) return { label:"과매도지만 추세 하락 · 관망", cls:"warn", rank:4 };
-    return { label:"과매도 · 추세 혼조 · 주의", cls:"warn", rank:3 };
+    if (!sec)                       return { label:"과매도 · 매수 (분야 미지정)", cls:"buy", rank:2 };
+    if (above === true && rising)   return { label:"강력 매수 · 우상향 눌림목", cls:"strong", rank:0 };
+    if (above === true)             return { label:"매수 · 추세 초기 눌림목", cls:"buy", rank:1 };
+    if (above === false)            return { label:"과매도지만 하락 추세 · 관망", cls:"warn", rank:4 };
+    return { label:"과매도 · 추세 확인불가 · 주의", cls:"warn", rank:3 };
   }
   return { label:"중립", cls:"neutral", rank:6 };
+}
+
+// ── 추세 지속기간 → 별칭 ──
+function swingTrendTier(above, n, tf) {
+  if (n == null) return null;
+  const b = tf === "monthly" ? [1, 3, 6, 12] : [4, 12, 26, 52];  // 구간 경계
+  const idx = n <= b[0] ? 0 : n <= b[1] ? 1 : n <= b[2] ? 2 : n <= b[3] ? 3 : 4;
+  const UP = [
+    { t:"🌱 새싹",   c:"#4d7c0f", bg:"#f7fee7" },
+    { t:"📈 상승",   c:"#15803d", bg:"#f0fdf4" },
+    { t:"🔥 강세",   c:"#15803d", bg:"#dcfce7" },
+    { t:"🚀 주도주", c:"#166534", bg:"#bbf7d0" },
+    { t:"👑 대장",   c:"#14532d", bg:"#86efac" },
+  ];
+  const DOWN = [
+    { t:"⚠️ 조정",     c:"#b45309", bg:"#fffbeb" },
+    { t:"📉 약세",     c:"#c2410c", bg:"#fff7ed" },
+    { t:"🧊 침체",     c:"#dc2626", bg:"#fef2f2" },
+    { t:"🕳️ 수렁",     c:"#b91c1c", bg:"#fee2e2" },
+    { t:"🗑️ 쓰레기통", c:"#7f1d1d", bg:"#fecaca" },
+  ];
+  return (above ? UP : DOWN)[idx];
 }
 
 // ── 추세 배지 ──
@@ -3043,14 +3069,15 @@ function swingTrendBadge(sec) {
   const base = "border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;";
   if (!t)      return `<span style="${base}background:var(--bg3);color:var(--text3);">미스캔</span>`;
   if (!t.ok)   return `<span style="${base}background:#fef2f2;color:#dc2626;">오류</span>`;
-  const map = {
-    up:   { t:"🔼 우상향", c:"#15803d", bg:"#f0fdf4" },
-    down: { t:"🔽 하락",   c:"#dc2626", bg:"#fef2f2" },
-    flat: { t:"➡️ 혼조",   c:"#b45309", bg:"#fffbeb" },
-  };
-  const m = map[t.trend] || map.flat;
   const tfLbl = t.timeframe === "monthly" ? "월봉" : "주봉";
-  return `<span style="${base}background:${m.bg};color:${m.c};">${m.t}<span style="opacity:.65;font-weight:600;"> ${tfLbl}</span></span>`;
+  const unit  = t.timeframe === "monthly" ? "개월" : "주";
+  const tier  = swingTrendTier(t.above, t.streak, t.timeframe);
+  if (!tier) {
+    const m = t.above ? { t:"🔼 우상향", c:"#15803d", bg:"#f0fdf4" } : { t:"🔽 하락", c:"#dc2626", bg:"#fef2f2" };
+    return `<span style="${base}background:${m.bg};color:${m.c};">${m.t}<span style="opacity:.65;font-weight:600;"> ${tfLbl}</span></span>`;
+  }
+  const dur = t.streak != null ? ` ${t.streak}${unit}` : "";
+  return `<span style="${base}background:${tier.bg};color:${tier.c};">${tier.t}<span style="opacity:.7;font-weight:600;">${dur} ${tfLbl}</span></span>`;
 }
 
 // ── 렌더 ──

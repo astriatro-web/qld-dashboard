@@ -1154,13 +1154,14 @@ function getRULES() {
   return [
     { title:"📌 QLD 매수법 — 핵심", color:"#1e3a8a", bg:"#eff4ff",
       items:[
-        ["한 줄 요약","QLD 주가가 120일 이동평균선 '아래'에 있는 동안, 매일 정해진 수량을 기계적으로 매수한다. 이게 전부입니다."],
+        ["한 줄 요약","SSO(S&P 2배)가 120일선 아래로 내려온 '찐 웅덩이' 구간 동안, QLD·SSO를 매일 정해진 수량으로 기계적으로 매수한다. QLD가 120일선을 회복하면 멈춘다. 이게 전부입니다."],
         ["왜 120일선인가","120일선 = 약 6개월 평균가. 단기선(20·60일)은 잦은 속임수(휩소)로 매수가 너무 빈번하고, 장기선(200일)은 진입이 늦습니다. 10년 데이터상 QLD가 120일선 아래로 내려간 구간(2015·2018·2020·2022)은 모두 결국 회복했습니다."],
-        ["언제 사나 (진입)","대시보드 새로고침 → '현재 모드'가 '매수 진행 중 ♾️'으로 뜨면 매수 구간입니다 (= 현재가 < MA120). 120일선 위로 올라오면 자동으로 '대기모드'로 바뀌고 매수를 멈춥니다."],
+        ["진입/종료 기준 (핵심)","웅덩이 시작·종료를 서로 다른 지수로 판정합니다. ▶ 진입: SSO(S&P500 2배) 현재가 < SSO 120일선 → 광범위 지수까지 빠져야 '찐 웅덩이' 확정. ▶ 종료: QLD(나스닥 2배) 현재가 > QLD 120일선 → 매수 중단·대기 전환. 이유: 기술주 QLD는 먼저 빠지며 휩소(가짜 하락)가 많음 → 진입을 SSO로 걸러 헛매수 방지. 회복은 QLD가 먼저 치고 올라가므로 종료는 QLD로."],
+        ["언제 사나 (진입)","대시보드 새로고침 → '현재 모드'가 '매수 진행 중 ♾️'으로 뜨면 매수 구간입니다 (SSO 하회 확정 + QLD 미회복). QLD가 120일선 위로 올라오면 자동으로 '대기모드'로 바뀌고 매수를 멈춥니다. (SSO 120선 데이터가 없으면 기존처럼 QLD 단독으로 판정)"],
         ["얼마나 사나 (수량)","QLD:SSO = 7:3 비중. 정확한 일일 수량은 아래 '🔢 일일 매수 수량' 섹션 참고 — 총알풀을 분할일수(75)로 나눠 산출합니다. 시작일·수량은 설정탭에서 조정하고, 하루치 금액은 대시보드 '일일 투입금'에 자동 표시됩니다."],
         ["어떻게 주문하나 (LOC)","대시보드 'LOC 주문 가이드'를 그대로 사용. A(확실체결, 종가×1.025) : B(유리한가격, 종가×0.990) = 6:4로 나눠 LOC(종가 기준) 주문을 겁니다. → 확실히 사면서도 일부는 더 싸게 잡는 방식."],
         ["기간 제한 없음 (무한매수)","하락이 길어져도 멈추지 않습니다. 탄환(SGOV)이 떨어지면 매달 들어오는 월 투자금으로 자연스럽게 이어 매수. '더 떨어지면 더 싸게 산다'가 핵심 — 하락은 위기가 아니라 평단을 낮추는 기회입니다."],
-        ["멈출 때 (대기모드)","120일선 위로 올라오면 신규 매수 중단 → 현금을 SGOV에 적립하며 다음 하락(웅덩이)을 기다립니다."],
+        ["멈출 때 (대기모드)","QLD가 120일선 위로 올라오면 신규 매수 중단 → 현금을 SGOV에 적립하며 다음 하락(웅덩이)을 기다립니다."],
         ["백테스트 근거","QLD 10년 CAGR 11.3% / SSO 9.6% (웅덩이 매수 기준). QLD 2배 레버리지 MDD -70% 수준이지만, 120일선 하회 구간은 역사적으로 전량 회복 → 10년+ 장기 보유 관점에서 현실적."],
         ["절대 하지 말 것","뇌동매매 금지. 빠질까봐 미리 팔거나, 무서워서 매수를 거르는 행위 금지. 규칙은 대시보드가 판단하고 사람은 그대로 실행만 — 이것이 이 전략의 전부입니다."],
       ]
@@ -1560,6 +1561,7 @@ async function fetchAll() {
       qld:d.qld, qldHigh:d.high52||d.qld, sso:d.sso, spy:d.spy,
       sgov:d.sgov, vix:d.vix, usdkrw:d.usdkrw||1380,
       fg:d.fg||S.fg||null, ma20:d.ma20, ma60:d.ma60, ma120:d.ma120,
+      ma120sso:d.ma120sso||null,
       ma200spy:d.ma200spy, spym:d.spym||null,
       tqqq:d.tqqq||null, soxl:d.soxl||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null,
@@ -1607,7 +1609,20 @@ function autoCountStreak(d) {
 }
 
 function determineMode(d) {
-  const belowMA = d.ma120 ? d.qld < d.ma120 : null;
+  // ── 비대칭 웅덩이 판정 ──
+  //  진입(시작): SSO 현재가 < SSO 120일선  → 광범위 지수까지 빠진 '찐 웅덩이' 확정 (QLD 단독 휩소 필터)
+  //  종료(대기): QLD 현재가 > QLD 120일선  → 기술주가 먼저 회복하므로 종료는 QLD로
+  //  QLD가 먼저 빠지고 먼저 오르므로, 두 조건이 모두 만족(둘 다 하회)해야 매수 지속.
+  //  SSO 120일선 데이터가 없으면 기존처럼 QLD 단독으로 폴백.
+  const qldBelow = d.ma120 ? d.qld < d.ma120 : null;
+  const ssoBelow = (d.ma120sso && d.sso) ? d.sso < d.ma120sso : null;
+  let belowMA;
+  if (qldBelow === null)       belowMA = null;            // QLD 데이터 없음 → 판정 불가
+  else if (ssoBelow === null)  belowMA = qldBelow;        // SSO MA 없음 → QLD 단독(구버전) 폴백
+  else                         belowMA = ssoBelow && qldBelow;  // 진입 SSO · 종료 QLD
+  const entryTxt = (d.ma120sso && d.sso)
+    ? `SSO < MA120(SSO $${f(d.ma120sso,1)})`
+    : `QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"})`;
   const el = elapsed();
   const ddBase = d.qldHigh;
   const dd = ddBase ? Math.max(0, (ddBase-d.qld)/ddBase) : 0;
@@ -1704,7 +1719,7 @@ function determineMode(d) {
         standbyInfo,
         ...(compositeInfo ? [compositeInfo] : []),
         "SGOV 100% 적립 (매월 투자금)",
-        `매수 재개: QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"})`
+        `매수 재개: ${entryTxt} — 진입은 SSO 확정(휩소 필터)`
       ];
     }
     if (S.rebuyBullet > 0 && S.rebuyDaysLeft > 0) {
@@ -1731,7 +1746,7 @@ function determineMode(d) {
     actions=[
       `QLD ${S.qldDailyShares||10}주 + SSO ${S.ssoDailyShares||5}주 매수`,
       `${el+1}일차 ·  무한매수 원칙`,
-      `MA120 $${d.ma120?f(d.ma120,1):"—"} 하회 ✓ — 탄환 소진 후 월 투자금으로 지속`
+      `찐 웅덩이 확정: ${entryTxt} 진입 ✓ · QLD > MA120($${d.ma120?f(d.ma120,1):"—"}) 회복 시 대기 전환`
     ];
   } else {
     name="데이터 조회 중"; phase="loading"; actions=["새로고침을 눌러주세요"];

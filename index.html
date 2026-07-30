@@ -1396,10 +1396,18 @@ async function fetchAll() {
   icon.innerHTML = '<span class="spinner"></span>';
   document.getElementById("errBox").style.display = "none";
   try {
-    const res = await fetch(GAS_URL, { method:"GET", mode:"cors", redirect:"follow" });
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 15000);
+    let res;
+    try {
+      res = await fetch(GAS_URL, { method:"GET", mode:"cors", redirect:"follow", signal:ctrl.signal });
+    } finally {
+      clearTimeout(to);
+    }
     if (!res.ok) throw new Error("서버 응답 오류: " + res.status);
     const d = await res.json();
-    if (!d.qld || d.qld === 0) throw new Error("QLD 데이터 없음");
+    if (!d.qld || d.qld === 0) throw new Error("QLD 시세(qld) 없음 — 시트 B1 셀 확인");
+    if (d.ma120 == null) throw new Error("QLD 120일선(ma120)이 비어 있음 — 시트의 QLD 일별종가(A11:B311, 120개 이상)가 채워졌는지, GAS가 최신 배포인지 확인");
     MD = {
       qld:d.qld, qldHigh:d.high52||d.qld, sso:d.sso, spy:d.spy,
       sgov:d.sgov, vix:d.vix, usdkrw:d.usdkrw||1380,
@@ -1422,7 +1430,10 @@ async function fetchAll() {
     console.error(e);
     const eb = document.getElementById("errBox");
     eb.style.display = "block";
-    eb.textContent = "조회 실패: " + e.message + "\n\n구글 스프레드시트 연결을 확인해주세요.";
+    const msg = (e.name === "AbortError")
+      ? "응답 시간 초과(15초) — GAS 배포 상태와 접근 권한('액세스 권한: 모든 사용자')을 확인하세요"
+      : "조회 실패: " + e.message;
+    eb.textContent = msg + "\n\n구글 스프레드시트/GAS 연결을 확인해주세요.";
   }
   btn.disabled = false;
   icon.textContent = "↻";
@@ -1432,14 +1443,20 @@ function determineMode(d) {
   // ── 비대칭 웅덩이 판정 ──
   //  진입(시작): SSO 현재가 < SSO 120일선  → 광범위 지수까지 빠진 '찐 웅덩이' 확정 (QLD 단독 휩소 필터)
   //  종료(대기): QLD 현재가 > QLD 120일선  → 기술주가 먼저 회복하므로 종료는 QLD로
-  //  QLD가 먼저 빠지고 먼저 오르므로, 두 조건이 모두 만족(둘 다 하회)해야 매수 지속.
-  //  SSO 120일선 데이터가 없으면 기존처럼 QLD 단독으로 폴백.
+  //  3-state 판정:
+  //   buy    : QLD 하회 AND SSO 하회        → 찐 웅덩이, 매수 진행
+  //   watch  : QLD 하회 but SSO 아직 위      → 진입 대기(매수 보류), SSO 확정 필요
+  //   standby: QLD 위                        → 회복/정상, SGOV 적립
+  //   loading: QLD 데이터 없음
   const qldBelow = d.ma120 ? d.qld < d.ma120 : null;
   const ssoBelow = (d.ma120sso && d.sso) ? d.sso < d.ma120sso : null;
-  let belowMA;
-  if (qldBelow === null)       belowMA = null;            // QLD 데이터 없음 → 판정 불가
-  else if (ssoBelow === null)  belowMA = qldBelow;        // SSO MA 없음 → QLD 단독(구버전) 폴백
-  else                         belowMA = ssoBelow && qldBelow;  // 진입 SSO · 종료 QLD
+  let state;
+  if (qldBelow === null)      state = "loading";
+  else if (!qldBelow)         state = "standby";              // QLD 위 → 종료/정상
+  else if (ssoBelow === null) state = "buy";                 // SSO MA 없음 → QLD 단독 폴백
+  else if (ssoBelow)          state = "buy";                 // 둘 다 하회 → 찐 웅덩이
+  else                        state = "watch";               // QLD만 하회 → SSO 확정 대기
+  const belowMA = (state === "standby") ? false : (state === "loading" ? null : true);
   const entryTxt = (d.ma120sso && d.sso)
     ? `SSO < MA120(SSO $${f(d.ma120sso,1)})`
     : `QLD < MA120($${d.ma120 ? f(d.ma120,1) : "—"})`;
@@ -1460,12 +1477,13 @@ function determineMode(d) {
     sell1:  { bg:"#fffbeb", bd:"#fcd34d", tx:"#92400e" },
     sell2:  { bg:"#fff7ed", bd:"#fdba74", tx:"#c2410c" },
     sell3:  { bg:"#fef2f2", bd:"#fca5a5", tx:"#dc2626" },
+    watch:  { bg:"#eff6ff", bd:"#93c5fd", tx:"#1d4ed8" },
     loading:{ bg:"#f8fafc", bd:"#cbd5e1", tx:"#64748b" },
   };
 
   let name, phase, actions = [];
 
-  if (belowMA === false) {
+  if (state === "standby") {
     // 120일선 위 → 홀드/익절
     if (sellGap != null && sellGap >= CFG.SELL_GAP[2]) {
       name="[옵션] 익절 3단계 (+100%)"; phase="sell3";
@@ -1542,14 +1560,24 @@ function determineMode(d) {
         `매수 재개: ${entryTxt} — 진입은 SSO 확정(휩소 필터)`
       ];
     }
-  } else if (belowMA === true) {
-    // 120일선 하방 → 무한매수 (기간 제한 없음)
+  } else if (state === "buy") {
+    // QLD·SSO 둘 다 하회 → 찐 웅덩이, 무한매수 (기간 제한 없음)
     name="매수 진행 중 ♾️"; phase="buy";
     const rem = Math.max(0, splitDays()-el);
     actions=[
       `QLD ${S.qldDailyShares||10}주 + SSO ${S.ssoDailyShares||5}주 매수`,
       `${el+1}일차 ·  무한매수 원칙`,
       `찐 웅덩이 확정: ${entryTxt} 진입 ✓ · QLD > MA120($${d.ma120?f(d.ma120,1):"—"}) 회복 시 대기 전환`
+    ];
+  } else if (state === "watch") {
+    // QLD는 웅덩이 진입했지만 SSO 아직 위 → 진입 대기(매수 보류)
+    name="관찰 — SSO 확정 대기 🔍"; phase="watch";
+    const ssoGapPct = (d.ma120sso && d.sso) ? ((d.sso - d.ma120sso)/d.ma120sso*100) : null;
+    actions=[
+      `QLD 웅덩이 진입 ✓  (QLD $${f(d.qld,1)} < MA120 $${f(d.ma120,1)})`,
+      `⏸ 하지만 SSO 아직 120일선 위 → 찐 웅덩이 미확정 · 매수 보류`,
+      `SSO $${d.sso?f(d.sso,1):"—"} vs MA120(SSO) $${d.ma120sso?f(d.ma120sso,1):"—"}${ssoGapPct!=null?` (아직 +${ssoGapPct.toFixed(1)}% 위)`:""}`,
+      `SSO가 120일선 아래로 내려오면 → 자동으로 '매수 진행'으로 전환. 지금은 SGOV 유지.`
     ];
   } else {
     name="데이터 조회 중"; phase="loading"; actions=["새로고침을 눌러주세요"];
@@ -1591,11 +1619,17 @@ function renderDashboard(d) {
   // LOC 가이드: 매수모드만
   if (mode.phase==="buy") {
     renderLOC(d.qld, d.sso, d.usdkrw);
+  } else if (mode.phase==="watch") {
+    document.getElementById("loc-body").innerHTML =
+      `<div style="font-size:12px;color:var(--text3);padding:8px 0;line-height:1.9;">
+        🔍 <b style="color:#1d4ed8;">관찰 — 매수 보류</b><br>
+        <span style="font-size:11px;color:var(--text3);">QLD는 웅덩이 진입했으나 SSO 미확정. SSO가 120일선 아래로 내려오면 매수 시작.</span>
+      </div>`;
   } else {
     document.getElementById("loc-body").innerHTML =
       `<div style="font-size:12px;color:var(--text3);padding:8px 0;line-height:1.9;">
         📋 <b style="color:var(--text2);">대기모드</b> — SGOV 100% 적립<br>
-        <span style="font-size:11px;color:var(--text3);">120일선 하회 시 QLD/SSO 매수 재개</span>
+        <span style="font-size:11px;color:var(--text3);">SSO 120일선 하회 시 QLD/SSO 매수 재개</span>
       </div>`;
   }
 

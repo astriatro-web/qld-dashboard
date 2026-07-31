@@ -492,6 +492,7 @@ body {
   <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
   <button class="tab" onclick="switchTab('pond')">웅덩노트</button>
+  <button class="tab" onclick="switchTab('ladder')">래더매수</button>
   <button class="tab" onclick="switchTab('swing')">단기스캔</button>
   <button class="tab" onclick="switchTab('war')">거시모니터</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
@@ -805,6 +806,60 @@ body {
       <button onclick="pondEditModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
       <button onclick="pondEditDelete()" style="flex:1;background:#fee2e2;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#dc2626;cursor:pointer;">삭제</button>
       <button onclick="pondEditConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 래더매수 패널 ── -->
+<div class="panel" id="panel-ladder">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--text1);">📐 지지선 래더 매수</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">저점 수평선 기반 10분할 · 일괄조회로 매수 구간 판정</div>
+    </div>
+    <div style="display:flex;gap:5px;align-items:center;">
+      <button onclick="ladderScanAll()" id="btnLadderScan" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;white-space:nowrap;"><span id="ladderScanIcon">↻</span> 일괄조회</button>
+      <button onclick="ladderAddOpen()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 종목</button>
+    </div>
+  </div>
+  <div id="ladder-list"></div>
+  <div id="ladder-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;line-height:1.9;">
+    ＋ 종목 버튼으로 등록<br><span style="font-size:11px;">차트에서 읽은 저점 지지선 2~5개를 입력하면<br>10분할 매수 사다리를 자동 생성합니다</span>
+  </div>
+</div>
+
+<!-- 래더 종목 추가/수정 모달 -->
+<div id="ladder-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8200;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg1);border-radius:18px;padding:22px;width:100%;max-width:370px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:88vh;overflow:auto;">
+    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:4px;" id="ladder-modal-title">종목 추가</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">티커와 차트에서 읽은 저점 지지선을 입력하세요</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">티커</div>
+    <input id="ladder-ticker" type="text" placeholder="예: AAPL" oninput="this.value=this.value.toUpperCase()" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:12px;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">저점 지지선 (2~5개, 쉼표로 구분)</div>
+    <input id="ladder-supports" type="text" placeholder="예: 9.0, 7.0, 3.0" oninput="ladderPreview()" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:6px;">
+    <div style="font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.6;">최고가=1번, 최저가=7번에 배치 · 입력값은 가장 가까운 칸에 그대로 반영 · 8~10번은 저점 붕괴 대비 버퍼로 자동 연장</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">총 투입예산 ($, 선택) — 10등분해 회차별 계획수량 자동 계산</div>
+    <input id="ladder-budget" type="number" step="1" placeholder="예: 10000" oninput="ladderPreview()" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:14px;">
+    <div id="ladder-preview" style="margin-bottom:14px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="ladderModalClose()" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
+      <button onclick="ladderSave()" style="flex:1;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 래더 회차 매수기록 모달 -->
+<div id="ladder-fill-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8300;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg1);border-radius:18px;padding:22px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:14px;" id="ladder-fill-title">매수 기록</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">매수가 ($)</div>
+    <input id="ladder-fill-price" type="number" step="0.01" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:12px;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">수량 (주)</div>
+    <input id="ladder-fill-qty" type="number" step="1" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:16px;">
+    <div style="display:flex;gap:8px;">
+      <button onclick="ladderFillDelete()" style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;color:#dc2626;cursor:pointer;">삭제</button>
+      <button onclick="ladderFillModalClose()" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
+      <button onclick="ladderFillSave()" style="flex:1;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">저장</button>
     </div>
   </div>
 </div>
@@ -1232,11 +1287,12 @@ function saveSettings() {
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","pond","swing","war","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","rules","pond","ladder","swing","war","settings"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
   if (id === "war") loadComments();
+  if (id === "ladder") ladderRender();
   if (id === "rules") { renderHiddenHoldings(); calcTQQQLOC(); calcSOXLLOC(); }
 }
 
@@ -1983,7 +2039,231 @@ window.closeSimbeop = function() {
 };
 
 // ── 초기화 ──
-loadSettings(); renderStatic(null); renderRules();
+// ══════════════════════ 지지선 래더 매수 ══════════════════════
+let LADDER = [];
+try { LADDER = JSON.parse(localStorage.getItem("qld_ladder") || "[]"); } catch { LADDER = []; }
+let ladderEditId = null;      // 수정 중인 종목 id (null이면 신규)
+let ladderFillCtx = null;     // {id, rung}
+
+function ladderStore(){ localStorage.setItem("qld_ladder", JSON.stringify(LADDER)); }
+
+// 지지선 배열 → 10칸 사다리 생성 (균등 뼈대 + 입력값 최근접 칸 스냅, 겹치면 낮은 값)
+function buildLadder(supports){
+  const s = [...new Set(supports.filter(x => x > 0))].sort((a,b) => b - a);
+  if (s.length < 2) return null;
+  const hi = s[0], lo = s[s.length - 1];
+  if (hi === lo) return null;
+  const step = (hi - lo) / 6;               // 1번=hi, 7번=lo 기준 균등 간격
+  const anchor = { 1: hi, 7: lo };
+  s.slice(1, s.length - 1).forEach(p => {   // 중간 입력값을 최근접 칸(2~6)에 스냅
+    let r = Math.round(1 + (hi - p) / step);
+    if (r < 2) r = 2; if (r > 6) r = 6;
+    if (anchor[r] == null || p < anchor[r]) anchor[r] = p;   // 겹치면 낮은 값 채택
+  });
+  const idx = Object.keys(anchor).map(Number).sort((a,b) => a - b);
+  const rungs = new Array(11);
+  for (let a = 0; a < idx.length - 1; a++){                  // 앵커 사이 보간
+    const i0 = idx[a], i1 = idx[a+1], p0 = anchor[i0], p1 = anchor[i1];
+    for (let i = i0 + 1; i < i1; i++){
+      const t = (i - i0) / (i1 - i0);
+      rungs[i] = { n:i, price: p0 + (p1 - p0) * t, src:"보간" };
+    }
+  }
+  idx.forEach(i => rungs[i] = { n:i, price: anchor[i], src:"입력" });
+  const gap = rungs[7].price - rungs[6].price;               // 8~10번 버퍼 연장
+  for (let i = 8; i <= 10; i++) rungs[i] = { n:i, price: Math.max(0.01, rungs[7].price + gap * (i - 7)), src:"버퍼" };
+  for (let i = 1; i <= 10; i++) rungs[i].price = Math.round(rungs[i].price * 100) / 100;
+  return rungs.slice(1);
+}
+
+function ladderF(n){ return (n!=null && !isNaN(n)) ? (Math.round(n*100)/100).toFixed(2) : "—"; }
+
+// 사다리 표 HTML (id 있으면 회차별 매수기록 버튼 활성)
+function ladderTable(rungs, fills, current, id, budget){
+  fills = fills || {};
+  const perRung = (budget > 0) ? budget / 10 : 0;
+  const rows = rungs.map(r => {
+    const f = fills[r.n];
+    const done = f && f.qty > 0;
+    const reached = current != null && current <= r.price;
+    const stColor = done ? "#16a34a" : reached ? "#dc2626" : "var(--text3)";
+    const stTxt   = done ? "✓ 매수" : reached ? "● 도달" : "대기";
+    const badge   = r.src === "입력" ? `<span style="color:var(--blue);" title="입력 지지선">●</span>`
+                  : r.src === "버퍼" ? `<span style="color:#f59e0b;" title="버퍼(붕괴대비)">▽</span>`
+                  : `<span style="color:var(--border);">·</span>`;
+    const planQty = perRung > 0 ? Math.floor(perRung / r.price) : 0;
+    const planAmt = planQty * r.price;
+    const planCell = perRung > 0
+      ? `<td style="padding:5px 4px;text-align:right;font-family:'JetBrains Mono',monospace;">${planQty}주<br><span style="font-size:9px;color:var(--text3);">$${ladderF(planAmt)}</span></td>`
+      : "";
+    const rec = id
+      ? (done
+          ? `<button onclick="ladderFillOpen('${id}',${r.n})" style="background:none;border:none;color:#16a34a;font-size:11px;font-weight:700;cursor:pointer;padding:0;">$${ladderF(f.price)}×${f.qty}</button>`
+          : `<button onclick="ladderFillOpen('${id}',${r.n})" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:10px;cursor:pointer;padding:2px 7px;">기록</button>`)
+      : "";
+    return `<tr style="border-top:1px solid var(--border);">
+      <td style="padding:5px 4px;font-weight:700;color:var(--text2);">${r.n}${r.n===7?`<span style="font-size:8px;color:var(--text3);"> ▲최저</span>`:""}</td>
+      <td style="padding:5px 4px;font-family:'JetBrains Mono',monospace;font-weight:700;">${badge} $${ladderF(r.price)}</td>
+      ${planCell}
+      <td style="padding:5px 4px;color:${stColor};font-weight:700;font-size:11px;">${stTxt}</td>
+      ${id?`<td style="padding:5px 4px;text-align:right;">${rec}</td>`:""}</tr>`;
+  }).join("");
+  return `<table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+    <tr style="color:var(--text3);font-size:9px;text-align:left;">
+      <th style="padding:2px 4px;font-weight:600;">회차</th><th style="padding:2px 4px;font-weight:600;">목표가</th>
+      ${perRung>0?`<th style="padding:2px 4px;font-weight:600;text-align:right;">계획</th>`:""}
+      <th style="padding:2px 4px;font-weight:600;">상태</th>${id?`<th style="padding:2px 4px;font-weight:600;text-align:right;">매수기록</th>`:""}</tr>
+    ${rows}</table>`;
+}
+
+// 종목별 상태 요약(현재가 대비)
+function ladderStatus(rungs, fills, current){
+  fills = fills || {};
+  if (current == null) return { txt:"일괄조회 눌러 현재가 확인", color:"var(--text3)" };
+  const reachedUnfilled = rungs.filter(r => current <= r.price && !(fills[r.n] && fills[r.n].qty > 0));
+  const filledCount = rungs.filter(r => fills[r.n] && fills[r.n].qty > 0).length;
+  if (reachedUnfilled.length > 0){
+    const ns = reachedUnfilled.map(r => r.n).join("·");
+    return { txt:`🔴 매수 구간 — ${ns}회차 도달(미체결)`, color:"#dc2626" };
+  }
+  // 다음 트리거 = 현재가 바로 아래 칸
+  const below = rungs.filter(r => r.price < current).sort((a,b) => b.price - a.price)[0];
+  if (below){
+    const gap = ((current - below.price) / current * 100);
+    return { txt:`대기 · 다음 ${below.n}회차 $${ladderF(below.price)} (−${gap.toFixed(1)}%) · 체결 ${filledCount}/10`, color:"var(--text2)" };
+  }
+  return { txt:`최저 칸까지 도달 · 체결 ${filledCount}/10`, color:"#dc2626" };
+}
+
+function ladderRender(){
+  const list = document.getElementById("ladder-list");
+  const empty = document.getElementById("ladder-empty");
+  if (!list) return;
+  if (LADDER.length === 0){ list.innerHTML = ""; empty.style.display = "block"; return; }
+  empty.style.display = "none";
+  list.innerHTML = LADDER.map(e => {
+    const rungs = buildLadder(e.supports) || [];
+    const st = ladderStatus(rungs, e.fills, e.current);
+    const fillsArr = Object.values(e.fills || {}).filter(f => f && f.qty > 0);
+    const totalQty = fillsArr.reduce((a,f) => a + f.qty, 0);
+    const avg = totalQty > 0 ? fillsArr.reduce((a,f) => a + f.price * f.qty, 0) / totalQty : null;
+    const invested = fillsArr.reduce((a,f) => a + f.price * f.qty, 0);
+    const perRung = (e.budget > 0) ? e.budget / 10 : 0;
+    const planTotal = perRung > 0 ? rungs.reduce((a,r) => a + Math.floor(perRung / r.price) * r.price, 0) : 0;
+    const budgetLine = e.budget > 0
+      ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;">💰 예산 $${ladderF(e.budget)} (회차당 $${ladderF(perRung)}) · 계획합 $${ladderF(planTotal)}${invested>0?` · <b style="color:var(--text2);">투입 $${ladderF(invested)}</b>`:""}</div>`
+      : (invested > 0 ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;">투입 총액 $${ladderF(invested)}</div>` : "");
+    return `<div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--text1);">${e.ticker}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">현재가 ${e.current!=null?`$${ladderF(e.current)}`:"—"}${avg!=null?` · 평단 $${ladderF(avg)} (${totalQty}주)`:""}</div>
+          ${budgetLine}
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button onclick="ladderAddOpen('${e.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:4px 8px;font-size:10px;color:var(--text2);cursor:pointer;">수정</button>
+          <button onclick="ladderRemove('${e.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:4px 8px;font-size:10px;color:#dc2626;cursor:pointer;">삭제</button>
+        </div>
+      </div>
+      <div style="background:${st.color==='#dc2626'?'#fef2f2':'var(--bg3)'};border-radius:9px;padding:7px 10px;font-size:11.5px;font-weight:700;color:${st.color};margin-bottom:10px;">${st.txt}</div>
+      ${ladderTable(rungs, e.fills, e.current, e.id, e.budget)}
+    </div>`;
+  }).join("");
+}
+
+function ladderAddOpen(id){
+  ladderEditId = id || null;
+  const e = id ? LADDER.find(x => x.id === id) : null;
+  document.getElementById("ladder-modal-title").textContent = e ? "종목 수정" : "종목 추가";
+  document.getElementById("ladder-ticker").value = e ? e.ticker : "";
+  document.getElementById("ladder-supports").value = e ? e.supports.join(", ") : "";
+  document.getElementById("ladder-budget").value = (e && e.budget) ? e.budget : "";
+  ladderPreview();
+  document.getElementById("ladder-modal").style.display = "flex";
+}
+function ladderModalClose(){ document.getElementById("ladder-modal").style.display = "none"; ladderEditId = null; }
+
+function ladderParseSupports(){
+  return (document.getElementById("ladder-supports").value || "")
+    .split(",").map(x => parseFloat(x.trim())).filter(x => !isNaN(x) && x > 0);
+}
+function ladderPreview(){
+  const sup = ladderParseSupports();
+  const budget = parseFloat(document.getElementById("ladder-budget").value) || 0;
+  const box = document.getElementById("ladder-preview");
+  const rungs = buildLadder(sup);
+  if (!rungs){ box.innerHTML = `<div style="font-size:11px;color:var(--text3);text-align:center;padding:10px 0;">지지선 2개 이상 입력 시 사다리 미리보기</div>`; return; }
+  box.innerHTML = `<div style="border:1px solid var(--border);border-radius:10px;padding:8px 10px;">
+    <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">🪜 생성 미리보기 (<span style="color:var(--blue);">●</span> 입력 · <span style="color:#f59e0b;">▽</span> 버퍼)</div>
+    ${ladderTable(rungs, {}, null, null, budget)}</div>`;
+}
+function ladderSave(){
+  const ticker = (document.getElementById("ladder-ticker").value || "").toUpperCase().trim();
+  const sup = ladderParseSupports();
+  if (!ticker){ alert("티커를 입력하세요"); return; }
+  if (sup.length < 2){ alert("저점 지지선을 2개 이상 입력하세요"); return; }
+  if (buildLadder(sup) == null){ alert("지지선 값이 올바르지 않습니다 (서로 다른 값 2개 이상)"); return; }
+  const budget = parseFloat(document.getElementById("ladder-budget").value) || 0;
+  if (ladderEditId){
+    const e = LADDER.find(x => x.id === ladderEditId);
+    e.ticker = ticker; e.supports = sup; e.budget = budget;   // 기존 매수기록(fills)은 유지
+  } else {
+    LADDER.push({ id: "L" + Date.now(), ticker, supports: sup, budget, fills: {}, current: null });
+  }
+  ladderStore(); ladderModalClose(); ladderRender();
+}
+function ladderRemove(id){
+  if (!confirm("이 종목을 삭제할까요? (매수기록도 함께 삭제)")) return;
+  LADDER = LADDER.filter(x => x.id !== id);
+  ladderStore(); ladderRender();
+}
+
+// 회차별 매수기록 모달
+function ladderFillOpen(id, rung){
+  ladderFillCtx = { id, rung };
+  const e = LADDER.find(x => x.id === id);
+  const f = e && e.fills ? e.fills[rung] : null;
+  document.getElementById("ladder-fill-title").textContent = `${e.ticker} · ${rung}회차 매수 기록`;
+  document.getElementById("ladder-fill-price").value = f ? f.price : "";
+  document.getElementById("ladder-fill-qty").value = f ? f.qty : "";
+  document.getElementById("ladder-fill-modal").style.display = "flex";
+}
+function ladderFillModalClose(){ document.getElementById("ladder-fill-modal").style.display = "none"; ladderFillCtx = null; }
+function ladderFillSave(){
+  if (!ladderFillCtx) return;
+  const price = parseFloat(document.getElementById("ladder-fill-price").value);
+  const qty = parseInt(document.getElementById("ladder-fill-qty").value);
+  if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0){ alert("매수가와 수량을 올바르게 입력하세요"); return; }
+  const e = LADDER.find(x => x.id === ladderFillCtx.id);
+  if (!e.fills) e.fills = {};
+  e.fills[ladderFillCtx.rung] = { price, qty };
+  ladderStore(); ladderFillModalClose(); ladderRender();
+}
+function ladderFillDelete(){
+  if (!ladderFillCtx) return;
+  const e = LADDER.find(x => x.id === ladderFillCtx.id);
+  if (e && e.fills) delete e.fills[ladderFillCtx.rung];
+  ladderStore(); ladderFillModalClose(); ladderRender();
+}
+
+// 일괄 조회 — 등록 종목 현재가를 ticker_price로 순차 조회
+async function ladderScanAll(){
+  if (LADDER.length === 0){ alert("등록된 종목이 없습니다"); return; }
+  const icon = document.getElementById("ladderScanIcon");
+  const btn = document.getElementById("btnLadderScan");
+  btn.disabled = true; icon.innerHTML = '<span class="spinner"></span>';
+  for (const e of LADDER){
+    try {
+      const res = await fetch(`${GAS_URL}?action=ticker_price&ticker=${encodeURIComponent(e.ticker)}`, { method:"GET", mode:"cors", redirect:"follow" });
+      const d = await res.json();
+      e.current = (d && d.ok && d.current != null) ? d.current : null;
+    } catch(err){ e.current = null; }
+  }
+  ladderStore(); ladderRender();
+  btn.disabled = false; icon.textContent = "↻";
+}
+
+loadSettings(); renderStatic(null); renderRules(); ladderRender();
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";

@@ -104,7 +104,6 @@ body {
   gap: 2px;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
-  overflow-x: auto;
 }
 .tab {
   flex: 1 1 0;
@@ -1045,6 +1044,9 @@ body {
     <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">① 실탄 (현금 총알, 원)</div>
     <input class="setting-input" type="number" id="calc-bullet" placeholder="예: 100000000" oninput="calcShares(); saveSettings()" style="margin-bottom:8px;">
 
+    <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">잔여 SGOV 주수 (대기모드 현금 · 총알에 합산)</div>
+    <input class="setting-input" type="number" id="calc-sgov" placeholder="0" oninput="calcShares(); saveSettings()" style="margin-bottom:8px;">
+
     <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">② 월 투자금 (월급, 원)</div>
     <input class="setting-input" type="number" id="calc-monthly" placeholder="예: 10000000" oninput="calcShares(); saveSettings()" style="margin-bottom:8px;">
 
@@ -1298,6 +1300,7 @@ function loadSettings() {
   S.standbyManual = S.standbyManual || "";
   S.totalBullet   = S.totalBullet   || 100000000;
   S.monthlyBudget = S.monthlyBudget || 10000000;
+  S.calcSgov      = S.calcSgov      || 0;
   S.fg            = S.fg            != null ? S.fg : null;
   S.qldHeld       = S.qldHeld       || 0;
   S.ssoHeld       = S.ssoHeld       || 0;
@@ -1315,6 +1318,7 @@ function loadSettings() {
   setVal("s-standbyManual", S.standbyManual || "");
   setVal("calc-bullet", S.totalBullet || "");
   setVal("calc-monthly", S.monthlyBudget || "");
+  setVal("calc-sgov", S.calcSgov || "");
   setVal("s-fg", S.fg != null ? S.fg : "");
   setVal("s-qldHeld", S.qldHeld);
   setVal("s-ssoHeld", S.ssoHeld);
@@ -1334,6 +1338,7 @@ function saveSettings() {
   S.standbyManual  = getVal("s-standbyManual").trim();
   S.totalBullet    = parseFloat(getVal("calc-bullet")) || 100000000;
   S.monthlyBudget  = parseFloat(getVal("calc-monthly")) || 10000000;
+  S.calcSgov       = parseInt(getVal("calc-sgov")) || 0;
   const fgv        = getVal("s-fg");
   S.fg             = fgv !== "" ? parseInt(fgv) : null;
   S.qldHeld        = parseInt(getVal("s-qldHeld")) || 0;
@@ -1392,20 +1397,22 @@ function calcShares(){
   const qldR = qldPct / 100, ssoR = ssoPct / 100;
   const qldP = MD && MD.qld, ssoP = MD && MD.sso, fx = MD && MD.usdkrw;
   if (!qldP || !ssoP || !fx){ out.innerHTML = "먼저 대시보드를 새로고침해 현재가를 불러오세요"; return; }
-  const pool = bullet + monthly * mo;
-  if (pool <= 0 || split <= 0){ out.innerHTML = "실탄 또는 월 투자금을 입력하세요"; return; }
+  const sgovShares = g("calc-sgov") || 0;
+  const sgovWon = sgovShares * (MD.sgov || 100) * fx;   // SGOV 평가액(원) → 총알에 합산
+  const pool = bullet + monthly * mo + sgovWon;
+  if (pool <= 0 || split <= 0){ out.innerHTML = "실탄 · 월 투자금 · SGOV 중 하나 이상 입력하세요"; return; }
   const daily = pool / split;
   const qldShares = Math.floor((daily * qldR) / (qldP * fx));
   const ssoShares = Math.floor((daily * ssoR) / (ssoP * fx));
   const won = n => Math.round(n/10000).toLocaleString() + "만원";
   out.innerHTML =
-    `<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">총알풀 <b style="color:var(--text1);">${won(pool)}</b> = 실탄 ${won(bullet)} + 월급 ${won(monthly)}×${mo}개월</div>`+
+    `<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">총알풀 <b style="color:var(--text1);">${won(pool)}</b> = 실탄 ${won(bullet)} + 월급 ${won(monthly)}×${mo}개월${sgovWon>0?` + SGOV ${won(sgovWon)}`:""}</div>`+
     `<div style="font-size:11px;color:var(--text3);margin-bottom:8px;">÷ ${split}일 = 하루 <b style="color:var(--text1);">${won(daily)}</b></div>`+
     `<div style="display:flex;justify-content:space-around;margin:6px 0 8px;">`+
       `<div><div style="font-size:10px;color:var(--text3);">QLD (${Math.round(qldPct*10)/10}%)</div><div style="font-size:23px;font-weight:800;color:var(--blue);">${qldShares}주</div></div>`+
       `<div><div style="font-size:10px;color:var(--text3);">SSO (${Math.round(ssoPct*10)/10}%)</div><div style="font-size:23px;font-weight:800;color:var(--blue);">${ssoShares}주</div></div>`+
     `</div>`+
-    `<div style="font-size:10px;color:var(--text3);line-height:1.6;">현재가 QLD $${f(qldP,2)} · SSO $${f(ssoP,2)} · 환율 ${Math.round(fx).toLocaleString()}원<br>↑ 이 값을 아래 'QLD/SSO 매일 매수 주수' 칸에 입력하세요</div>`;
+    `<div style="font-size:10px;color:var(--text3);line-height:1.6;">현재가 QLD $${f(qldP,2)} · SSO $${f(ssoP,2)}${sgovWon>0?` · SGOV $${f(MD.sgov,2)}`:""} · 환율 ${Math.round(fx).toLocaleString()}원<br>↑ 이 값을 아래 'QLD/SSO 매일 매수 주수' 칸에 입력하세요</div>`;
 }
 
 function setText(id, text, color) {

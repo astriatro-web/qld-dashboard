@@ -1084,24 +1084,37 @@ body {
   </div>
 
   <div style="border-top:1px solid var(--border);margin:4px 0 12px;padding-top:12px;">
-    <div style="font-size:10px;color:var(--blue);letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">🏦 보유 수량</div>
-    <div class="setting-group"><div class="setting-label">QLD 보유 주수</div><input class="setting-input" type="number" id="s-qldHeld" placeholder="0" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">SSO 보유 주수</div><input class="setting-input" type="number" id="s-ssoHeld" placeholder="0" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">SGOV 보유 주수 (대기모드)</div><input class="setting-input" type="number" id="s-sgovHeld" placeholder="0" oninput="saveSettings()"></div>
+    <div style="font-size:10px;color:var(--blue);letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">🏦 주력 보유 (QLD · SSO)</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:9px;color:var(--text3);font-weight:700;letter-spacing:0.05em;">
+      <div style="width:46px;">종목</div><div style="flex:1;">보유 주수</div><div style="flex:1;">평단가 ($)</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">QLD</div>
+      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" id="s-qldHeld" placeholder="0" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" step="0.01" id="s-qldAvg" placeholder="예: 68.50" oninput="saveSettings()">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+      <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">SSO</div>
+      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" id="s-ssoHeld" placeholder="0" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" step="0.01" id="s-ssoAvg" placeholder="예: 80.20" oninput="saveSettings()">
+    </div>
   </div>
 
   <div style="border-top:1px solid var(--border);margin:4px 0 12px;padding-top:12px;">
-    <div style="font-size:10px;color:var(--purple);letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">⚡ 히든전략 보유 수량</div>
-    <div class="setting-group"><div class="setting-label">TQQQ 보유 주수</div><input class="setting-input" type="number" id="s-tqqqHeld" placeholder="0" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">SOXL 보유 주수</div><input class="setting-input" type="number" id="s-soxlHeld" placeholder="0" oninput="saveSettings()"></div>
-  </div>
-
-  <div style="border-top:1px solid var(--border);margin:4px 0 12px;padding-top:12px;">
-    <div style="font-size:10px;color:var(--amber);letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">📈 평단가 (USD) — 익절 트리거용</div>
-    <div class="setting-group"><div class="setting-label">QLD 평단가 ($)</div><input class="setting-input" type="number" id="s-qldAvg" placeholder="예: 68.50" step="0.01" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">SSO 평단가 ($)</div><input class="setting-input" type="number" id="s-ssoAvg" placeholder="예: 80.20" step="0.01" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">TQQQ 평단가 ($)</div><input class="setting-input" type="number" id="s-tqqqAvg" placeholder="예: 40.00" step="0.01" oninput="saveSettings()"></div>
-    <div class="setting-group"><div class="setting-label">SOXL 평단가 ($)</div><input class="setting-input" type="number" id="s-soxlAvg" placeholder="예: 15.00" step="0.01" oninput="saveSettings()"></div>
+    <div style="font-size:10px;color:var(--purple);letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">⚡ 특공대 보유 (TQQQ · SOXL)</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:9px;color:var(--text3);font-weight:700;letter-spacing:0.05em;">
+      <div style="width:46px;">종목</div><div style="flex:1;">보유 주수</div><div style="flex:1;">평단가 ($)</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">TQQQ</div>
+      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" id="s-tqqqHeld" placeholder="0" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" step="0.01" id="s-tqqqAvg" placeholder="예: 40.00" oninput="saveSettings()">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">SOXL</div>
+      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" id="s-soxlHeld" placeholder="0" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" step="0.01" id="s-soxlAvg" placeholder="예: 15.00" oninput="saveSettings()">
+    </div>
     <div class="info-box" style="margin-top:0;margin-bottom:12px;">
       평단가 입력 시 <b style="color:var(--amber);">+25%/+50%/+100%</b> 트리거 자동 판단.<br>
       익절 시 해당 비율의 10%씩 매도 → SGOV 보관.
@@ -1288,7 +1301,6 @@ function loadSettings() {
   S.fg            = S.fg            != null ? S.fg : null;
   S.qldHeld       = S.qldHeld       || 0;
   S.ssoHeld       = S.ssoHeld       || 0;
-  S.sgovHeld      = S.sgovHeld      || 0;
   S.tqqqHeld      = S.tqqqHeld      || 0;
   S.soxlHeld      = S.soxlHeld      || 0;
   S.qldAvg        = S.qldAvg        || null;
@@ -1306,7 +1318,6 @@ function loadSettings() {
   setVal("s-fg", S.fg != null ? S.fg : "");
   setVal("s-qldHeld", S.qldHeld);
   setVal("s-ssoHeld", S.ssoHeld);
-  setVal("s-sgovHeld", S.sgovHeld);
   setVal("s-tqqqHeld", S.tqqqHeld);
   setVal("s-soxlHeld", S.soxlHeld);
   setVal("s-qldAvg", S.qldAvg || "");
@@ -1327,7 +1338,6 @@ function saveSettings() {
   S.fg             = fgv !== "" ? parseInt(fgv) : null;
   S.qldHeld        = parseInt(getVal("s-qldHeld")) || 0;
   S.ssoHeld        = parseInt(getVal("s-ssoHeld")) || 0;
-  S.sgovHeld       = parseInt(getVal("s-sgovHeld")) || 0;
   S.tqqqHeld       = parseInt(getVal("s-tqqqHeld")) || 0;
   S.soxlHeld       = parseInt(getVal("s-soxlHeld")) || 0;
   S.qldDailyShares = parseInt(getVal("s-qldDaily")) || 10;
@@ -1467,8 +1477,7 @@ function renderHoldings(qldPrice, ssoPrice, usdkrw, sgovPrice) {
   const container = document.getElementById("holdingRows");
   const qh = S.qldHeld || 0;
   const sh = S.ssoHeld || 0;
-  const sgh = S.sgovHeld || 0;
-  if (!qh && !sh && !sgh) { container.innerHTML='<div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div>'; return; }
+  if (!qh && !sh) { container.innerHTML='<div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div>'; return; }
   if (!qldPrice || !ssoPrice || !usdkrw) { container.innerHTML='<div style="font-size:12px;color:var(--text3);">시세 조회 후 표시됩니다</div>'; return; }
 
   const pnlChip = (price, avg) => {
@@ -1481,8 +1490,7 @@ function renderHoldings(qldPrice, ssoPrice, usdkrw, sgovPrice) {
   const fw = n => Math.round(n/10000).toLocaleString();
   const qldUsd = qh * qldPrice;
   const ssoUsd = sh * ssoPrice;
-  const sgovUsd = sgh * (sgovPrice || 100);
-  const totalUsd = qldUsd + ssoUsd + sgovUsd;
+  const totalUsd = qldUsd + ssoUsd;
 
   let html = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:6px;">
     <div></div><div style="text-align:right;">USD</div><div style="text-align:right;">원화</div></div>`;
@@ -1497,12 +1505,6 @@ function renderHoldings(qldPrice, ssoPrice, usdkrw, sgovPrice) {
     <div style="color:var(--text2);">SSO <span style="font-size:11px;color:var(--text3);">${sh}주</span> ${pnlChip(ssoPrice, S.ssoAvg)}</div>
     <div style="text-align:right;font-weight:700;">$${Math.round(ssoUsd).toLocaleString()}</div>
     <div style="text-align:right;font-weight:700;">${fw(Math.round(ssoUsd*usdkrw))}만</div>
-  </div>`;
-
-  if (sgh > 0 && sgovPrice) html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
-    <div style="color:var(--text2);">SGOV <span style="font-size:11px;color:var(--text3);">${sgh}주</span></div>
-    <div style="text-align:right;font-weight:700;">$${Math.round(sgovUsd).toLocaleString()}</div>
-    <div style="text-align:right;font-weight:700;">${fw(Math.round(sgovUsd*usdkrw))}만</div>
   </div>`;
 
   html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:14px;font-weight:900;padding:8px 0;color:var(--blue);">

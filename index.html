@@ -101,16 +101,16 @@ body {
 .tabs {
   display: flex;
   padding: 12px 12px 0;
-  gap: 5px;
+  gap: 2px;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
 .tab {
-  flex: 1;
-  min-width: 56px;
-  padding: 8px 4px;
-  font-size: 11px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 2px;
+  font-size: 10px;
   font-weight: 600;
   background: transparent;
   color: var(--text3);
@@ -511,13 +511,28 @@ body {
   <div class="grid2">
     <div class="mc"><div class="mc-label">QLD</div><div class="mc-value" id="v-qld" style="color:var(--text3);">—</div><div class="mc-sub" id="v-ma120">MA120 —</div></div>
     <div class="mc"><div class="mc-label">이격률 / DD</div><div class="mc-value" id="v-gap" style="color:var(--text3);">—</div><div class="mc-sub" id="v-dd">DD —</div></div>
-    <div class="mc"><div class="mc-label">SSO / SPY</div><div class="mc-value" id="v-sso" style="color:var(--text3);">—</div><div class="mc-sub" id="v-spy">SPY —</div></div>
-    <div class="mc"><div class="mc-label">SGOV / 환율</div><div class="mc-value" id="v-sgov" style="color:var(--text3);">—</div><div class="mc-sub" id="v-usdkrw">환율 —</div></div>
   </div>
 
-  <div class="grid2">
-    <div class="mc"><div class="mc-label">Fear &amp; Greed</div><div class="mc-value" id="v-fg" style="color:var(--text3);">—</div><div class="mc-sub" id="v-fglabel">—</div></div>
-    <div class="mc"><div class="mc-label">VIX</div><div class="mc-value" id="v-vix" style="color:var(--text3);">—</div><div class="mc-sub" id="v-vixlabel">—</div></div>
+  <div class="mc" style="display:flex;justify-content:space-around;align-items:center;text-align:center;margin-top:8px;padding:10px 8px;">
+    <div style="flex:1;">
+      <div class="mc-label" style="margin-bottom:3px;">S&amp;P500</div>
+      <div id="v-spx" style="font-size:15px;font-weight:800;color:var(--text1);font-family:'JetBrains Mono',monospace;">—</div>
+    </div>
+    <div style="width:1px;height:28px;background:var(--border);"></div>
+    <div style="flex:1;">
+      <div class="mc-label" style="margin-bottom:3px;">F&amp;G</div>
+      <div><span id="v-fg" style="font-size:15px;font-weight:800;color:var(--text3);">—</span> <span id="v-fglabel" style="font-size:10px;color:var(--text3);"></span></div>
+    </div>
+    <div style="width:1px;height:28px;background:var(--border);"></div>
+    <div style="flex:1;">
+      <div class="mc-label" style="margin-bottom:3px;">VIX</div>
+      <div><span id="v-vix" style="font-size:15px;font-weight:800;color:var(--text3);">—</span> <span id="v-vixlabel" style="font-size:10px;color:var(--text3);"></span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:8px;">
+    <div class="card-label">⚡ 특공대 평가액 (TQQQ · SOXL)</div>
+    <div id="dashHiddenRows"><div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div></div>
   </div>
 
   <div class="card">
@@ -631,11 +646,6 @@ body {
     </div>
   </div>
 
-  <!-- 보유 현황 -->
-  <div class="card" style="margin-top:8px;">
-    <div class="card-label">특공대 보유 현황</div>
-    <div id="hiddenHoldingRows"><div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div></div>
-  </div>
 </div>
 
 <!-- ── 웅덩노트 패널 ── -->
@@ -1317,7 +1327,7 @@ function switchTab(id) {
   document.getElementById("panel-" + id).classList.add("active");
   if (id === "war") loadComments();
   if (id === "ladder") ladderRender();
-  if (id === "rules") { renderHiddenHoldings(); calcTQQQLOC(); calcSOXLLOC(); }
+  if (id === "rules") { calcTQQQLOC(); calcSOXLLOC(); }
 }
 
 const f  = (n, d=1) => (n != null && !isNaN(n)) ? parseFloat(n).toFixed(d) : "N/A";
@@ -1349,7 +1359,8 @@ function calcSOXLLOC() {
 }
 
 function renderHiddenHoldings() {
-  const container = document.getElementById("hiddenHoldingRows");
+  const container = document.getElementById("dashHiddenRows");
+  if (!container) return;
   if (!MD) { container.innerHTML='<div style="font-size:12px;color:var(--text3);">대시보드 새로고침 후 표시됩니다</div>'; return; }
 
   const tqqqP  = MD.tqqq   || null;
@@ -1506,6 +1517,7 @@ async function fetchAll() {
     localStorage.setItem("qld_s11", JSON.stringify(S));
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
+    fetchSPX();
   } catch(e) {
     console.error(e);
     const eb = document.getElementById("errBox");
@@ -1517,6 +1529,17 @@ async function fetchAll() {
   }
   btn.disabled = false;
   icon.textContent = "↻";
+}
+
+// S&P500 지수(^GSPC) — 기존 ticker_price 엔드포인트 재사용 (GAS 수정 불필요)
+async function fetchSPX(){
+  try {
+    const res = await fetch(`${GAS_URL}?action=ticker_price&ticker=${encodeURIComponent("^GSPC")}`, { method:"GET", mode:"cors", redirect:"follow" });
+    const d = await res.json();
+    if (d && d.ok && d.current != null) {
+      setText("v-spx", Math.round(d.current).toLocaleString());
+    }
+  } catch(e) { /* 실패해도 대시보드엔 영향 없음 */ }
 }
 
 function determineMode(d) {
@@ -1687,14 +1710,13 @@ function renderDashboard(d) {
   const ddLabel = "52주고가";
   const dd = ddBase ? Math.max(0,(ddBase-d.qld)/ddBase) : 0;
   setText("v-dd", `DD -${f(dd*100)}% (${ddLabel}기준)`);
-  setText("v-sso", `$${f(d.sso,2)}`); setText("v-spy", `SPY $${f(d.spy,2)}`);
-  setText("v-sgov", `$${f(d.sgov,2)}`); setText("v-usdkrw", `${d.usdkrw?Math.round(d.usdkrw).toLocaleString():"—"}원/USD`);
   if (d.fg!=null) { setText("v-fg",""+d.fg,fgClr(d.fg)); setText("v-fglabel",fgLbl(d.fg)); }
   else { setText("v-fg","N/A"); setText("v-fglabel","조회 실패"); }
   setText("v-vix", f(d.vix), vixClr(d.vix)); setText("v-vixlabel", vixLbl(d.vix));
 
   renderStatic(d);
   renderHoldings(d.qld, d.sso, d.usdkrw, d.sgov);
+  renderHiddenHoldings();
 
   // LOC 가이드: 매수모드만
   if (mode.phase==="buy") {

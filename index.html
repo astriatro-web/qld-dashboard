@@ -536,7 +536,6 @@ body {
       <div class="stat-item"><div class="sl">매수 시작~경과</div><div class="sv" id="v-elapsed">—</div></div>
       <div class="stat-item"><div class="sl">오늘 매수 주수</div><div class="sv" id="v-shares">—</div></div>
       <div class="stat-item"><div class="sl">일일 투입금 (추정)</div><div class="sv" id="v-daily">—</div></div>
-      <div class="stat-item"><div class="sl">익절현금풀</div><div class="sv" id="v-profit">—</div></div>
     </div>
   </div>
 
@@ -1039,11 +1038,32 @@ body {
   </div>
   <div class="setting-group"><div class="setting-label">매수 시작일</div><input class="setting-input" type="text" id="s-entryDate" placeholder="2026-03-01" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">대기모드 시작일 — 자동감지 (수동 덮어쓰기 가능)</div><input class="setting-input" type="text" id="s-standbyManual" placeholder="자동감지 중 · 직접 입력 시 우선 적용" oninput="saveSettings(); if(MD) renderDashboard(MD);"><div style="font-size:10px;color:var(--text3);margin-top:4px;">평소엔 비워두세요. 차트에서 QLD가 120일선을 돌파한 종가일을 자동으로 찾아 셉니다. 자동값이 틀렸을 때만 날짜(예: 2026-04-13)를 직접 넣으면 그 값이 우선합니다.</div></div>
+  <div class="setting-group" style="border:1.5px solid var(--blue);border-radius:12px;padding:14px;background:var(--blue-lt);">
+    <div style="font-size:13px;font-weight:800;color:var(--blue);margin-bottom:4px;">🧮 일일 매수 주수 계산기</div>
+    <div style="font-size:10.5px;color:var(--text3);margin-bottom:12px;line-height:1.6;">총알풀(실탄+월급) ÷ 분할일수로 하루 매수 주수를 계산합니다. <b style="color:var(--text2);">결과는 참고용</b> — 아래 'QLD/SSO 매일 매수 주수' 칸에 직접 넣으세요(커스터마이징 가능).</div>
+
+    <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">① 실탄 (현금 총알, 원)</div>
+    <input class="setting-input" type="number" id="calc-bullet" placeholder="예: 100000000" oninput="calcShares(); saveSettings()" style="margin-bottom:8px;">
+
+    <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">② 월 투자금 (월급, 원)</div>
+    <input class="setting-input" type="number" id="calc-monthly" placeholder="예: 10000000" oninput="calcShares(); saveSettings()" style="margin-bottom:8px;">
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">③ 월급 반영 개월</div>
+        <input class="setting-input" type="number" step="0.5" id="calc-months" value="2.5" oninput="calcShares()">
+        <div style="font-size:9px;color:var(--text3);margin-top:2px;">75일 ≈ 약 2.5~3개월</div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">④ 분할일수 (권장 75)</div>
+        <input class="setting-input" type="number" id="calc-splitdays" value="75" oninput="calcShares()">
+      </div>
+    </div>
+
+    <div id="calc-output" style="background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;color:var(--text3);text-align:center;">먼저 대시보드를 새로고침해 현재가를 불러오세요</div>
+  </div>
   <div class="setting-group"><div class="setting-label">QLD 매일 매수 주수</div><input class="setting-input" type="number" id="s-qldDaily" placeholder="10" min="1" oninput="saveSettings()"></div>
   <div class="setting-group"><div class="setting-label">SSO 매일 매수 주수</div><input class="setting-input" type="number" id="s-ssoDaily" placeholder="5" min="1" oninput="saveSettings()"></div>
-  <div class="setting-group"><div class="setting-label">탄환 총액 (원)</div><input class="setting-input" type="number" id="s-totalBullet" placeholder="100000000" oninput="saveSettings()"></div>
-  <div class="setting-group"><div class="setting-label">월 투자금액 (원)</div><input class="setting-input" type="number" id="s-monthlyBudget" placeholder="10000000" oninput="saveSettings()"></div>
-  <div class="setting-group"><div class="setting-label">익절현금풀 잔액 (원)</div><input class="setting-input" type="number" id="s-profitCash" placeholder="0" oninput="saveSettings()"></div>
   <div class="setting-group">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
       <div class="setting-label" style="margin-bottom:0;">Fear &amp; Greed 수동 입력 (0~100)</div>
@@ -1257,7 +1277,6 @@ function loadSettings() {
   S.standbyManual = S.standbyManual || "";
   S.totalBullet   = S.totalBullet   || 100000000;
   S.monthlyBudget = S.monthlyBudget || 10000000;
-  S.profitCash    = S.profitCash    || 0;
   S.fg            = S.fg            != null ? S.fg : null;
   S.qldHeld       = S.qldHeld       || 0;
   S.ssoHeld       = S.ssoHeld       || 0;
@@ -1274,9 +1293,8 @@ function loadSettings() {
   const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
   setVal("s-entryDate", S.entryDate);
   setVal("s-standbyManual", S.standbyManual || "");
-  setVal("s-totalBullet", S.totalBullet);
-  setVal("s-monthlyBudget", S.monthlyBudget);
-  setVal("s-profitCash", S.profitCash);
+  setVal("calc-bullet", S.totalBullet || "");
+  setVal("calc-monthly", S.monthlyBudget || "");
   setVal("s-fg", S.fg != null ? S.fg : "");
   setVal("s-qldHeld", S.qldHeld);
   setVal("s-ssoHeld", S.ssoHeld);
@@ -1295,9 +1313,8 @@ function saveSettings() {
   const getVal = id => { const el = document.getElementById(id); return el ? el.value : ""; };
   S.entryDate      = getVal("s-entryDate").trim();
   S.standbyManual  = getVal("s-standbyManual").trim();
-  S.totalBullet    = parseFloat(getVal("s-totalBullet")) || 100000000;
-  S.monthlyBudget  = parseFloat(getVal("s-monthlyBudget")) || 10000000;
-  S.profitCash     = parseFloat(getVal("s-profitCash")) || 0;
+  S.totalBullet    = parseFloat(getVal("calc-bullet")) || 100000000;
+  S.monthlyBudget  = parseFloat(getVal("calc-monthly")) || 10000000;
   const fgv        = getVal("s-fg");
   S.fg             = fgv !== "" ? parseInt(fgv) : null;
   S.qldHeld        = parseInt(getVal("s-qldHeld")) || 0;
@@ -1328,6 +1345,7 @@ function switchTab(id) {
   if (id === "war") loadComments();
   if (id === "ladder") ladderRender();
   if (id === "rules") { calcTQQQLOC(); calcSOXLLOC(); }
+  if (id === "settings") calcShares();
 }
 
 const f  = (n, d=1) => (n != null && !isNaN(n)) ? parseFloat(n).toFixed(d) : "N/A";
@@ -1338,6 +1356,34 @@ const fgClr  = v => v<=25?"#dc2626":v<=45?"#d97706":v<=60?"var(--text2)":"#16a34
 const vixClr = v => v>=30?"#dc2626":v>=20?"#d97706":"#16a34a";
 const elapsed   = () => S.entryDate ? daysSince(S.entryDate) : 0;
 const splitDays = () => S.splitDays || CFG.SPLIT_DAYS;
+
+// 일일 매수 주수 계산기 (설정탭) — 총알풀(실탄+월급) ÷ 분할일수 → QLD70%/SSO30% 주수
+function calcShares(){
+  const out = document.getElementById("calc-output");
+  if (!out) return;
+  const g = id => { const el = document.getElementById(id); return el ? parseFloat(el.value) : NaN; };
+  const bullet  = g("calc-bullet")  || 0;
+  const monthly = g("calc-monthly") || 0;
+  const months  = g("calc-months");
+  const split   = g("calc-splitdays") || 75;
+  const mo = isNaN(months) ? 2.5 : months;
+  const qldP = MD && MD.qld, ssoP = MD && MD.sso, fx = MD && MD.usdkrw;
+  if (!qldP || !ssoP || !fx){ out.innerHTML = "먼저 대시보드를 새로고침해 현재가를 불러오세요"; return; }
+  const pool = bullet + monthly * mo;
+  if (pool <= 0 || split <= 0){ out.innerHTML = "실탄 또는 월 투자금을 입력하세요"; return; }
+  const daily = pool / split;
+  const qldShares = Math.floor((daily * 0.7) / (qldP * fx));
+  const ssoShares = Math.floor((daily * 0.3) / (ssoP * fx));
+  const won = n => Math.round(n/10000).toLocaleString() + "만원";
+  out.innerHTML =
+    `<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">총알풀 <b style="color:var(--text1);">${won(pool)}</b> = 실탄 ${won(bullet)} + 월급 ${won(monthly)}×${mo}개월</div>`+
+    `<div style="font-size:11px;color:var(--text3);margin-bottom:8px;">÷ ${split}일 = 하루 <b style="color:var(--text1);">${won(daily)}</b></div>`+
+    `<div style="display:flex;justify-content:space-around;margin:6px 0 8px;">`+
+      `<div><div style="font-size:10px;color:var(--text3);">QLD (70%)</div><div style="font-size:23px;font-weight:800;color:var(--blue);">${qldShares}주</div></div>`+
+      `<div><div style="font-size:10px;color:var(--text3);">SSO (30%)</div><div style="font-size:23px;font-weight:800;color:var(--blue);">${ssoShares}주</div></div>`+
+    `</div>`+
+    `<div style="font-size:10px;color:var(--text3);line-height:1.6;">현재가 QLD $${f(qldP,2)} · SSO $${f(ssoP,2)} · 환율 ${Math.round(fx).toLocaleString()}원<br>↑ 이 값을 아래 'QLD/SSO 매일 매수 주수' 칸에 입력하세요</div>`;
+}
 
 function setText(id, text, color) {
   const el = document.getElementById(id);
@@ -1831,7 +1877,6 @@ function renderStatic(d) {
     setText("v-daily", `QLD ${qShares}주 · SSO ${sShares}주 기준`);
     setText("v-shares", "—");
   }
-  setText("v-profit", fKRW(S.profitCash));
 }
 
 function renderRules() {

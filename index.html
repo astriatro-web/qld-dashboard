@@ -1060,6 +1060,14 @@ body {
       </div>
     </div>
 
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">⑤ QLD 비중 (%) — 권장 70</div>
+        <input class="setting-input" type="number" id="calc-qldpct" value="70" min="0" max="100" oninput="calcShares()">
+      </div>
+      <div style="flex:1;font-size:11.5px;color:var(--text3);padding-bottom:11px;">→ SSO <b id="calc-ssopct" style="color:var(--text2);">30</b>% 자동</div>
+    </div>
+
     <div id="calc-output" style="background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;color:var(--text3);text-align:center;">먼저 대시보드를 새로고침해 현재가를 불러오세요</div>
   </div>
   <div class="setting-group"><div class="setting-label">QLD 매일 매수 주수</div><input class="setting-input" type="number" id="s-qldDaily" placeholder="10" min="1" oninput="saveSettings()"></div>
@@ -1367,20 +1375,25 @@ function calcShares(){
   const months  = g("calc-months");
   const split   = g("calc-splitdays") || 75;
   const mo = isNaN(months) ? 2.5 : months;
+  let qldPct = g("calc-qldpct"); if (isNaN(qldPct)) qldPct = 70;
+  qldPct = Math.min(100, Math.max(0, qldPct));
+  const ssoPct = 100 - qldPct;
+  const ssoPctEl = document.getElementById("calc-ssopct"); if (ssoPctEl) ssoPctEl.textContent = Math.round(ssoPct*10)/10;
+  const qldR = qldPct / 100, ssoR = ssoPct / 100;
   const qldP = MD && MD.qld, ssoP = MD && MD.sso, fx = MD && MD.usdkrw;
   if (!qldP || !ssoP || !fx){ out.innerHTML = "먼저 대시보드를 새로고침해 현재가를 불러오세요"; return; }
   const pool = bullet + monthly * mo;
   if (pool <= 0 || split <= 0){ out.innerHTML = "실탄 또는 월 투자금을 입력하세요"; return; }
   const daily = pool / split;
-  const qldShares = Math.floor((daily * 0.7) / (qldP * fx));
-  const ssoShares = Math.floor((daily * 0.3) / (ssoP * fx));
+  const qldShares = Math.floor((daily * qldR) / (qldP * fx));
+  const ssoShares = Math.floor((daily * ssoR) / (ssoP * fx));
   const won = n => Math.round(n/10000).toLocaleString() + "만원";
   out.innerHTML =
     `<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">총알풀 <b style="color:var(--text1);">${won(pool)}</b> = 실탄 ${won(bullet)} + 월급 ${won(monthly)}×${mo}개월</div>`+
     `<div style="font-size:11px;color:var(--text3);margin-bottom:8px;">÷ ${split}일 = 하루 <b style="color:var(--text1);">${won(daily)}</b></div>`+
     `<div style="display:flex;justify-content:space-around;margin:6px 0 8px;">`+
-      `<div><div style="font-size:10px;color:var(--text3);">QLD (70%)</div><div style="font-size:23px;font-weight:800;color:var(--blue);">${qldShares}주</div></div>`+
-      `<div><div style="font-size:10px;color:var(--text3);">SSO (30%)</div><div style="font-size:23px;font-weight:800;color:var(--blue);">${ssoShares}주</div></div>`+
+      `<div><div style="font-size:10px;color:var(--text3);">QLD (${Math.round(qldPct*10)/10}%)</div><div style="font-size:23px;font-weight:800;color:var(--blue);">${qldShares}주</div></div>`+
+      `<div><div style="font-size:10px;color:var(--text3);">SSO (${Math.round(ssoPct*10)/10}%)</div><div style="font-size:23px;font-weight:800;color:var(--blue);">${ssoShares}주</div></div>`+
     `</div>`+
     `<div style="font-size:10px;color:var(--text3);line-height:1.6;">현재가 QLD $${f(qldP,2)} · SSO $${f(ssoP,2)} · 환율 ${Math.round(fx).toLocaleString()}원<br>↑ 이 값을 아래 'QLD/SSO 매일 매수 주수' 칸에 입력하세요</div>`;
 }

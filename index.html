@@ -527,6 +527,12 @@ body {
       <div class="mc-label" style="margin-bottom:3px;">VIX</div>
       <div><span id="v-vix" style="font-size:15px;font-weight:800;color:var(--text3);">—</span> <span id="v-vixlabel" style="font-size:10px;color:var(--text3);"></span></div>
     </div>
+    <div style="width:1px;height:28px;background:var(--border);"></div>
+    <div style="flex:1;">
+      <div class="mc-label" style="margin-bottom:3px;">QQQ 이격</div>
+      <div><span id="v-dev" style="font-size:15px;font-weight:800;color:var(--text3);">—</span></div>
+      <div id="v-devlabel" style="font-size:9px;color:var(--text3);margin-top:1px;"></div>
+    </div>
   </div>
 
   <div class="card">
@@ -1586,6 +1592,7 @@ async function fetchAll() {
     renderDashboard(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
     fetchSPX();
+    fetchDev();
   } catch(e) {
     console.error(e);
     const eb = document.getElementById("errBox");
@@ -1608,6 +1615,30 @@ async function fetchSPX(){
       setText("v-spx", Math.round(d.current).toLocaleString());
     }
   } catch(e) { /* 실패해도 대시보드엔 영향 없음 */ }
+}
+
+// QQQ 200일 이격도 — 과열/탐욕 게이지 (GAS action=dev 필요)
+function devClr(dev){
+  if (dev >= 12) return "#dc2626";   // 극단 과열
+  if (dev >= 6)  return "#d97706";   // 과열
+  if (dev <= -8) return "#16a34a";   // 추세 하회(할인)
+  return "var(--text2)";
+}
+function devLbl(dev){
+  if (dev >= 12) return "극단과열";
+  if (dev >= 6)  return "과열";
+  if (dev <= -8) return "저평가";
+  return "중립";
+}
+async function fetchDev(){
+  try {
+    const res = await fetch(`${GAS_URL}?action=dev&ticker=QQQ&period=200`, { method:"GET", mode:"cors", redirect:"follow" });
+    const d = await res.json();
+    if (d && d.dev != null) {
+      setText("v-dev", (d.dev>=0?"+":"") + d.dev + "%", devClr(d.dev));
+      setText("v-devlabel", devLbl(d.dev));
+    }
+  } catch(e) { /* 실패해도 무시 */ }
 }
 
 function determineMode(d) {

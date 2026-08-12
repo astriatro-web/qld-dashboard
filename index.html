@@ -535,6 +535,8 @@ body {
     </div>
   </div>
 
+  <div id="overheatBanner" style="display:none;margin-top:8px;border-radius:12px;padding:11px 14px;font-size:12px;line-height:1.55;"></div>
+
   <div class="card">
     <div class="card-label">♾️ 매수 현황</div>
     <div class="stat-grid">
@@ -1098,13 +1100,13 @@ body {
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">QLD</div>
-      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" id="s-qldHeld" placeholder="0" oninput="saveSettings()">
-      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" step="0.01" id="s-qldAvg" placeholder="예: 68.50" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" id="s-qldHeld" placeholder="0" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" step="0.01" id="s-qldAvg" placeholder="예: 68.50" oninput="saveSettings()">
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
       <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">SSO</div>
-      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" id="s-ssoHeld" placeholder="0" oninput="saveSettings()">
-      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" step="0.01" id="s-ssoAvg" placeholder="예: 80.20" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" id="s-ssoHeld" placeholder="0" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" step="0.01" id="s-ssoAvg" placeholder="예: 80.20" oninput="saveSettings()">
     </div>
   </div>
 
@@ -1115,13 +1117,13 @@ body {
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">TQQQ</div>
-      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" id="s-tqqqHeld" placeholder="0" oninput="saveSettings()">
-      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" step="0.01" id="s-tqqqAvg" placeholder="예: 40.00" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" id="s-tqqqHeld" placeholder="0" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" step="0.01" id="s-tqqqAvg" placeholder="예: 40.00" oninput="saveSettings()">
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
       <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">SOXL</div>
-      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" id="s-soxlHeld" placeholder="0" oninput="saveSettings()">
-      <input class="setting-input" style="flex:1;width:auto;margin:0;" type="number" step="0.01" id="s-soxlAvg" placeholder="예: 15.00" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" id="s-soxlHeld" placeholder="0" oninput="saveSettings()">
+      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" step="0.01" id="s-soxlAvg" placeholder="예: 15.00" oninput="saveSettings()">
     </div>
     <div class="info-box" style="margin-top:0;margin-bottom:12px;">
       평단가 입력 시 <b style="color:var(--amber);">+25%/+50%/+100%</b> 트리거 자동 판단.<br>
@@ -1281,6 +1283,15 @@ function getRULES() {
         ["75일 이후엔 (2차 방어선)","총알풀 소진 후에도 하락 지속 시 → 매달 들어오는 월급만으로 매수 지속. 총알풀=1차 방어선, 월급=2차 방어선."],
         ["그래도 안 끝나면 (무한매수)","월급 + 마이너스 통장으로 무한매수. 75일은 주력 집중 구간일 뿐, 매수 자체엔 상한이 없음. 위 실측 최장이 143일이므로 이 단계가 실제로 필요했던 사례는 2022 한 번."],
         ["튜닝 가능","더 보수적으로 큰 구간 평균(81일)에 맞추거나, 더 공격적으로 중앙값(46일)로 낮출 수도 있음. 위 실측 분포가 그 선택의 근거 — 위 웅덩이 지도 이미지 참조."],
+      ]
+    },
+    { title:"🌡️ 과열 지표 보는 법 (탐욕 자제용)", color:"#b45309", bg:"#fffbeb",
+      items:[
+        ["용도 — 자제 브레이크","이 지표들은 '사라/팔아라' 신호가 아닙니다. 과열일 때 추격매수·몰빵 충동을 눌러 규칙(계산기 주수)대로만 하게 하는 브레이크. 타이밍이 조금 일러도 손해 없음 = 자제용으론 신뢰도 충분."],
+        ["QQQ 이격도 (가격 과열)","QQQ 현재가가 200일선에서 얼마나 위로 벌어졌나(%). VIX와 달리 상승장에서도 계속 반응. 대략 +6% 이상 과열, +12% 이상 극단 과열, 0% 부근 추세 복귀, -8% 이하 저평가."],
+        ["시장폭 RSP/SPY (폭 과열)","동일가중 S&P(RSP)÷시총가중 S&P(SPY) 비율. 소수 대형주만 끌고 가는 좁은 랠리(취약한 고점)일 때 이 비율이 떨어짐. 값 자체보다 20일 변화(▼)가 핵심 — ▼ -2% 이상이면 '속으로 곪는 상승' 경고."],
+        ["과열 배너 읽는 법","대시보드 지표 스트립 아래 배너 — 🟢 신호 없음 / 🟡 한쪽 과열(추격 자제) / 🔴 극단 과열 or 가격+폭 동시 과열(몰빵·추격 강력 자제). 색만 봐도 지금 탐욕 부려도 되는 국면인지 판단."],
+        ["주의 — 트리거 아님","과열이라고 매도하거나 매수 멈추면 안 됩니다. 웅덩전략은 120일선이 정한 규칙대로 돌아가고, 과열 지표는 오직 '내 손이 규칙을 벗어나려 할 때' 잡아주는 심리 안전장치입니다."],
       ]
     },
     { title:"💰 익절 전략 (옵션 — 필수 아님)", color:"#92400e", bg:"#fef3c7",
@@ -1593,6 +1604,7 @@ async function fetchAll() {
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
     fetchSPX();
     fetchDev();
+    fetchBreadth();
   } catch(e) {
     console.error(e);
     const eb = document.getElementById("errBox");
@@ -1617,7 +1629,9 @@ async function fetchSPX(){
   } catch(e) { /* 실패해도 대시보드엔 영향 없음 */ }
 }
 
-// QQQ 200일 이격도 — 과열/탐욕 게이지 (GAS action=dev 필요)
+// QQQ 200일 이격도 + RSP/SPY 시장폭 → 과열 경고 (자제용)
+let LATEST_DEV = null;      // QQQ 200일 이격도 %
+let LATEST_BREADTH = null;  // { ratio, chg20 }
 function devClr(dev){
   if (dev >= 12) return "#dc2626";   // 극단 과열
   if (dev >= 6)  return "#d97706";   // 과열
@@ -1635,10 +1649,49 @@ async function fetchDev(){
     const res = await fetch(`${GAS_URL}?action=dev&ticker=QQQ&period=200`, { method:"GET", mode:"cors", redirect:"follow" });
     const d = await res.json();
     if (d && d.dev != null) {
+      LATEST_DEV = d.dev;
       setText("v-dev", (d.dev>=0?"+":"") + d.dev + "%", devClr(d.dev));
       setText("v-devlabel", devLbl(d.dev));
     }
-  } catch(e) { /* 실패해도 무시 */ }
+  } catch(e) { /* 무시 */ }
+  renderOverheat();
+}
+async function fetchBreadth(){
+  try {
+    const res = await fetch(`${GAS_URL}?action=breadth`, { method:"GET", mode:"cors", redirect:"follow" });
+    const d = await res.json();
+    if (d && d.ok && d.ratio != null) LATEST_BREADTH = { ratio:d.ratio, chg20:d.chg20 };
+  } catch(e) { /* 무시 */ }
+  renderOverheat();
+}
+// 과열이면 '자제' 경고, 아니면 차분한 안내 (매수/매도 트리거 아님 — 오직 자제용)
+function renderOverheat(){
+  const box = document.getElementById("overheatBanner");
+  if (!box) return;
+  const dev = LATEST_DEV;
+  const br  = LATEST_BREADTH;
+  if (dev == null && br == null) { box.style.display = "none"; return; }
+
+  const devHot   = dev != null && dev >= 8;      // 가격 과열
+  const devExtreme = dev != null && dev >= 12;
+  const brWeak   = br  != null && br.chg20 <= -2; // 시장폭 협소화(20일)
+
+  const parts = [];
+  if (dev != null) parts.push(`이격도 ${dev>=0?"+":""}${dev}%`);
+  if (br  != null) parts.push(`시장폭 ${br.ratio}${br.chg20<=-0.1?` ▼${Math.abs(br.chg20)}%`:br.chg20>=0.1?` ▲${br.chg20}%`:""}/20d`);
+  const detail = parts.join(" · ");
+
+  box.style.display = "block";
+  if (devExtreme || (devHot && brWeak)) {
+    box.style.background = "#fef2f2"; box.style.border = "1.5px solid #fca5a5";
+    box.innerHTML = `<b style="color:#dc2626;">⚠️ 시장 과열 — 추격매수·몰빵 자제</b><br><span style="color:var(--text3);">규칙(계산기 주수)대로만. 탐욕은 손실의 청구서다.<br>${detail}</span>`;
+  } else if (devHot || brWeak) {
+    box.style.background = "#fffbeb"; box.style.border = "1.5px solid #fcd34d";
+    box.innerHTML = `<b style="color:#b45309;">🟡 과열 주의</b> <span style="color:var(--text3);">— 추격 자제, 규칙대로.<br>${detail}</span>`;
+  } else {
+    box.style.background = "var(--bg3)"; box.style.border = "1px solid var(--border)";
+    box.innerHTML = `<span style="color:var(--text3);">🟢 과열 신호 없음 · ${detail}</span>`;
+  }
 }
 
 function determineMode(d) {
@@ -1686,19 +1739,12 @@ function determineMode(d) {
   let name, phase, actions = [];
 
   if (state === "standby") {
-    // 120일선 위 → 홀드/익절
-    if (sellGap != null && sellGap >= CFG.SELL_GAP[2]) {
-      name="[옵션] 익절 3단계 (+100%)"; phase="sell3";
-      actions=[`QLD 평단 대비 +${(sellGap*100).toFixed(1)}% ✓`, "📌 [선택] 포지션 10% 매도 → SGOV 보관 / 풀 홀드도 유효한 전략", "📊 실행 시 원금의 20.0% 추가 확보  |  누적 원금 회수: 47.5%", "잔여 포지션: 원래 보유량의 70%"];
-    } else if (sellGap != null && sellGap >= CFG.SELL_GAP[1]) {
-      name="[옵션] 익절 2단계 (+50%)"; phase="sell2";
-      actions=[`QLD 평단 대비 +${(sellGap*100).toFixed(1)}% ✓`, "📌 [선택] 포지션 10% 매도 → SGOV 보관 / 풀 홀드도 유효한 전략", "📊 실행 시 원금의 15.0% 추가 확보  |  누적 원금 회수: 27.5%", "잔여 포지션: 원래 보유량의 80%  |  다음 트리거: 평단 +100%"];
-    } else if (sellGap != null && sellGap >= CFG.SELL_GAP[0]) {
-      name="[옵션] 익절 1단계 (+25%)"; phase="sell1";
-      actions=[`QLD 평단 대비 +${(sellGap*100).toFixed(1)}% ✓`, "📌 [선택] 포지션 10% 매도 → SGOV 보관 / 풀 홀드도 유효한 전략", "📊 실행 시 원금의 12.5% 확보  |  누적 원금 회수: 12.5%", "잔여 포지션: 원래 보유량의 90%  |  다음 트리거: 평단 +50%"];
-    } else {
+    // 120일선 위 → 풀 홀드 (부분익절은 전략원칙의 '옵션'일 뿐, 여기선 나열 안 함)
+    {
       name="홀드 — 대기모드"; phase="hold";
-      const sgText = S.qldAvg ? `익절 대기: 평단 +25%/+50%/+100%` : "⚠ 평단가 미입력 — 설정탭에서 입력하세요";
+      const sgText = (sellGap != null)
+        ? `QLD 평단 대비 ${sellGap>=0?"+":""}${(sellGap*100).toFixed(1)}% · 풀 홀드 유지`
+        : (S.qldAvg ? "풀 홀드 유지 · 대기 중" : "⚠ 평단가 미입력 — 설정탭에서 입력하세요");
 
       // 대기모드 경과일 계산
       let standbyInfo = "";

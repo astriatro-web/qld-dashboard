@@ -1055,6 +1055,13 @@ details.strat-acc > summary:active { opacity: 0.85; }
       </div>
 
       <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:600;">물가상승률 (%) · 실질 구매력 환산용</div>
+        <input id="goal-infl" type="number" inputmode="decimal" step="0.1" value="2.5" oninput="calcGoal()"
+          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text1);font-size:15px;font-weight:700;font-family:inherit;outline:none;">
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;">한국 장기 물가목표 ≈ 2%, 체감 물가 반영 시 2.5~3% 권장</div>
+      </div>
+
+      <div>
         <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;">📊 수익률 프리셋 (10년 백테스트 CAGR)</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
           <button type="button" onclick="setGoalRate(11.3)" style="background:var(--blue-lt);color:var(--blue);border:1px solid rgba(37,99,235,0.25);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">QLD 11.3% ⭐</button>
@@ -1067,7 +1074,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
 
     <!-- 결과 -->
     <div style="margin-top:16px;background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.22);border-radius:12px;padding:16px;">
-      <div style="font-size:11px;color:var(--blue);font-weight:800;letter-spacing:0.05em;margin-bottom:4px;"><span id="goal-summary-years">10</span>년 뒤 도달 금액</div>
+      <div style="font-size:11px;color:var(--blue);font-weight:800;letter-spacing:0.05em;margin-bottom:4px;"><span id="goal-summary-years">10</span>년 뒤 도달 금액 (명목)</div>
       <div id="goal-final" style="font-size:26px;font-weight:900;color:var(--blue);line-height:1.2;">-</div>
       <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
         <div>
@@ -1083,8 +1090,22 @@ details.strat-acc > summary:active { opacity: 0.85; }
           <div id="goal-rate-echo" style="font-size:14px;font-weight:800;color:var(--text1);">-</div>
         </div>
       </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px dashed rgba(37,99,235,0.3);">
+        <div style="font-size:11px;color:var(--text2);font-weight:800;margin-bottom:4px;">🛒 오늘 구매력 기준 (물가 <span id="goal-infl-echo">2.5</span>% 반영)</div>
+        <div id="goal-real" style="font-size:20px;font-weight:900;color:var(--text1);line-height:1.2;">-</div>
+        <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:10px;color:var(--text3);font-weight:600;">실질 배수</div>
+            <div id="goal-real-mult" style="font-size:13px;font-weight:800;color:var(--text1);">-</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);font-weight:600;">실질 연복리</div>
+            <div id="goal-real-rate" style="font-size:13px;font-weight:800;color:var(--text1);">-</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;">※ 매년 같은 수익률을 가정한 단순 복리 계산입니다. 실제 레버리지 ETF는 변동성·경로 의존성으로 결과가 크게 달라질 수 있습니다.</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;">※ 매년 같은 수익률을 가정한 단순 복리. <b style="color:var(--text2);">명목=미래에 받는 금액</b>, <b style="color:var(--text2);">실질=그 금액의 오늘 구매력</b>(물가상승분 차감). 레버리지 ETF는 변동성·경로 의존성으로 실제 결과가 크게 달라질 수 있습니다.</div>
   </div>
 </div>
 
@@ -2294,26 +2315,37 @@ function calcGoal() {
   const principal = parseFloat(document.getElementById("goal-principal")?.value) || 0;
   const years     = parseFloat(document.getElementById("goal-years")?.value) || 0;
   const rate      = parseFloat(document.getElementById("goal-rate")?.value) || 0;
+  const infl      = parseFloat(document.getElementById("goal-infl")?.value) || 0;
 
   const hint = document.getElementById("goal-principal-hint");
   if (hint) hint.textContent = principal > 0 ? goalFmtKRW(principal) : "";
 
   const yEl = document.getElementById("goal-summary-years");
   if (yEl) yEl.textContent = years || 0;
+  const iEl = document.getElementById("goal-infl-echo");
+  if (iEl) iEl.textContent = infl;
 
-  const final   = principal * Math.pow(1 + rate / 100, years);
-  const profit  = final - principal;
-  const mult    = principal > 0 ? final / principal : 0;
+  const final    = principal * Math.pow(1 + rate / 100, years);
+  const profit   = final - principal;
+  const mult     = principal > 0 ? final / principal : 0;
+  // 실질(오늘 구매력) = 명목 ÷ (1+물가)^년수, 실질 연복리 = (1+명목)/(1+물가) − 1
+  const realFinal = final / Math.pow(1 + infl / 100, years);
+  const realMult  = principal > 0 ? realFinal / principal : 0;
+  const realRate  = ((1 + rate / 100) / (1 + infl / 100) - 1) * 100;
 
   const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
   if (!principal || !years) {
     set("goal-final", "-"); set("goal-profit", "-"); set("goal-multiple", "-"); set("goal-rate-echo", "-");
+    set("goal-real", "-"); set("goal-real-mult", "-"); set("goal-real-rate", "-");
     return;
   }
   set("goal-final", goalFmtKRW(final));
   set("goal-profit", "+" + goalFmtKRW(profit));
   set("goal-multiple", "×" + mult.toFixed(2));
   set("goal-rate-echo", rate + "%");
+  set("goal-real", goalFmtKRW(realFinal));
+  set("goal-real-mult", "×" + realMult.toFixed(2));
+  set("goal-real-rate", (realRate >= 0 ? "" : "") + realRate.toFixed(1) + "%");
 }
 
 // ── 비밀번호 ──

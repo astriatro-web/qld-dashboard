@@ -1276,13 +1276,73 @@ function detectStandbyStart() {
   const pd = parseLocalDate(raw);
   return pd ? fmtISO(pd) : (raw || "");
 }
-// 대기모드 시작일 결정: 수동 지정 > GAS 역산(전체 데이터) > 차트 자동감지(폴백) > 저장값
+// ── 찐 웅덩이 판정 (대기 클럭 리셋용) ──
+// 짧은 휩쏘(가웅덩이)가 대기 시작일을 리셋하는 문제 보완.
+// 대기 리셋은 '찐 웅덩이'가 끝났을 때만 인정한다.
+//  찐 웅덩이 = 종가<MA120 연속 ≥ REAL_DIP_MIN_DAYS 거래일  AND  최저괴리 ≤ REAL_DIP_MIN_DEV
+//  (본인 확정 정의 2026-08: ≥5거래일 & 최저괴리 ≤ -5%)
+const REAL_DIP_MIN_DAYS = 5;
+const REAL_DIP_MIN_DEV  = -0.05;   // -5%
+let STANDBY_WHIPSAW_NOTE = "";     // 최근 가웅덩이를 무시했을 때 UI에 표시할 메모
+
+// 차트에서 '가장 최근에 끝난 찐 웅덩이'의 다음 거래일을 대기 시작일로 반환.
+// 그보다 최근의 짧은 휩쏘(가웅덩이)는 무시 → 대기 클럭이 리셋되지 않음.
+function detectRealStandbyStart() {
+  STANDBY_WHIPSAW_NOTE = "";
+  const ch = (MD && MD.chart6m) || (MD && MD.chart2m) || null;
+  if (!ch || !ch.closes || !ch.ma120 || !ch.dates) return "";
+  const closes = ch.closes, ma = ch.ma120, dates = ch.dates;
+  const n = Math.min(closes.length, ma.length, dates.length);
+  if (n < 2) return "";
+  // 현재가 120일선 아래면 대기 아님(매수/관찰) → 대기 시작일 없음
+  if (closes[n-1] != null && ma[n-1] != null && closes[n-1] < ma[n-1]) return "";
+
+  let i = n - 1;
+  let episodeIndex = 0;   // 0 = 가장 최근 below-episode
+  while (i >= 0) {
+    // 120일선 위 구간 건너뛰기
+    while (i >= 0 && !(closes[i] != null && ma[i] != null && closes[i] < ma[i])) i--;
+    if (i < 0) break;
+    // i = 이 episode의 마지막(가장 최근) below 날 → 시작까지 역방향 확장
+    const end = i;
+    let minDev = 0, len = 0;
+    while (i >= 0 && closes[i] != null && ma[i] != null && closes[i] < ma[i]) {
+      const dev = (closes[i] - ma[i]) / ma[i];
+      if (dev < minDev) minDev = dev;
+      len++; i--;
+    }
+    const isReal = (len >= REAL_DIP_MIN_DAYS) && (minDev <= REAL_DIP_MIN_DEV);
+    if (isReal) {
+      const raw = dates[end + 1];   // 웅덩이 종료 다음 거래일 = 대기 시작
+      const pd = parseLocalDate(raw);
+      return pd ? fmtISO(pd) : (raw || "");
+    }
+    // 찐이 아닌데 그게 '가장 최근' episode면 → 가웅덩이 무시 메모 남김
+    if (episodeIndex === 0) {
+      STANDBY_WHIPSAW_NOTE = `⚠️ 최근 가웅덩이 무시(${len}거래일·${(minDev*100).toFixed(1)}%)`;
+    }
+    episodeIndex++;
+  }
+  return "";   // 창 내 찐 웅덩이 없음 → 상위 로직이 GAS/폴백 사용
+}
+// 대기모드 시작일 결정: 수동 지정 > 찐 웅덩이 역산(휩쏘 무시) > GAS 역산 > 차트 자동감지 > 저장값
+let WHIPSAW_NOTE = "";   // 대기 줄글에 표시할 '가웅덩이 무시' 메모 (GAS 우선, 없으면 클라이언트 감지)
+// 대기모드 시작일 결정: 수동 지정 > GAS 역산(야후 2년·찐 웅덩이 필터) > 클라이언트 찐 웅덩이 감지(6개월 폴백) > naive > 저장값
 function standbyStart(d) {
+  WHIPSAW_NOTE = "";
   const manual = (S.standbyManual || "").trim();
   if (manual) return manual;
+  // GAS가 전체 히스토리(야후 2년)에서 찐 웅덩이만 걸러 계산한 값이 최우선
   const gas = (d && d.standbyDate) || S.standbyDate || "";
-  if (gas) return gas;
-  const auto = detectStandbyStart();   // GAS가 못 줄 때만 차트로 직접 감지
+  if (gas) {
+    const note = (d && d.standbyWhipsawNote) || "";
+    if (note) WHIPSAW_NOTE = "⚠️ " + note;
+    return gas;
+  }
+  // GAS가 못 줄 때만 클라이언트 차트(6개월)로 직접 감지 — 창 밖 웅덩이는 못 잡음
+  const real = detectRealStandbyStart();   // STANDBY_WHIPSAW_NOTE 설정
+  if (real) { WHIPSAW_NOTE = STANDBY_WHIPSAW_NOTE; return real; }
+  const auto = detectStandbyStart();
   if (auto) return auto;
   return "";
 }
@@ -1636,6 +1696,7 @@ async function fetchAll() {
       tqqq:d.tqqq||null, soxl:d.soxl||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null,
       standbyDate: d.standbyDate || null,
+      standbyWhipsawNote: d.standbyWhipsawNote || null,
       chart2m: d.chart2m || null,
       chart6m: d.chart6m || null
     };
@@ -1838,7 +1899,7 @@ function determineMode(d) {
         const probMemo = standbyDays <= 30 ? "단기 조정" :
                          standbyDays <= 90 ? "중기 조정" :
                          standbyDays <= 180 ? "장기 조정" : "역사적 장기 대기";
-        standbyInfo = `📅 대기 ${standbyDays}일 경과 (${sd} 진입) · 역사적 회귀 확률 ${prob}% · ${probMemo}`;
+        standbyInfo = `📅 대기 ${standbyDays}일 경과 (${sd} 진입) · 역사적 회귀 확률 ${prob}% · ${probMemo}${WHIPSAW_NOTE ? " · " + WHIPSAW_NOTE : ""}`;
 
         // F&G 복합 점수
         const fg = d.fg;

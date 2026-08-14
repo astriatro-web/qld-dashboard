@@ -251,6 +251,26 @@ body {
 .s-label { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
 .s-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
 
+/* ── 전략원칙 아코디언 ── */
+details.strat-acc { padding: 0; }
+details.strat-acc > summary.strategy-header {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  justify-content: space-between;
+}
+details.strat-acc > summary.strategy-header::-webkit-details-marker { display: none; }
+.strat-chevron {
+  font-size: 11px;
+  font-weight: 900;
+  opacity: 0.55;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+details.strat-acc[open] > summary .strat-chevron { transform: rotate(90deg); }
+details.strat-acc > summary:active { opacity: 0.85; }
+
 /* ── 백테스트 표 ── */
 .bt-table {
   width: 100%;
@@ -1982,15 +2002,20 @@ function renderStatic(d) {
 function renderRules() {
   const guideBox = document.getElementById("guideBox");
   if (guideBox) guideBox.style.display = localStorage.getItem("guideHidden")==="1" ? "none" : "block";
-  const html = getRULES().map(sec => `
-    <div class="strategy-block">
-      <div class="strategy-header" style="background:${sec.bg};color:${sec.color};">${sec.title}</div>
-      ${sec.items.map(([l,desc]) => `
-        <div class="strategy-row">
-          <div class="s-label">${l}</div>
-          <div class="s-desc">${desc}</div>
-        </div>`).join("")}
-    </div>`).join("");
+  const html = getRULES().map((sec, i) => `
+    <details class="strategy-block strat-acc"${i === 0 ? " open" : ""}>
+      <summary class="strategy-header" style="background:${sec.bg};color:${sec.color};">
+        <span>${sec.title}</span>
+        <span class="strat-chevron">▸</span>
+      </summary>
+      <div class="strat-rows">
+        ${sec.items.map(([l,desc]) => `
+          <div class="strategy-row">
+            <div class="s-label">${l}</div>
+            <div class="s-desc">${desc}</div>
+          </div>`).join("")}
+      </div>
+    </details>`).join("");
   let container = document.getElementById("rules-content");
   if (!container) { container=document.createElement("div"); container.id="rules-content"; document.getElementById("panel-rules").appendChild(container); }
   container.innerHTML = html;

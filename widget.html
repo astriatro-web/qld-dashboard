@@ -17,7 +17,7 @@
   body{
     font-family:-apple-system,'Noto Sans KR',Roboto,sans-serif;
     background:transparent; color:var(--t1);
-    display:flex; padding:6px; cursor:pointer; user-select:none;
+    display:flex; align-items:flex-start; padding:2px 6px 6px; cursor:pointer; user-select:none;
   }
   .bar{
     flex:1; display:flex; align-items:stretch; gap:0;
@@ -27,7 +27,7 @@
   }
   .mode{
     display:flex; flex-direction:column; justify-content:center;
-    padding:0 14px; min-width:96px; gap:2px;
+    padding:9px 14px; min-width:96px; gap:2px;
   }
   .mode .m-txt{font-size:clamp(14px,4.4vw,18px); font-weight:900; line-height:1.05; white-space:nowrap;}
   .mode .m-sub{font-size:10px; font-weight:700; opacity:.75; white-space:nowrap;}
@@ -38,7 +38,7 @@
   .cells{flex:1; display:flex; align-items:center;}
   .cell{
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; padding:0 4px; min-width:0; border-left:1px solid var(--border);
+    gap:2px; padding:9px 4px; min-width:0; border-left:1px solid var(--border);
   }
   .cell .lab{font-size:9px; color:var(--t3); font-weight:700; white-space:nowrap;}
   .cell .val{font-size:clamp(13px,4vw,17px); font-weight:900; line-height:1; white-space:nowrap; color:var(--t1);}

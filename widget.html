@@ -26,7 +26,6 @@
     border-radius:16px; box-shadow:0 3px 14px rgba(0,0,0,0.07);
     padding:10px 12px; display:flex; flex-direction:column; gap:9px; overflow:hidden;
   }
-  /* 헤더 */
   .head{display:flex; align-items:center; justify-content:space-between; gap:8px;}
   .mode{
     display:inline-flex; align-items:baseline; gap:6px;
@@ -39,14 +38,10 @@
   .mode.watch{background:var(--amber-lt); color:var(--amber);}
   .mode.err  {background:#f3f4f6;         color:var(--t3);}
   .upd{font-size:10px; color:var(--t3); font-weight:700; white-space:nowrap;}
-  /* 타일 그리드 4×2 */
-  .grid{
-    display:grid; grid-template-columns:repeat(4,1fr); gap:6px;
-  }
+  .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:6px;}
   .tile{
     background:var(--tile); border-radius:10px; padding:7px 6px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-    min-width:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-width:0;
   }
   .tile .lab{font-size:9px; color:var(--t3); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
   .tile .val{font-size:clamp(12px,3.4vw,15px); font-weight:900; line-height:1; white-space:nowrap; color:var(--t1);}
@@ -75,6 +70,7 @@
 // ── 설정: 이 두 값만 맞으면 됩니다 ──
 const GAS_URL  = "https://script.google.com/macros/s/AKfycbxhYlpp3Iq-iK-84cejY2uMIU6IybsgRlJ-SNx16OmmTPc4i4fBF8QFjYZURwV4hnpItA/exec";
 const DASH_URL = "https://qld-dashboard.pages.dev";   // ← 전체 대시보드 주소(다르면 수정)
+const CACHE_KEY = "qld_widget_cache_v2";
 
 document.getElementById("body").addEventListener("click", () => {
   try { window.location.href = DASH_URL; } catch(e) {}
@@ -84,7 +80,7 @@ const $ = id => document.getElementById(id);
 
 async function getJSON(url){
   const ctrl = new AbortController();
-  const to = setTimeout(()=>ctrl.abort(), 12000);
+  const to = setTimeout(()=>ctrl.abort(), 10000);
   try{
     const r = await fetch(url, { method:"GET", mode:"cors", redirect:"follow", signal:ctrl.signal });
     clearTimeout(to);
@@ -101,7 +97,6 @@ function daysSince(iso){
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.max(0, Math.round((today - d0)/86400000));
 }
-
 function heatTag(dev, chg20){
   if(dev==null && chg20==null) return "–";
   const devHot=dev!=null&&dev>=8, devExt=dev!=null&&dev>=12, brWeak=chg20!=null&&chg20<=-2;
@@ -110,58 +105,34 @@ function heatTag(dev, chg20){
   else if(devHot || brWeak)      e = "🟡";
   return dev!=null ? `${e} ${dev>=0?"+":""}${dev}%` : e;
 }
-
 function fgLabel(v){
   if(v==null) return "–";
-  let l = "중립";
+  let l="중립";
   if(v<25) l="극공"; else if(v<45) l="공포"; else if(v<55) l="중립"; else if(v<75) l="탐욕"; else l="극탐";
   return v + " " + l;
 }
-
-// 특공대 타일: 신호 활성(현재가<장기선)이면 🔔, 이격% 함께
 function tuggun(price, ma){
   if(price==null || ma==null) return "–";
   const gap = (price-ma)/ma*100;
-  const on = price < ma;
-  return (on ? "🔔 " : "") + (gap>=0?"+":"") + gap.toFixed(1) + "%";
+  return (price<ma ? "🔔 " : "") + (gap>=0?"+":"") + gap.toFixed(1) + "%";
 }
+function gapPct(p, ma){ return (p==null||ma==null) ? null : (p-ma)/ma*100; }
+function hhmm(t){ return String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0"); }
 
-function gapPct(p, ma){
-  if(p==null || ma==null) return null;
-  return (p-ma)/ma*100;
-}
-
-async function load(){
-  const [main, dev, br] = await Promise.all([
-    getJSON(GAS_URL),
-    getJSON(`${GAS_URL}?action=dev&ticker=QQQ&period=200`),
-    getJSON(`${GAS_URL}?action=breadth`)
-  ]);
-
-  if(!main || main.qld==null){
-    $("mode").className = "mode err";
-    $("mtxt").textContent = "연결 실패";
-    $("msub").textContent = "";
-    $("upd").textContent = "탭하여 열기";
-    return;
-  }
-
+// main 데이터로 대부분 타일 그리기 (fetch 1개면 됨)
+function renderMain(main){
   const qld=main.qld, ma120=main.ma120, sso=main.sso, ma120sso=main.ma120sso;
   const belowQLD = (qld!=null && ma120!=null && qld < ma120);
   const ssoConfirmed = (sso!=null && ma120sso!=null && sso < ma120sso);
-
-  // 모드
   let cls, mtxt, msub, thirdLab, thirdVal;
   if(!belowQLD){
     cls="hold"; mtxt="홀드"; msub="대기모드";
     const dd = daysSince(main.standbyDate);
     thirdLab="대기"; thirdVal = dd!=null ? dd+"일" : "–";
   } else if(ssoConfirmed){
-    cls="buy"; mtxt="매수"; msub="찐웅덩이";
-    thirdLab="상태"; thirdVal="진행중";
+    cls="buy"; mtxt="매수"; msub="찐웅덩이"; thirdLab="상태"; thirdVal="진행중";
   } else {
-    cls="watch"; mtxt="관찰"; msub="매수대기";
-    thirdLab="상태"; thirdVal="미확정";
+    cls="watch"; mtxt="관찰"; msub="매수대기"; thirdLab="상태"; thirdVal="미확정";
   }
   $("mode").className = "mode " + cls;
   $("mtxt").textContent = mtxt;
@@ -169,30 +140,62 @@ async function load(){
   $("thirdLab").textContent = thirdLab;
   $("third").textContent = thirdVal;
 
-  // QLD 이격
   const gQ = gapPct(qld, ma120);
   if(gQ!=null){ $("gapQ").textContent=(gQ>=0?"+":"")+gQ.toFixed(1)+"%"; $("gapQ").style.color = gQ>=0?"var(--t1)":"var(--blue)"; }
-
-  // SSO 이격
   const gS = gapPct(sso, ma120sso);
   if(gS!=null){ $("gapS").textContent=(gS>=0?"+":"")+gS.toFixed(1)+"%"; $("gapS").style.color = gS>=0?"var(--t1)":"var(--blue)"; }
-
-  // 과열
-  const devVal = (dev && dev.ok) ? dev.dev : null;
-  const chg20  = (br && br.ok)  ? br.chg20 : null;
-  $("heat").textContent = heatTag(devVal, chg20);
-
-  // 공포탐욕 / VIX
   $("fg").textContent  = fgLabel(main.fg);
   $("vix").textContent = (main.vix!=null) ? Number(main.vix).toFixed(1) : "–";
-
-  // 특공대
   $("tq").textContent = tuggun(main.tqqq, main.ma200tqqq);
   $("sx").textContent = tuggun(main.soxl, main.ma300soxl);
+}
+function renderHeat(devVal, chg20){ $("heat").textContent = heatTag(devVal, chg20); }
+function renderStamp(t){ $("upd").textContent = "갱신 " + hhmm(t); }
 
-  // 갱신 시각
-  const now = new Date();
-  $("upd").textContent = "갱신 " + String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+// 캐시 스냅샷 적용 (열자마자 즉시 그림 → "불러오는 중" 안 뜸)
+function applySnapshot(s){
+  if(!s || !s.main) return;
+  try{
+    renderMain(s.main);
+    renderHeat(s.devVal, s.chg20);
+    if(s.time) renderStamp(new Date(s.time));
+  }catch(e){}
+}
+function loadCache(){ try{ return JSON.parse(localStorage.getItem(CACHE_KEY)); }catch(e){ return null; } }
+function saveCache(s){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify(s)); }catch(e){} }
+
+// 시작하자마자 캐시부터 그린다
+const cached = loadCache();
+if(cached) applySnapshot(cached);
+
+async function load(){
+  // 1) main 먼저 — 대부분 타일이 여기서 채워짐
+  const main = await getJSON(GAS_URL);
+  if(!main || main.qld==null){
+    // 실패해도 캐시가 있으면 그대로 유지, 없을 때만 실패 표시
+    if(!cached){
+      $("mode").className = "mode err";
+      $("mtxt").textContent = "연결 실패";
+      $("msub").textContent = "";
+      $("upd").textContent = "탭하여 열기";
+    }
+    return;
+  }
+  renderMain(main);
+  renderStamp(new Date());
+  let snap = { main, devVal:null, chg20:null, time: Date.now() };
+  saveCache(snap);
+
+  // 2) 과열(QQQ 이격 + 시장폭)은 뒤이어 채움
+  const [dev, br] = await Promise.all([
+    getJSON(`${GAS_URL}?action=dev&ticker=QQQ&period=200`),
+    getJSON(`${GAS_URL}?action=breadth`)
+  ]);
+  const devVal = (dev && dev.ok) ? dev.dev : null;
+  const chg20  = (br && br.ok)  ? br.chg20 : null;
+  renderHeat(devVal, chg20);
+  snap.devVal = devVal; snap.chg20 = chg20; snap.time = Date.now();
+  saveCache(snap);
 }
 
 load();

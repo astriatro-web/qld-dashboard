@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QLD 위젯</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --border:#e5e7eb;
+    --t1:#111827; --t2:#4b5563; --t3:#9ca3af;
+    --blue:#2563eb; --blue-lt:#eff4ff;
+    --green:#059669; --green-lt:#ecfdf5;
+    --amber:#d97706; --amber-lt:#fffbeb;
+    --red:#dc2626;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:-apple-system,'Noto Sans KR',Roboto,sans-serif;
+    background:transparent; color:var(--t1);
+    display:flex; padding:8px; cursor:pointer; user-select:none;
+  }
+  .card{
+    flex:1; background:var(--card); border:1px solid var(--border);
+    border-radius:18px; padding:14px 16px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.06);
+    display:flex; flex-direction:column; gap:10px; overflow:hidden;
+  }
+  .top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .mode{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:clamp(15px,4.6vw,20px); font-weight:900; line-height:1.1;
+    padding:6px 12px; border-radius:10px;
+  }
+  .mode.hold{background:var(--blue-lt); color:var(--blue);}
+  .mode.buy {background:var(--green-lt);color:var(--green);}
+  .mode.watch{background:var(--amber-lt);color:var(--amber);}
+  .mode.err {background:#f3f4f6; color:var(--t3);}
+  .refresh{font-size:10px; color:var(--t3); font-weight:700; white-space:nowrap;}
+  .stats{display:flex; gap:8px;}
+  .stat{
+    flex:1; background:var(--bg); border-radius:12px; padding:9px 10px; min-width:0;
+  }
+  .stat .lab{font-size:10px; color:var(--t3); font-weight:700; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .stat .val{font-size:clamp(13px,4vw,17px); font-weight:900; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .foot{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:10px; color:var(--t3); font-weight:600; margin-top:2px;
+  }
+  .foot .open{color:var(--blue); font-weight:800;}
+  .dim{color:var(--t3);}
+</style>
+</head>
+<body id="body">
+  <div class="card">
+    <div class="top">
+      <span id="mode" class="mode err">불러오는 중…</span>
+      <span id="refresh" class="refresh"></span>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="lab">QLD 이격</div>
+        <div class="val" id="gap">–</div>
+      </div>
+      <div class="stat">
+        <div class="lab">과열</div>
+        <div class="val" id="heat">–</div>
+      </div>
+      <div class="stat">
+        <div class="lab" id="thirdLab">대기</div>
+        <div class="val" id="third">–</div>
+      </div>
+    </div>
+    <div class="foot">
+      <span id="stamp" class="dim">–</span>
+      <span class="open">탭하면 전체 대시보드 ›</span>
+    </div>
+  </div>
+
+<script>
+// ── 설정: 대시보드 배포 후 이 두 값만 맞으면 됩니다 ──
+const GAS_URL  = "https://script.google.com/macros/s/AKfycbxhYlpp3Iq-iK-84cejY2uMIU6IybsgRlJ-SNx16OmmTPc4i4fBF8QFjYZURwV4hnpItA/exec";
+const DASH_URL = "https://qld-dashboard.pages.dev";   // ← 전체 대시보드 주소(다르면 여기 수정)
+
+// 위젯 전체를 탭하면 대시보드 열기
+document.getElementById("body").addEventListener("click", () => {
+  try { window.location.href = DASH_URL; } catch(e) {}
+});
+
+const $ = id => document.getElementById(id);
+
+async function getJSON(url){
+  const ctrl = new AbortController();
+  const to = setTimeout(()=>ctrl.abort(), 12000);
+  try{
+    const r = await fetch(url, { method:"GET", mode:"cors", redirect:"follow", signal:ctrl.signal });
+    clearTimeout(to);
+    return await r.json();
+  }catch(e){ clearTimeout(to); return null; }
+}
+
+function daysSince(iso){
+  if(!iso) return null;
+  const p = String(iso).split("-").map(Number);
+  if(p.length<3) return null;
+  const d0 = new Date(p[0], p[1]-1, p[2]);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(0, Math.round((today - d0)/86400000));
+}
+
+// 과열 판정 (대시보드와 동일 기준)
+function heatTag(dev, chg20){
+  if(dev==null && chg20==null) return {emoji:"–", txt:""};
+  const devHot=dev!=null&&dev>=8, devExt=dev!=null&&dev>=12, brWeak=chg20!=null&&chg20<=-2;
+  if(devExt || (devHot&&brWeak)) return {emoji:"🔴", txt:"과열"};
+  if(devHot || brWeak)           return {emoji:"🟡", txt:"주의"};
+  return {emoji:"🟢", txt:"양호"};
+}
+
+function setMode(cls, text){
+  const el = $("mode");
+  el.className = "mode " + cls;
+  el.textContent = text;
+}
+
+async function load(){
+  const [main, dev, br] = await Promise.all([
+    getJSON(GAS_URL),
+    getJSON(`${GAS_URL}?action=dev&ticker=QQQ&period=200`),
+    getJSON(`${GAS_URL}?action=breadth`)
+  ]);
+
+  if(!main || main.qld==null){
+    setMode("err", "연결 실패");
+    $("stamp").textContent = "탭하여 다시 열기";
+    return;
+  }
+
+  const qld = main.qld, ma120 = main.ma120, sso = main.sso, ma120sso = main.ma120sso;
+
+  // ── 현재 모드 ──
+  let modeCls, modeTxt, thirdLab, thirdVal;
+  const belowQLD = (qld!=null && ma120!=null && qld < ma120);
+  const ssoConfirmed = (sso!=null && ma120sso!=null && sso < ma120sso);
+  if(!belowQLD){
+    modeCls="hold"; modeTxt="🟦 홀드 · 대기";
+    const dd = daysSince(main.standbyDate);
+    thirdLab="대기"; thirdVal = dd!=null ? dd+"일" : "–";
+  } else if(ssoConfirmed){
+    modeCls="buy"; modeTxt="🟩 매수 진행";
+    thirdLab="상태"; thirdVal="찐웅덩이";
+  } else {
+    modeCls="watch"; modeTxt="🟨 관찰 · 대기";
+    thirdLab="상태"; thirdVal="미확정";
+  }
+  setMode(modeCls, modeTxt);
+  $("thirdLab").textContent = thirdLab;
+  $("third").textContent = thirdVal;
+
+  // ── QLD 이격 ──
+  if(qld!=null && ma120!=null){
+    const gap = (qld-ma120)/ma120*100;
+    $("gap").textContent = (gap>=0?"+":"") + gap.toFixed(1) + "%";
+    $("gap").style.color = gap>=0 ? "var(--t1)" : "var(--blue)";
+  } else $("gap").textContent = "–";
+
+  // ── 과열 ──
+  const devVal = (dev && dev.ok) ? dev.dev : null;
+  const chg20  = (br && br.ok)  ? br.chg20 : null;
+  const h = heatTag(devVal, chg20);
+  $("heat").textContent = h.emoji + (h.txt ? " " + h.txt : "");
+
+  // ── 갱신 시각 ──
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,"0");
+  const mm = String(now.getMinutes()).padStart(2,"0");
+  $("stamp").textContent = "갱신 " + hh + ":" + mm;
+  $("refresh").textContent = "";
+}
+
+load();
+setInterval(load, 5*60*1000);   // 5분마다 자동 갱신
+document.addEventListener("visibilitychange", () => { if(!document.hidden) load(); });
+</script>
+</body>
+</html>

@@ -6,83 +6,77 @@
 <title>QLD 위젯</title>
 <style>
   :root{
-    --bg:#f7f8fa; --card:#ffffff; --border:#e5e7eb;
+    --card:#ffffff; --border:#e5e7eb;
     --t1:#111827; --t2:#4b5563; --t3:#9ca3af;
     --blue:#2563eb; --blue-lt:#eff4ff;
     --green:#059669; --green-lt:#ecfdf5;
     --amber:#d97706; --amber-lt:#fffbeb;
-    --red:#dc2626;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
   body{
     font-family:-apple-system,'Noto Sans KR',Roboto,sans-serif;
     background:transparent; color:var(--t1);
-    display:flex; padding:8px; cursor:pointer; user-select:none;
+    display:flex; padding:6px; cursor:pointer; user-select:none;
   }
-  .card{
-    flex:1; background:var(--card); border:1px solid var(--border);
-    border-radius:18px; padding:14px 16px;
-    box-shadow:0 4px 16px rgba(0,0,0,0.06);
-    display:flex; flex-direction:column; gap:10px; overflow:hidden;
+  .bar{
+    flex:1; display:flex; align-items:stretch; gap:0;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; box-shadow:0 3px 12px rgba(0,0,0,0.06);
+    overflow:hidden;
   }
-  .top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
   .mode{
-    display:inline-flex; align-items:center; gap:6px;
-    font-size:clamp(15px,4.6vw,20px); font-weight:900; line-height:1.1;
-    padding:6px 12px; border-radius:10px;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:0 14px; min-width:96px; gap:2px;
   }
-  .mode.hold{background:var(--blue-lt); color:var(--blue);}
-  .mode.buy {background:var(--green-lt);color:var(--green);}
-  .mode.watch{background:var(--amber-lt);color:var(--amber);}
-  .mode.err {background:#f3f4f6; color:var(--t3);}
-  .refresh{font-size:10px; color:var(--t3); font-weight:700; white-space:nowrap;}
-  .stats{display:flex; gap:8px;}
-  .stat{
-    flex:1; background:var(--bg); border-radius:12px; padding:9px 10px; min-width:0;
+  .mode .m-txt{font-size:clamp(14px,4.4vw,18px); font-weight:900; line-height:1.05; white-space:nowrap;}
+  .mode .m-sub{font-size:10px; font-weight:700; opacity:.75; white-space:nowrap;}
+  .mode.hold {background:var(--blue-lt);  color:var(--blue);}
+  .mode.buy  {background:var(--green-lt); color:var(--green);}
+  .mode.watch{background:var(--amber-lt); color:var(--amber);}
+  .mode.err  {background:#f3f4f6;         color:var(--t3);}
+  .cells{flex:1; display:flex; align-items:center;}
+  .cell{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; padding:0 4px; min-width:0; border-left:1px solid var(--border);
   }
-  .stat .lab{font-size:10px; color:var(--t3); font-weight:700; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .stat .val{font-size:clamp(13px,4vw,17px); font-weight:900; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .foot{
-    display:flex; align-items:center; justify-content:space-between;
-    font-size:10px; color:var(--t3); font-weight:600; margin-top:2px;
+  .cell .lab{font-size:9px; color:var(--t3); font-weight:700; white-space:nowrap;}
+  .cell .val{font-size:clamp(13px,4vw,17px); font-weight:900; line-height:1; white-space:nowrap; color:var(--t1);}
+  .stamp{
+    display:flex; align-items:center; padding:0 10px 0 8px;
+    border-left:1px solid var(--border);
+    font-size:9px; color:var(--t3); font-weight:700; white-space:nowrap;
   }
-  .foot .open{color:var(--blue); font-weight:800;}
-  .dim{color:var(--t3);}
 </style>
 </head>
 <body id="body">
-  <div class="card">
-    <div class="top">
-      <span id="mode" class="mode err">불러오는 중…</span>
-      <span id="refresh" class="refresh"></span>
+  <div class="bar">
+    <div id="mode" class="mode err">
+      <div class="m-txt" id="mtxt">…</div>
+      <div class="m-sub" id="msub">불러오는 중</div>
     </div>
-    <div class="stats">
-      <div class="stat">
-        <div class="lab">QLD 이격</div>
+    <div class="cells">
+      <div class="cell">
+        <div class="lab">이격</div>
         <div class="val" id="gap">–</div>
       </div>
-      <div class="stat">
+      <div class="cell">
         <div class="lab">과열</div>
         <div class="val" id="heat">–</div>
       </div>
-      <div class="stat">
+      <div class="cell">
         <div class="lab" id="thirdLab">대기</div>
         <div class="val" id="third">–</div>
       </div>
     </div>
-    <div class="foot">
-      <span id="stamp" class="dim">–</span>
-      <span class="open">탭하면 전체 대시보드 ›</span>
-    </div>
+    <div class="stamp" id="stamp">–</div>
   </div>
 
 <script>
-// ── 설정: 대시보드 배포 후 이 두 값만 맞으면 됩니다 ──
+// ── 설정: 이 두 값만 맞으면 됩니다 ──
 const GAS_URL  = "https://script.google.com/macros/s/AKfycbxhYlpp3Iq-iK-84cejY2uMIU6IybsgRlJ-SNx16OmmTPc4i4fBF8QFjYZURwV4hnpItA/exec";
-const DASH_URL = "https://qld-dashboard.pages.dev";   // ← 전체 대시보드 주소(다르면 여기 수정)
+const DASH_URL = "https://qld-dashboard.pages.dev";   // ← 전체 대시보드 주소(다르면 수정)
 
-// 위젯 전체를 탭하면 대시보드 열기
 document.getElementById("body").addEventListener("click", () => {
   try { window.location.href = DASH_URL; } catch(e) {}
 });
@@ -109,19 +103,12 @@ function daysSince(iso){
   return Math.max(0, Math.round((today - d0)/86400000));
 }
 
-// 과열 판정 (대시보드와 동일 기준)
 function heatTag(dev, chg20){
-  if(dev==null && chg20==null) return {emoji:"–", txt:""};
+  if(dev==null && chg20==null) return "–";
   const devHot=dev!=null&&dev>=8, devExt=dev!=null&&dev>=12, brWeak=chg20!=null&&chg20<=-2;
-  if(devExt || (devHot&&brWeak)) return {emoji:"🔴", txt:"과열"};
-  if(devHot || brWeak)           return {emoji:"🟡", txt:"주의"};
-  return {emoji:"🟢", txt:"양호"};
-}
-
-function setMode(cls, text){
-  const el = $("mode");
-  el.className = "mode " + cls;
-  el.textContent = text;
+  if(devExt || (devHot&&brWeak)) return "🔴";
+  if(devHot || brWeak)           return "🟡";
+  return "🟢";
 }
 
 async function load(){
@@ -132,55 +119,50 @@ async function load(){
   ]);
 
   if(!main || main.qld==null){
-    setMode("err", "연결 실패");
-    $("stamp").textContent = "탭하여 다시 열기";
+    $("mode").className = "mode err";
+    $("mtxt").textContent = "연결 실패";
+    $("msub").textContent = "탭하여 열기";
     return;
   }
 
   const qld = main.qld, ma120 = main.ma120, sso = main.sso, ma120sso = main.ma120sso;
-
-  // ── 현재 모드 ──
-  let modeCls, modeTxt, thirdLab, thirdVal;
   const belowQLD = (qld!=null && ma120!=null && qld < ma120);
   const ssoConfirmed = (sso!=null && ma120sso!=null && sso < ma120sso);
+
+  let cls, mtxt, msub, thirdLab, thirdVal;
   if(!belowQLD){
-    modeCls="hold"; modeTxt="🟦 홀드 · 대기";
+    cls="hold"; mtxt="홀드"; msub="대기모드";
     const dd = daysSince(main.standbyDate);
     thirdLab="대기"; thirdVal = dd!=null ? dd+"일" : "–";
   } else if(ssoConfirmed){
-    modeCls="buy"; modeTxt="🟩 매수 진행";
-    thirdLab="상태"; thirdVal="찐웅덩이";
+    cls="buy"; mtxt="매수"; msub="찐웅덩이";
+    thirdLab="상태"; thirdVal="진행";
   } else {
-    modeCls="watch"; modeTxt="🟨 관찰 · 대기";
+    cls="watch"; mtxt="관찰"; msub="매수대기";
     thirdLab="상태"; thirdVal="미확정";
   }
-  setMode(modeCls, modeTxt);
+  $("mode").className = "mode " + cls;
+  $("mtxt").textContent = mtxt;
+  $("msub").textContent = msub;
   $("thirdLab").textContent = thirdLab;
   $("third").textContent = thirdVal;
 
-  // ── QLD 이격 ──
   if(qld!=null && ma120!=null){
     const gap = (qld-ma120)/ma120*100;
     $("gap").textContent = (gap>=0?"+":"") + gap.toFixed(1) + "%";
     $("gap").style.color = gap>=0 ? "var(--t1)" : "var(--blue)";
   } else $("gap").textContent = "–";
 
-  // ── 과열 ──
   const devVal = (dev && dev.ok) ? dev.dev : null;
   const chg20  = (br && br.ok)  ? br.chg20 : null;
-  const h = heatTag(devVal, chg20);
-  $("heat").textContent = h.emoji + (h.txt ? " " + h.txt : "");
+  $("heat").textContent = heatTag(devVal, chg20);
 
-  // ── 갱신 시각 ──
   const now = new Date();
-  const hh = String(now.getHours()).padStart(2,"0");
-  const mm = String(now.getMinutes()).padStart(2,"0");
-  $("stamp").textContent = "갱신 " + hh + ":" + mm;
-  $("refresh").textContent = "";
+  $("stamp").textContent = String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
 }
 
 load();
-setInterval(load, 5*60*1000);   // 5분마다 자동 갱신
+setInterval(load, 5*60*1000);
 document.addEventListener("visibilitychange", () => { if(!document.hidden) load(); });
 </script>
 </body>

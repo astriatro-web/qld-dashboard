@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>QLD+SSO+@ 전략 대시보드</title>
+<title>QLD DipBoost</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -447,9 +447,9 @@ details.strat-acc > summary:active { opacity: 0.85; }
 
   <!-- 제목 -->
   <div style="position:relative;z-index:1;text-align:center;margin-bottom:44px;">
-    <div style="font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:8px;">LEVERAGE ETF DASHBOARD</div>
-    <div style="font-size:36px;font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1.1;">120 POND</div>
-    <div style="font-size:13px;color:#60a5fa;letter-spacing:0.5em;font-weight:500;margin-top:4px;">STRATEGY</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:8px;">DAILY DCA · DIP BOOST</div>
+    <div style="font-size:36px;font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1.1;">QLD DipBoost</div>
+    <div style="font-size:13px;color:#60a5fa;letter-spacing:0.12em;font-weight:500;margin-top:6px;">매일 적립 + 웅덩이 부스트</div>
   </div>
 
   <!-- 입력 영역 -->
@@ -470,7 +470,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
 <!-- 심법 팝업 (비번 통과 시마다 랜덤 1개) -->
 <div id="simbeopModal" style="position:fixed;inset:0;background:rgba(8,10,20,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10000;padding:32px;">
   <div style="position:relative;z-index:1;width:100%;max-width:460px;text-align:center;">
-    <div style="font-size:11px;color:#f87171;letter-spacing:0.32em;text-transform:uppercase;margin-bottom:24px;font-weight:800;">⚔ 웅덩이 심법 ⚔</div>
+    <div style="font-size:11px;color:#f87171;letter-spacing:0.32em;text-transform:uppercase;margin-bottom:24px;font-weight:800;">⚔ DipBoost 심법 ⚔</div>
     <div id="simbeopText" style="font-size:25px;font-weight:900;color:#fff;line-height:1.5;letter-spacing:-0.01em;margin-bottom:16px;word-break:keep-all;"></div>
     <div id="simbeopSub" style="font-size:13.5px;color:rgba(255,255,255,0.52);line-height:1.65;margin-bottom:38px;word-break:keep-all;"></div>
     <button id="simbeopClose" onclick="closeSimbeop()" disabled
@@ -483,8 +483,8 @@ details.strat-acc > summary:active { opacity: 0.85; }
 <div id="appWrap" style="display:none;">
 <div class="header">
   <div>
-    <div class="header-sub">QLD · SSO · TQQQ · SOXL</div>
-    <div class="header-title">120 POND Strategy</div>
+    <div class="header-sub">QLD · SSO · TQQQ</div>
+    <div class="header-title">QLD DipBoost</div>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="fetchAll()">
     <span id="btnIcon">↻</span> 새로고침
@@ -493,12 +493,10 @@ details.strat-acc > summary:active { opacity: 0.85; }
 <div class="last-updated" id="lastUpdated">새로고침을 눌러 데이터를 불러오세요</div>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('dashboard')">대시보드</button>
+  <button class="tab active" onclick="switchTab('dashboard')">매일매수</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
-  <button class="tab" onclick="switchTab('pond')">웅덩노트</button>
   <button class="tab" onclick="switchTab('ladder')">래더매수</button>
   <button class="tab" onclick="switchTab('swing')">단기스캔</button>
-  <button class="tab" onclick="switchTab('war')">AI</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
 
@@ -506,166 +504,111 @@ details.strat-acc > summary:active { opacity: 0.85; }
 <div class="panel active" id="panel-dashboard">
   <div id="errBox" class="err-box" style="display:none;"></div>
 
-  <div id="modeCard" class="mode-card" style="background:#eff4ff;border-color:#bfdbfe;">
-    <div class="card-label">현재 모드</div>
-    <div class="mode-name" id="modeName" style="color:#2563eb;">—</div>
-    <ul class="action-list" id="actionList" style="margin-top:8px;"></ul>
+  <!-- 오늘 매수 히어로 -->
+  <div class="card" id="dd-hero">
+    <div id="dd-badge" style="display:inline-block;font-size:12px;font-weight:900;padding:4px 13px;border-radius:20px;margin-bottom:10px;background:var(--bg3);color:var(--text3);">—</div>
+    <div style="font-size:11px;color:var(--text3);font-weight:700;">오늘 매수 (하루치)</div>
+    <div id="dd-total" style="font-size:30px;font-weight:900;line-height:1;color:var(--text1);margin-top:2px;">—</div>
+    <div id="dd-explain" style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:10px;">시세를 불러오는 중…</div>
   </div>
 
+  <!-- 오늘의 매수 구성 -->
+  <div class="card">
+    <div class="card-label">🧾 오늘의 매수 구성</div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD (매일 정액)</span><b id="dd-qld-amt">—</b></div>
+    <div id="dd-sso-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">SSO (안정 배분)</span><b id="dd-sso-amt" style="color:var(--teal);">—</b></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">TQQQ (웅덩이 추가)</span><b id="dd-tqqq-amt" style="color:var(--purple);">—</b></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;border-top:2px solid var(--text1);"><span style="font-weight:800;">합계</span><b id="dd-total2">—</b></div>
+  </div>
+
+  <!-- 라이브 시세 -->
   <div class="grid2">
-    <div class="mc"><div class="mc-label">QLD</div><div class="mc-value" id="v-qld" style="color:var(--text3);">—</div><div class="mc-sub" id="v-ma120">MA120 —</div></div>
-    <div class="mc"><div class="mc-label">이격률 / DD</div><div class="mc-value" id="v-gap" style="color:var(--text3);">—</div><div class="mc-sub" id="v-dd">DD —</div></div>
+    <div class="mc"><div class="mc-label">QLD</div><div class="mc-value" id="dd-qld" style="color:var(--text3);">—</div><div class="mc-sub" id="dd-ma120">120선 —</div></div>
+    <div class="mc"><div class="mc-label">120선 이격</div><div class="mc-value" id="dd-gap" style="color:var(--text3);">—</div><div class="mc-sub" id="dd-tqqq">TQQQ —</div></div>
   </div>
 
+  <!-- 시장 컨텍스트 -->
   <div class="mc" style="display:flex;justify-content:space-around;align-items:center;text-align:center;margin-top:8px;padding:10px 8px;">
-    <div style="flex:1;">
-      <div class="mc-label" style="margin-bottom:3px;">S&amp;P500</div>
-      <div id="v-spx" style="font-size:15px;font-weight:800;color:var(--text1);font-family:'JetBrains Mono',monospace;">—</div>
-    </div>
+    <div style="flex:1;"><div class="mc-label" style="margin-bottom:3px;">F&amp;G</div><div><span id="dd-fg" style="font-size:15px;font-weight:800;color:var(--text3);">—</span> <span id="dd-fglabel" style="font-size:10px;color:var(--text3);"></span></div></div>
     <div style="width:1px;height:28px;background:var(--border);"></div>
-    <div style="flex:1;">
-      <div class="mc-label" style="margin-bottom:3px;">F&amp;G</div>
-      <div><span id="v-fg" style="font-size:15px;font-weight:800;color:var(--text3);">—</span> <span id="v-fglabel" style="font-size:10px;color:var(--text3);"></span></div>
-    </div>
+    <div style="flex:1;"><div class="mc-label" style="margin-bottom:3px;">VIX</div><div id="dd-vix" style="font-size:15px;font-weight:800;color:var(--text3);">—</div></div>
     <div style="width:1px;height:28px;background:var(--border);"></div>
-    <div style="flex:1;">
-      <div class="mc-label" style="margin-bottom:3px;">VIX</div>
-      <div><span id="v-vix" style="font-size:15px;font-weight:800;color:var(--text3);">—</span> <span id="v-vixlabel" style="font-size:10px;color:var(--text3);"></span></div>
-    </div>
-    <div style="width:1px;height:28px;background:var(--border);"></div>
-    <div style="flex:1;">
-      <div class="mc-label" style="margin-bottom:3px;">QQQ 이격</div>
-      <div><span id="v-dev" style="font-size:15px;font-weight:800;color:var(--text3);">—</span></div>
-      <div id="v-devlabel" style="font-size:9px;color:var(--text3);margin-top:1px;"></div>
-    </div>
+    <div style="flex:1;"><div class="mc-label" style="margin-bottom:3px;">갱신</div><div id="dd-upd" style="font-size:13px;font-weight:800;color:var(--text3);">—</div></div>
   </div>
 
-  <div id="overheatBanner" style="display:none;margin-top:8px;border-radius:12px;padding:11px 14px;font-size:12px;line-height:1.55;"></div>
-
-  <div class="card">
-    <div class="card-label">♾️ 매수 현황</div>
-    <div class="stat-grid">
-      <div class="stat-item"><div class="sl">매수 시작~경과</div><div class="sv" id="v-elapsed">—</div></div>
-      <div class="stat-item"><div class="sl">오늘 매수 주수</div><div class="sv" id="v-shares">—</div></div>
-      <div class="stat-item"><div class="sl">일일 투입금 (추정)</div><div class="sv" id="v-daily">—</div></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-label">보유 평가액</div>
-    <div id="holdingRows"><div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-label">⚡ 특공대 평가액 (TQQQ · SOXL)</div>
-    <div id="dashHiddenRows"><div style="font-size:12px;color:var(--text3);">설정탭에서 보유 주수를 입력하세요</div></div>
-  </div>
-
-  <div class="loc-card">
-    <div class="loc-title">📋 LOC 주문 가이드 (전날 종가 기준 · 새로고침 후 사용)</div>
-    <div id="loc-body"><div class="loc-na">새로고침 후 표시됩니다</div></div>
-  </div>
-
-  <!-- 히든전략 진입 알림 -->
-  <div id="hiddenAlertCard" style="display:none;" class="card">
-    <div class="card-label">⚡ 히든전략 진입 알림</div>
-    <div id="hiddenAlertRows"></div>
-  </div>
+  <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6;">일일 매수액·TQQQ 배수는 <b>설정</b> 탭에서 조정합니다. 시세는 상단 새로고침 시 갱신됩니다.</div>
 </div>
 
 <!-- ── 전략원칙 패널 ── -->
+<!-- ══ 대시보드2 · 하이브리드 전략 ══ -->
 <div class="panel" id="panel-rules">
-  <div onclick="openLightbox()" style="margin-bottom:12px;border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:zoom-in;background:#0b0f1a;">
-    <img id="puddle-thumb" src="qld-puddle.png" alt="QLD 10년 웅덩이 + 120일선" style="width:100%;display:block;" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=\&quot;padding:20px;text-align:center;color:var(--text3);font-size:11px;line-height:1.6;\&quot;>📈 이미지 파일(qld-puddle.png)을 index.html과 같은 폴더에<br>업로드하면 여기에 표시됩니다</div>');">
-    <div style="font-size:10px;color:var(--text3);text-align:center;padding:6px 8px;background:var(--bg2);">📈 QLD 10년 웅덩이 지도 (2015~) · 120일선 하방 괴리율 — <b style="color:var(--text2);">탭하면 크게</b></div>
-  </div>
-  <div id="guideBox" style="background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.25);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <div style="font-size:10px;color:var(--blue);letter-spacing:0.1em;font-weight:800;">📖 대시보드 사용 설명서</div>
-      <button onclick="document.getElementById('guideBox').style.display='none';localStorage.setItem('guideHidden','1')"
-        style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
-    </div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.9;">
-      <b style="color:var(--text1);">① 설정 탭</b> 먼저 입력 · 매수 시작일 / 탄환 총액 / 월 투자금 / 평단가 / 보유 주수<br><br>
-      <b style="color:var(--text1);">② 대시보드 탭</b> — 매일 아침 새로고침 · 모드 자동 판단 · LOC 주문 가이드<br><br>
-      <b style="color:var(--text1);">③ 웅덩노트 탭</b> — 관심 종목 120일선 모니터링 · AI 전략 분석<br><br>
-      <b style="color:var(--text1);">④ 거시모니터 탭</b> — StockHub 뉴스 → Claude AI 거시 리스크 분석
+  <div class="card">
+    <div class="card-label">📌 전략 (2026-08 개편 · 백테스트 기반)</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.85;">
+      <b style="color:var(--text1);">매일 QLD 정액 매수</b> + QLD가 <b>120일선 아래(웅덩이)</b>인 날엔 <b style="color:var(--purple);">TQQQ를 일일 QLD의 0.5~1배</b> 추가 매수.
+      동일 '주수'가 아니라 <b>동일 금액</b>으로. 웅덩이를 기다리며 현금 쌓기는 <b>폐기</b> — 매일 매수가 이기고, 웅덩이는 TQQQ 추가 기회로만 씁니다.
     </div>
   </div>
 
-  <!-- 10년 백테스트 테이블 -->
   <div class="card" style="margin-bottom:12px;">
-    <div class="card-label">📊 10년 백테스트 결과 요약 (직접 검증)</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">기간: 2016~2026</div>
+    <div class="card-label">📊 전략별 비교 (나스닥 · 연1억 페이스 · 2012~2026)</div>
     <div style="overflow-x:auto;">
       <table class="bt-table">
-        <thead>
-          <tr><th>상품</th><th>전략</th><th>기준선</th><th class="num">ROI%</th><th class="cagr">CAGR</th></tr>
-        </thead>
+        <thead><tr><th>전략</th><th class="num">배수</th><th class="num">평가액(억)</th><th class="num">MDD</th></tr></thead>
         <tbody>
-          <tr class="highlight"><td>SSO</td><td>웅덩(120) 5주</td><td>120일</td><td class="num">150.95%</td><td class="cagr">9.6%</td></tr>
-          <tr class="highlight"><td>QLD</td><td>웅덩(120) 10주</td><td>120일</td><td class="num">191.27%</td><td class="cagr">11.3%</td></tr>
-          <tr class="highlight-blue"><td>TQQQ</td><td>웅덩(200) 5→6→7…</td><td>200일</td><td class="num">294.01%</td><td class="cagr">14.7%</td></tr>
-          <tr class="highlight-blue"><td>SOXL</td><td>웅덩(300) 5→6→7…</td><td>300일</td><td class="num">408.84%</td><td class="cagr">17.7%</td></tr>
+          <tr><td>매일 QLD만</td><td class="num">12.74</td><td class="num">179.8</td><td class="num">-63%</td></tr>
+          <tr><td>웅덩이 대기(모아서 투입)</td><td class="num">11.49</td><td class="num">161.4</td><td class="num">-63%</td></tr>
+          <tr><td>매일+웅덩이 QLD 2x증량</td><td class="num">12.71</td><td class="num">219.4</td><td class="num">-62%</td></tr>
+          <tr class="highlight-blue"><td>매일+웅덩이 <b>TQQQ 추가(채택)</b></td><td class="num">14.93</td><td class="num">257.6</td><td class="num">-69%</td></tr>
         </tbody>
       </table>
     </div>
-    <div style="font-size:10px;color:var(--text3);line-height:1.65;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);">
-      ⚠️ <b style="color:var(--text2);">참고</b> — 위 CAGR은 <b>백테스트 시작·종료 시점에 크게 좌우</b>됩니다. 바닥에서 시작하면 높게, 고점(과열)에서 시작하면 낮게 나와요. 레버리지 ETF는 변동성 감쇠까지 겹쳐 더 심합니다. <b style="color:var(--text2);">과거 한 구간의 실현값일 뿐 미래 보장이 아니며</b>, MDD(-70~90%)를 견딜 각오가 전제입니다.
-    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6;">웅덩이 '대기'가 꼴찌(11.49). 매일 매수(12.74)에 웅덩이날 TQQQ 추가 시 <b style="color:var(--blue);">14.93배</b>로 최고.</div>
   </div>
 
-  <!-- 전략 원칙 카드들 -->
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-label">🔔 웅덩이 TQQQ 추가량 최적 (배수 × 딥범위)</div>
+    <div style="overflow-x:auto;">
+      <table class="bt-table">
+        <thead><tr><th>TQQQ 배수</th><th>딥 범위</th><th class="num">배수</th><th class="num">MDD</th></tr></thead>
+        <tbody>
+          <tr><td>0.5x</td><td>전체 웅덩이</td><td class="num">13.94</td><td class="num">-67%</td></tr>
+          <tr class="highlight-blue"><td><b>1.0x</b></td><td><b>전체 웅덩이</b></td><td class="num">14.93</td><td class="num">-69%</td></tr>
+          <tr><td>2.0x</td><td>전체 웅덩이</td><td class="num">16.44</td><td class="num">-72%</td></tr>
+          <tr><td>3.0x</td><td>전체 웅덩이</td><td class="num">17.55</td><td class="num">-74%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6;">권장 <b>0.5~1.0배 · 전체 웅덩이</b>(깊은 딥만 거르면 오히려 비효율). 2~3배는 MDD -72~-74%라 강세장 도박.</div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-label">📅 시작 시점 민감도 (QLD · 매일+웅덩이TQQQ)</div>
+    <div style="overflow-x:auto;">
+      <table class="bt-table">
+        <thead><tr><th>시작</th><th>기간</th><th class="num">매일QLD</th><th class="num">+웅덩이TQQQ</th></tr></thead>
+        <tbody>
+          <tr><td>2006-06 (20년)</td><td>19.4년</td><td class="num">31.2</td><td class="num">51.2*</td></tr>
+          <tr><td>2007-06 (위기직전)</td><td>18.9년</td><td class="num">30.5</td><td class="num">50.8*</td></tr>
+          <tr><td>2012-01</td><td>14.3년</td><td class="num">12.4</td><td class="num">14.5</td></tr>
+          <tr><td>2015-06</td><td>10.8년</td><td class="num">6.1</td><td class="num">6.9</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6;">적립식(DCA)은 위기 직전 시작(2007)에도 강건 — 폭락을 싸게 담아 계좌 MDD -64~-74%(거치식 -84%보다 얕음). *2010년 이전 TQQQ는 재구성값(낙관 상한).</div>
+  </div>
+
   <div id="rules-content"></div>
 
-  <!-- TQQQ 특공대 -->
-  <details class="strategy-block strat-acc" id="tqqq-strat">
-    <summary class="strategy-header" style="background:var(--purple-lt);color:var(--purple);">
-      <span><span class="hidden-badge tqqq">⚡ TQQQ 특공대</span> 200일선 하단 주별 증가 매수 <span id="tqqq-sig" style="font-size:10px;font-weight:800;margin-left:2px;"></span></span>
-      <span class="strat-chevron">▸</span>
-    </summary>
+  <details class="strategy-block strat-acc">
+    <summary class="strategy-header" style="background:var(--amber-lt);color:var(--amber);"><span>⚠️ 대전제와 한계 (반드시 읽기)</span><span class="strat-chevron">▸</span></summary>
     <div class="strat-rows">
-    <div class="strategy-row"><div class="s-label">진입 조건</div><div class="s-desc">TQQQ 주가 &lt; 200일 이동평균선 하단 돌파 시 시작</div></div>
-    <div class="strategy-row"><div class="s-label">매수 방식</div><div class="s-desc">1주차 <b style="color:var(--purple);">5주</b> → 2주차 6주 → 3주차 7주 … 매주 1주씩 무한 증가 매일 매수</div></div>
-    <div class="strategy-row"><div class="s-label">백테스트</div><div class="s-desc">CAGR <b style="color:var(--purple);">14.7%</b> · 3배 레버리지 특성상 200일 장기선이 안전 진입 기준</div></div>
-    <div class="strategy-row"><div class="s-label">익절 / 주의</div><div class="s-desc">200일선 복귀 시 분할 매도. MDD -80% 이상 가능. 소규모 특공대 운용 권장</div></div>
-    <div style="padding:12px 14px;background:var(--purple-lt);border-top:1px solid rgba(124,58,237,0.15);">
-      <div style="font-size:10px;font-weight:800;color:var(--purple);margin-bottom:8px;">⚡ 이번 주 매수량</div>
-      <div style="display:flex;gap:7px;align-items:center;">
-        <div style="font-size:12px;color:var(--text2);">경과 주차:</div>
-        <input type="number" id="tqqq-week" min="1" max="52" value="1" oninput="calcTQQQLOC()"
-          style="width:60px;background:#fff;border:1.5px solid rgba(124,58,237,0.3);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;color:var(--purple);font-family:inherit;outline:none;text-align:center;">
-        <div style="font-size:12px;color:var(--text2);">주차</div>
-      </div>
-      <div id="tqqq-loc-result" style="font-size:13px;font-weight:700;color:var(--purple);margin-top:6px;">→ 이번 주 매수: 5주 매일</div>
-    </div>
+      <div class="strategy-row"><div class="s-label">단일 경로 편향</div><div class="s-desc">2012~2026은 역대급 기술주 강세장 한 경로. 닷컴버블·잃어버린 10년(나스닥 -78%, 회복에 ~15년)은 QLD/TQQQ 상장 전이라 미검증 — 진짜 최악은 백테스트 밖에 있습니다.</div></div>
+      <div class="strategy-row"><div class="s-label">레버리지 감가</div><div class="s-desc">장기 횡보·하락장에선 변동성 감가가 잔인. TQQQ가 '잃어버린 10년'에 있었다면 -99% 수준. 그래서 TQQQ(3x) 비중엔 상한을 둡니다.</div></div>
+      <div class="strategy-row"><div class="s-label">나스닥 편중</div><div class="s-desc">최적해가 '나스닥이 계속 이긴다'에 강하게 의존. 지수 리더십이 비미국·가치·소형으로 바뀌면 전략 전체가 역작동.</div></div>
+      <div class="strategy-row"><div class="s-label">심리·자금 여력</div><div class="s-desc">-70~-80% 낙폭을 수년 들고 매수를 지속할 수 있느냐가 최대 실전 리스크. 생활자금과 철저히 분리한 여유자금만. 세금(해외 22%)·수수료 미반영.</div></div>
     </div>
   </details>
-
-  <!-- SOXL 특공대 -->
-  <details class="strategy-block strat-acc" id="soxl-strat">
-    <summary class="strategy-header" style="background:var(--teal-lt);color:var(--teal);">
-      <span><span class="hidden-badge soxl">💎 SOXL 특공대</span> 300일선 하단 주별 증가 매수 <span id="soxl-sig" style="font-size:10px;font-weight:800;margin-left:2px;"></span></span>
-      <span class="strat-chevron">▸</span>
-    </summary>
-    <div class="strat-rows">
-    <div class="strategy-row"><div class="s-label">진입 조건</div><div class="s-desc">SOXL 주가 &lt; 300일 이동평균선 하단 돌파 시 시작</div></div>
-    <div class="strategy-row"><div class="s-label">매수 방식</div><div class="s-desc">1주차 <b style="color:var(--teal);">5주</b> → 2주차 6주 → 3주차 7주 … 매주 1주씩 무한 증가 매일 매수</div></div>
-    <div class="strategy-row"><div class="s-label">백테스트</div><div class="s-desc">CAGR <b style="color:var(--teal);">17.7%</b> · 반도체 섹터 집중, 레버리지 ETF 중 장기 수익 최고</div></div>
-    <div class="strategy-row"><div class="s-label">익절 / 주의</div><div class="s-desc">300일선 복귀 시 분할 매도. MDD -90% 이상 가능. 포트 5~10% 이하 배분 권장</div></div>
-    <div style="padding:12px 14px;background:var(--teal-lt);border-top:1px solid rgba(8,145,178,0.15);">
-      <div style="font-size:10px;font-weight:800;color:var(--teal);margin-bottom:8px;">💎 이번 주 매수량</div>
-      <div style="display:flex;gap:7px;align-items:center;">
-        <div style="font-size:12px;color:var(--text2);">경과 주차:</div>
-        <input type="number" id="soxl-week" min="1" max="52" value="1" oninput="calcSOXLLOC()"
-          style="width:60px;background:#fff;border:1.5px solid rgba(8,145,178,0.3);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;color:var(--teal);font-family:inherit;outline:none;text-align:center;">
-        <div style="font-size:12px;color:var(--text2);">주차</div>
-      </div>
-      <div id="soxl-loc-result" style="font-size:13px;font-weight:700;color:var(--teal);margin-top:6px;">→ 이번 주 매수: 5주 매일</div>
-    </div>
-    </div>
-  </details>
-
 </div>
 
 <!-- ── 웅덩노트 패널 ── -->
@@ -965,276 +908,70 @@ details.strat-acc > summary:active { opacity: 0.85; }
 </div>
 
 <!-- ── 거시모니터 패널 ── -->
-<div class="panel" id="panel-war">
-  <div class="war-header">
-    <div class="war-title">🌐 거시모니터 · 매수 조율</div>
-    <button class="btn-war" id="btnWar" onclick="runWarMonitor()">
-      <span id="warBtnIcon">⚡</span> AI 분석
-    </button>
-  </div>
-
-  <div id="warEmpty" class="war-empty">
-    AI 분석 버튼을 누르면<br>StockHub 최신 뉴스를 읽고<br>오늘의 거시 리스크를 자동 판단합니다<br><br>
-    <span style="color:var(--text3);font-size:12px;">전쟁 · 금융위기 · AI버블 · 관세 · 연준 등<br>하루 1회 권장 · 비용 약 ₩3~4/회</span>
-  </div>
-
-  <div id="warResult" style="display:none;">
-    <div class="war-updated" id="warUpdated"></div>
-    <div class="card" style="padding:14px 16px 12px;">
-      <div class="card-label">거시 리스크 등급</div>
-      <div id="warBadge" class="war-badge gray">분석 중</div>
-      <div id="warGradeDesc" style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5;"></div>
-    </div>
-    <div class="war-kpi">
-      <div class="war-kpi-item" style="grid-column:span 3;"><div class="war-kpi-label">주요 테마</div><div class="war-kpi-value" id="wk-main-theme" style="color:var(--amber);font-size:12px;">—</div></div>
-    </div>
-    <div class="war-kpi" style="margin-top:-4px;">
-      <div class="war-kpi-item"><div class="war-kpi-label">보조 테마</div><div class="war-kpi-value" id="wk-sub-theme" style="color:var(--text2);font-size:11px;">—</div></div>
-      <div class="war-kpi-item" style="grid-column:span 2;"><div class="war-kpi-label">시장 신호</div><div class="war-kpi-value" id="wk-market-signal" style="color:var(--blue);font-size:11px;">—</div></div>
-    </div>
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-label">오늘의 핵심 팩트</div>
-      <ul class="war-facts" id="warFacts"></ul>
-    </div>
-    <div class="ai-summary">
-      <div class="ai-summary-label">AI 전략 판단</div>
-      <div id="aiJudgment"></div>
-    </div>
-    <div id="adjCard" class="adj-card gray">
-      <div id="adjTitle" class="adj-title" style="color:var(--text3);">📊 오늘 매수 조율</div>
-      <div id="adjRows"></div>
-    </div>
-    <div class="loc-adj-card">
-      <div class="loc-adj-title">📋 조율된 LOC 주문 가이드</div>
-      <div id="warLocWarn" class="loc-adj-warn" style="display:none;"></div>
-      <div id="warLocBody"><div class="loc-na">AI 분석 후 표시됩니다</div></div>
-    </div>
-    <div class="card" id="splitAdviceCard" style="display:none;">
-      <div class="card-label">분할일수 조정 권장</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div>
-          <div id="splitAdviceText" style="font-size:13px;color:var(--text1);margin-bottom:4px;font-weight:700;"></div>
-          <div id="splitAdviceReason" style="font-size:11px;color:var(--text3);"></div>
-        </div>
-        <button id="splitAdviceBtn" onclick="applySplitAdvice()"
-          style="background:var(--blue);border:none;border-radius:9px;color:#fff;padding:9px 15px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;margin-left:12px;">
-          적용
-        </button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-label">내일 체크포인트</div>
-      <ul class="war-facts" id="warCheckpoints"></ul>
-    </div>
-  </div>
-
-  <!-- 복리 목표 계산기 -->
-  <div class="card" style="margin-top:4px;">
-    <div class="card-label">🧮 복리 목표 계산기</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">원금을 넣고 기간·연 수익률을 정하면, X년 뒤 도달 금액을 계산합니다.</div>
-
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:600;">원금 (₩)</div>
-        <input id="goal-principal" type="number" inputmode="numeric" value="100000000" oninput="calcGoal()"
-          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text1);font-size:15px;font-weight:700;font-family:inherit;outline:none;">
-        <div id="goal-principal-hint" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>
-      </div>
-
-      <div style="display:flex;gap:10px;">
-        <div style="flex:1;">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:600;">기간 (년)</div>
-          <input id="goal-years" type="number" inputmode="numeric" value="10" min="1" max="60" oninput="calcGoal()"
-            style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text1);font-size:15px;font-weight:700;font-family:inherit;outline:none;">
-        </div>
-        <div style="flex:1;">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:600;">연 수익률 (%)</div>
-          <input id="goal-rate" type="number" inputmode="decimal" step="0.1" value="11.3" oninput="calcGoal()"
-            style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text1);font-size:15px;font-weight:700;font-family:inherit;outline:none;">
-        </div>
-      </div>
-
-      <div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:600;">물가상승률 (%) · 실질 구매력 환산용</div>
-        <input id="goal-infl" type="number" inputmode="decimal" step="0.1" value="2.5" oninput="calcGoal()"
-          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text1);font-size:15px;font-weight:700;font-family:inherit;outline:none;">
-        <div style="font-size:10px;color:var(--text3);margin-top:4px;">한국 장기 물가목표 ≈ 2%, 체감 물가 반영 시 2.5~3% 권장</div>
-      </div>
-
-      <div>
-        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;">📊 수익률 프리셋 (10년 백테스트 CAGR)</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <button type="button" onclick="setGoalRate(11.3)" style="background:var(--blue-lt);color:var(--blue);border:1px solid rgba(37,99,235,0.25);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">QLD 11.3% ⭐</button>
-          <button type="button" onclick="setGoalRate(9.6)" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">SSO 9.6%</button>
-          <button type="button" onclick="setGoalRate(14.7)" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">TQQQ 14.7%</button>
-          <button type="button" onclick="setGoalRate(17.7)" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">SOXL 17.7%</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 결과 -->
-    <div style="margin-top:16px;background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.22);border-radius:12px;padding:16px;">
-      <div style="font-size:11px;color:var(--blue);font-weight:800;letter-spacing:0.05em;margin-bottom:4px;"><span id="goal-summary-years">10</span>년 뒤 도달 금액 (명목)</div>
-      <div id="goal-final" style="font-size:26px;font-weight:900;color:var(--blue);line-height:1.2;">-</div>
-      <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
-        <div>
-          <div style="font-size:10px;color:var(--text3);font-weight:600;">총 수익금</div>
-          <div id="goal-profit" style="font-size:14px;font-weight:800;color:var(--green);">-</div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:var(--text3);font-weight:600;">원금 대비</div>
-          <div id="goal-multiple" style="font-size:14px;font-weight:800;color:var(--text1);">-</div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:var(--text3);font-weight:600;">연 복리</div>
-          <div id="goal-rate-echo" style="font-size:14px;font-weight:800;color:var(--text1);">-</div>
-        </div>
-      </div>
-      <div style="margin-top:14px;padding-top:12px;border-top:1px dashed rgba(37,99,235,0.3);">
-        <div style="font-size:11px;color:var(--text2);font-weight:800;margin-bottom:4px;">🛒 오늘 구매력 기준 (물가 <span id="goal-infl-echo">2.5</span>% 반영)</div>
-        <div id="goal-real" style="font-size:20px;font-weight:900;color:var(--text1);line-height:1.2;">-</div>
-        <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;">
-          <div>
-            <div style="font-size:10px;color:var(--text3);font-weight:600;">실질 배수</div>
-            <div id="goal-real-mult" style="font-size:13px;font-weight:800;color:var(--text1);">-</div>
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text3);font-weight:600;">실질 연복리</div>
-            <div id="goal-real-rate" style="font-size:13px;font-weight:800;color:var(--text1);">-</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;">※ 매년 같은 수익률을 가정한 단순 복리. <b style="color:var(--text2);">명목=미래에 받는 금액</b>, <b style="color:var(--text2);">실질=그 금액의 오늘 구매력</b>(물가상승분 차감). 레버리지 ETF는 변동성·경로 의존성으로 실제 결과가 크게 달라질 수 있습니다.</div>
-  </div>
-</div>
-
-
 <!-- ── 설정 패널 ── -->
 <div class="panel" id="panel-settings">
-  <div style="background:var(--blue-lt);border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-    <div style="font-size:10px;color:var(--blue);font-weight:800;letter-spacing:0.1em;margin-bottom:4px;">⚙ 기본 설정</div>
-    <div style="font-size:11px;color:var(--text3);line-height:1.7;">입력하면 이 기기에 자동 저장됩니다 (localStorage)</div>
-  </div>
-  <div class="setting-group"><div class="setting-label">매수 시작일</div><input class="setting-input" type="text" id="s-entryDate" placeholder="2026-03-01" oninput="saveSettings()"></div>
-  <div class="setting-group"><div class="setting-label">대기모드 시작일 — 자동감지 (수동 덮어쓰기 가능)</div><input class="setting-input" type="text" id="s-standbyManual" placeholder="자동감지 중 · 직접 입력 시 우선 적용" oninput="saveSettings(); if(MD) renderDashboard(MD);"><div style="font-size:10px;color:var(--text3);margin-top:4px;">평소엔 비워두세요. 차트에서 QLD가 120일선을 돌파한 종가일을 자동으로 찾아 셉니다. 자동값이 틀렸을 때만 날짜(예: 2026-04-13)를 직접 넣으면 그 값이 우선합니다.</div></div>
-  <div class="setting-group" style="border:1.5px solid var(--blue);border-radius:12px;padding:14px;background:var(--blue-lt);">
-    <div style="font-size:13px;font-weight:800;color:var(--blue);margin-bottom:4px;">🧮 일일 매수 주수 계산기</div>
-    <div style="font-size:10.5px;color:var(--text3);margin-bottom:12px;line-height:1.6;">총알풀(실탄+월급) ÷ 분할일수로 하루 매수 주수를 계산합니다. <b style="color:var(--text2);">결과는 참고용</b> — 아래 'QLD/SSO 매일 매수 주수' 칸에 직접 넣으세요(커스터마이징 가능).</div>
+  <style>
+    #panel-settings .bm-btn{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text3);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;}
+    #panel-settings .bm-btn.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);}
+  </style>
 
-    <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">① 실탄 (현금 총알, 원)</div>
-    <input class="setting-input" type="number" id="calc-bullet" placeholder="예: 100000000" oninput="calcShares(); saveSettings()" style="margin-bottom:8px;">
-
-    <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">잔여 SGOV 주수 (대기모드 현금 · 총알에 합산)</div>
-    <input class="setting-input" type="number" id="calc-sgov" placeholder="0" oninput="calcShares(); saveSettings()" style="margin-bottom:8px;">
-
-    <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">② 월 투자금 (월급, 원)</div>
-    <input class="setting-input" type="number" id="calc-monthly" placeholder="예: 10000000" oninput="calcShares(); saveSettings()" style="margin-bottom:8px;">
-
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <div style="flex:1;">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">③ 월급 반영 개월</div>
-        <input class="setting-input" type="number" step="0.5" id="calc-months" value="2.5" oninput="calcShares()">
-        <div style="font-size:9px;color:var(--text3);margin-top:2px;">75일 ≈ 약 2.5~3개월</div>
-      </div>
-      <div style="flex:1;">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">④ 분할일수 (권장 75)</div>
-        <input class="setting-input" type="number" id="calc-splitdays" value="75" oninput="calcShares()">
-      </div>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
-      <div style="flex:1;">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">⑤ QLD 비중 (%) — 권장 70</div>
-        <input class="setting-input" type="number" id="calc-qldpct" value="70" min="0" max="100" oninput="calcShares()">
-      </div>
-      <div style="flex:1;font-size:11.5px;color:var(--text3);padding-bottom:11px;">→ SSO <b id="calc-ssopct" style="color:var(--text2);">30</b>% 자동</div>
-    </div>
-
-    <div id="calc-output" style="background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;color:var(--text3);text-align:center;">먼저 대시보드를 새로고침해 현재가를 불러오세요</div>
-  </div>
-  <div class="setting-group"><div class="setting-label">QLD 매일 매수 주수</div><input class="setting-input" type="number" id="s-qldDaily" placeholder="10" min="1" oninput="saveSettings()"></div>
-  <div class="setting-group"><div class="setting-label">SSO 매일 매수 주수</div><input class="setting-input" type="number" id="s-ssoDaily" placeholder="5" min="1" oninput="saveSettings()"></div>
-  <div class="setting-group">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-      <div class="setting-label" style="margin-bottom:0;">Fear &amp; Greed 수동 입력 (0~100)</div>
-      <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank"
-        style="font-size:10px;color:var(--blue);text-decoration:none;font-weight:700;padding:3px 8px;border:1px solid rgba(37,99,235,0.3);border-radius:6px;background:var(--blue-lt);">
-        CNN →
-      </a>
-    </div>
-    <input class="setting-input" type="number" id="s-fg" placeholder="현재값 입력 (예: 34)" min="0" max="100" oninput="saveSettings()">
+  <div style="background:var(--blue-lt);border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+    <div style="font-size:11px;color:var(--blue);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">📅 일일 매수액 산정</div>
+    <div style="font-size:11px;color:var(--text3);line-height:1.7;">'매일매수' 전략의 핵심 — 1년 투자 페이스를 정해 하루 매수액을 계산합니다. 이 기기에 자동 저장됩니다.</div>
   </div>
 
-  <div style="border-top:1px solid var(--border);margin:4px 0 12px;padding-top:12px;">
-    <div style="font-size:10px;color:var(--blue);letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">🏦 주력 보유 (QLD · SSO)</div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:9px;color:var(--text3);font-weight:700;letter-spacing:0.05em;">
-      <div style="width:46px;">종목</div><div style="flex:1;">보유 주수</div><div style="flex:1;">평단가 ($)</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">QLD</div>
-      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" id="s-qldHeld" placeholder="0" oninput="saveSettings()">
-      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" step="0.01" id="s-qldAvg" placeholder="예: 68.50" oninput="saveSettings()">
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
-      <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">SSO</div>
-      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" id="s-ssoHeld" placeholder="0" oninput="saveSettings()">
-      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" step="0.01" id="s-ssoAvg" placeholder="예: 80.20" oninput="saveSettings()">
-    </div>
+  <div style="display:flex;gap:6px;margin-bottom:14px;">
+    <button type="button" id="bm-simple" onclick="setBuyMode('simple')" class="bm-btn active">심플</button>
+    <button type="button" id="bm-adv" onclick="setBuyMode('advanced')" class="bm-btn">고급 (라이프사이클)</button>
   </div>
 
-  <div style="border-top:1px solid var(--border);margin:4px 0 12px;padding-top:12px;">
-    <div style="font-size:10px;color:var(--purple);letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">⚡ 특공대 보유 (TQQQ · SOXL)</div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:9px;color:var(--text3);font-weight:700;letter-spacing:0.05em;">
-      <div style="width:46px;">종목</div><div style="flex:1;">보유 주수</div><div style="flex:1;">평단가 ($)</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">TQQQ</div>
-      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" id="s-tqqqHeld" placeholder="0" oninput="saveSettings()">
-      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" step="0.01" id="s-tqqqAvg" placeholder="예: 40.00" oninput="saveSettings()">
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <div style="width:46px;font-size:12px;font-weight:800;color:var(--text1);">SOXL</div>
-      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" id="s-soxlHeld" placeholder="0" oninput="saveSettings()">
-      <input class="setting-input" style="flex:1;min-width:0;box-sizing:border-box;width:auto;margin:0;" type="number" step="0.01" id="s-soxlAvg" placeholder="예: 15.00" oninput="saveSettings()">
-    </div>
-    <div class="info-box" style="margin-top:0;margin-bottom:12px;">
-      평단가 입력 시 <b style="color:var(--amber);">+25%/+50%/+100%</b> 트리거 자동 판단.<br>
-      익절 시 해당 비율의 10%씩 매도 → SGOV 보관.
-    </div>
+  <div id="buy-simple">
+    <div class="setting-group"><div class="setting-label">연 투자 가능액 (₩/년)</div><input class="setting-input" type="number" inputmode="numeric" id="s-annual" placeholder="예: 100000000" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">1년 동안 이 종목에 넣을 총액. 생활비·비상금 제외한 여유자금만.</div></div>
+    <div class="setting-group"><div class="setting-label">연 거래일수</div><input class="setting-input" type="number" inputmode="numeric" id="s-tdays" placeholder="252" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">미국장 연 거래일 ≈ 252</div></div>
   </div>
 
-  <div class="info-box">
-    <b style="color:var(--text2);">무한매수 원칙</b><br>
-    120일선 하방 시 기간 제한 없이 QLD 10주 + SSO 5주 무한 매수 지속.<br>
-    탄환(SGOV) 소진 후 월 투자금으로 자연 전환. B-3(매수 동결) 없음.<br><br>
-    <b style="color:var(--text2);">익절 원칙</b><br>
-    평단 대비 <b style="color:var(--green);">+25%</b> → 10% 매도<br>
-    평단 대비 <b style="color:var(--amber);">+50%</b> → 10% 매도<br>
-    평단 대비 <b style="color:var(--red);">+100%</b> → 10% 매도 (총 30% 상한)<br>
-    익절 자금 → SGOV 보관
+  <div id="buy-adv" style="display:none;">
+    <div class="setting-group"><div class="setting-label">월 소득 (₩/월)</div><input class="setting-input" type="number" inputmode="numeric" id="s-income" placeholder="예: 8000000" oninput="dailySave()"></div>
+    <div style="display:flex;gap:10px;">
+      <div class="setting-group" style="flex:1;"><div class="setting-label">투자율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="1" id="s-rate" placeholder="30" oninput="dailySave()"></div>
+      <div class="setting-group" style="flex:1;"><div class="setting-label">연 거래일수</div><input class="setting-input" type="number" inputmode="numeric" id="s-tdays2" placeholder="252" oninput="dailySave()"></div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <div class="setting-group" style="flex:1;"><div class="setting-label">투자 지속연수</div><input class="setting-input" type="number" inputmode="numeric" id="s-years" placeholder="20" oninput="dailySave()"></div>
+      <div class="setting-group" style="flex:1;"><div class="setting-label">연 소득증가율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="0.5" id="s-growth" placeholder="3" oninput="dailySave()"></div>
+    </div>
+    <div id="adv-note" style="font-size:11px;color:var(--text2);line-height:1.7;background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:12px;"></div>
+  </div>
+
+  <div class="card" style="background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.22);">
+    <div style="font-size:11px;color:var(--blue);font-weight:800;">하루 매수액 (총액)</div>
+    <div id="s-daily-result" style="font-size:26px;font-weight:900;color:var(--blue);line-height:1.2;margin-top:2px;">—</div>
+    <div id="s-daily-sub" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
+  </div>
+
+  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
+    <div style="background:var(--teal-lt);border:1px solid rgba(8,145,178,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--teal);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">⚖️ 포트 구성 (QLD : SSO)</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD(나스닥 2배)는 수익 극대화, SSO(S&P 2배)는 안정성. 하루 매수액을 이 비율로 나눠 매수합니다. QLD 100 = SSO 안 섞음(순수 QLD).</div>
+    </div>
+    <div class="setting-group"><div class="setting-label">QLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-qldweight" placeholder="100" oninput="dailySave()"><div id="s-mix-sub" style="font-size:10px;color:var(--text3);margin-top:3px;"></div></div>
+  </div>
+
+  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
+    <div style="background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--purple);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔔 웅덩이 TQQQ 추가 배수</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD가 120선 아래(웅덩이)일 때, 일일 QLD의 몇 배로 TQQQ를 추가 매수할지. 백테스트 권장 0.5~1.0배(1.0=표준).</div>
+    </div>
+    <div class="setting-group"><div class="setting-label">TQQQ 배수 (0.5 ~ 1.0)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="2" id="s-tqqqmult" placeholder="1.0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">2~3배는 MDD -72~-74%로 강세장 도박 — 권장 안 함.</div></div>
+  </div>
+
+  <div style="font-size:10px;color:var(--text3);line-height:1.7;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+    ⚠️ 백테스트(2012~2026)는 역대급 기술주 강세장 한 경로 기준이라 미래 보장이 아니며, -60~-74% 낙폭과 수년 횡보를 버틸 여력이 전제입니다. 세금·수수료 미반영.
   </div>
 </div>
 
 </div><!-- /appWrap -->
 
-<!-- 이미지 라이트박스 (고화질 전체보기) -->
-<div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10500;overflow:auto;padding:12px;cursor:zoom-out;">
-  <div style="position:sticky;top:0;text-align:right;">
-    <button onclick="closeLightbox()" style="background:rgba(255,255,255,0.12);border:none;color:#fff;font-size:20px;font-weight:700;width:40px;height:40px;border-radius:50%;cursor:pointer;line-height:1;">✕</button>
-  </div>
-  <img id="lightbox-img" src="" alt="" style="width:100%;max-width:1400px;margin:0 auto;display:block;">
-  <div style="text-align:center;color:rgba(255,255,255,0.5);font-size:11px;padding:10px 0 20px;">가로로 돌리거나 두 손가락으로 확대하면 더 크게 볼 수 있어요 · 아무 곳이나 탭하면 닫힘</div>
-</div>
-
-<script>
-function openLightbox(){
-  const t = document.getElementById("puddle-thumb");
-  document.getElementById("lightbox-img").src = t ? t.src : "";
-  document.getElementById("lightbox").style.display = "block";
-}
-function closeLightbox(){ document.getElementById("lightbox").style.display = "none"; }
-</script>
 
 <script>
 // ── 전략 상수 ──
@@ -1380,60 +1117,36 @@ function standbyStart(d) {
 // ── 전략 원칙 데이터 ──
 function getRULES() {
   return [
-    { title:"📌 QLD 매수법 — 핵심", color:"#1e3a8a", bg:"#eff4ff",
+    { title:"📌 매일 매수 — 핵심", color:"#1e3a8a", bg:"#eff4ff",
       items:[
-        ["한 줄 요약","SSO(S&P 2배)가 120일선 아래로 내려온 '찐 웅덩이' 구간 동안, QLD·SSO를 매일 정해진 수량으로 기계적으로 매수한다. QLD가 120일선을 회복하면 멈춘다. 이게 전부입니다."],
-        ["왜 120일선인가","120일선 = 약 6개월 평균가. 단기선(20·60일)은 잦은 속임수(휩소)로 매수가 너무 빈번하고, 장기선(200일)은 진입이 늦습니다. 10년 데이터상 QLD가 120일선 아래로 내려간 구간(2015·2018·2020·2022)은 모두 결국 회복했습니다."],
-        ["진입/종료 기준 (핵심)","웅덩이 시작·종료를 서로 다른 지수로 판정합니다. ▶ 진입: SSO(S&P500 2배) 현재가 < SSO 120일선 → 광범위 지수까지 빠져야 '찐 웅덩이' 확정. ▶ 종료: QLD(나스닥 2배) 현재가 > QLD 120일선 → 매수 중단·대기 전환. 이유: 기술주 QLD는 먼저 빠지며 휩소(가짜 하락)가 많음 → 진입을 SSO로 걸러 헛매수 방지. 회복은 QLD가 먼저 치고 올라가므로 종료는 QLD로."],
-        ["언제 사나 (진입)","대시보드 새로고침 → '현재 모드'가 '매수 진행 중 ♾️'으로 뜨면 매수 구간입니다 (SSO 하회 확정 + QLD 미회복). QLD가 120일선 위로 올라오면 자동으로 '대기모드'로 바뀌고 매수를 멈춥니다. (SSO 120선 데이터가 없으면 기존처럼 QLD 단독으로 판정)"],
-        ["얼마나 사나 (수량)","QLD:SSO = 7:3 비중. 정확한 일일 수량은 아래 '🔢 일일 매수 수량' 섹션 참고 — 총알풀을 분할일수(75)로 나눠 산출합니다. 시작일·수량은 설정탭에서 조정하고, 하루치 금액은 대시보드 '일일 투입금'에 자동 표시됩니다."],
-        ["어떻게 주문하나 (LOC)","대시보드 'LOC 주문 가이드'를 그대로 사용. A(확실체결, 종가×1.025) : B(유리한가격, 종가×0.990) = 6:4로 나눠 LOC(종가 기준) 주문을 겁니다. → 확실히 사면서도 일부는 더 싸게 잡는 방식."],
-        ["기간 제한 없음 (무한매수)","하락이 길어져도 멈추지 않습니다. 탄환(SGOV)이 떨어지면 매달 들어오는 월 투자금으로 자연스럽게 이어 매수. '더 떨어지면 더 싸게 산다'가 핵심 — 하락은 위기가 아니라 평단을 낮추는 기회입니다."],
-        ["멈출 때 (대기모드)","QLD가 120일선 위로 올라오면 신규 매수 중단 → 현금을 SGOV에 적립하며 다음 하락(웅덩이)을 기다립니다."],
-        ["백테스트 근거","QLD 10년 CAGR 11.3% / SSO 9.6% (웅덩이 매수 기준). QLD 2배 레버리지 MDD -70% 수준이지만, 120일선 하회 구간은 역사적으로 전량 회복 → 10년+ 장기 보유 관점에서 현실적."],
-        ["절대 하지 말 것","뇌동매매 금지. 빠질까봐 미리 팔거나, 무서워서 매수를 거르는 행위 금지. 규칙은 대시보드가 판단하고 사람은 그대로 실행만 — 이것이 이 전략의 전부입니다."],
+        ["한 줄 요약","QLD를 매일 '정액'으로 기계적으로 매수한다. 시장 예측·타이밍·대기 없음. 이게 전부. 백테스트상 매일 매수(12.74배)가 웅덩이 대기(11.49배·꼴찌)를 이겼다."],
+        ["왜 매일인가","돈을 쥐고 웅덩이를 기다리면, 상승장에선 그 웅덩이가 와도 몇 달 전 즉시 매수한 가격보다 비싸다(대기 기회비용 > 싸게 사는 이득). 매일 DCA는 폭락도 싸게 담아 나쁜 타이밍 시작에 강하다(2007 위기 직전 시작도 강건)."],
+        ["동일 '금액'으로","동일 '주수' 고정은 함정 — 비쌀 때 더 많이 사게 된다. 하루 매수 = 연 투자 페이스 ÷ 252거래일의 '정액'. 설정 탭 '일일 매수액 산정'에서 자동 계산된다."],
+        ["종목은 QLD","나스닥100 2배. 백테스트상 지수 중 최강(14.93배). S&P(SSO)·다우·러셀보다 압도적. 단 '나스닥이 계속 이긴다'에 베팅하는 것임을 항상 기억."],
       ]
     },
-    { title:"🔢 일일 매수 수량 — 계산기 사용", color:"#0c4a6e", bg:"#f0f9ff",
+    { title:"🔔 웅덩이 TQQQ 추가", color:"#5b21b6", bg:"#ede9fe",
       items:[
-        ["설정탭 계산기 이용","설정탭 상단 '🧮 일일 매수 주수 계산기'에 값만 넣으면 하루 매수할 QLD·SSO 주수가 자동으로 나옵니다. 아래 공식을 손으로 계산할 필요 없습니다."],
-        ["계산기 입력값","① 실탄(현금 총알) ② 월 투자금(월급) ③ 잔여 SGOV 주수 ④ 월급 반영 개월(기본 2.5) ⑤ 분할일수(권장 75) ⑥ QLD 비중(%, 권장 70). 실탄·월급·SGOV는 저장돼 다음에도 유지됩니다."],
-        ["총알풀 산정","총알풀 = 실탄 + 월급 × 개월수 + SGOV 평가액. 75일이면 그 기간 유입되는 2.5~3달치 월급과 대기모드에 쌓아둔 SGOV까지 실탄으로 합산합니다."],
-        ["적용 공식","일일 투입금 = 총알풀 ÷ 분할일수 → QLD 비중·SSO 비중으로 나눈 뒤 각 (현재가 × 환율)로 나눠 주수 산출(소수점 버림). 계산기가 실시간 현재가·환율을 그대로 반영합니다."],
-        ["결과는 참고값","계산기는 아웃풋만 내주고, 실제 매수 주수는 설정탭 'QLD/SSO 매일 매수 주수' 칸에 직접 입력합니다 — 미세 조정·커스터마이징 여지를 남기기 위함."],
-        ["언제 다시 계산?","총알풀(실탄·월급·SGOV)이 바뀌거나 주가·환율이 크게 변하면 계산기를 다시 돌려 주수를 갱신하세요. 대시보드 새로고침으로 현재가를 먼저 불러와야 계산됩니다."],
-        ["7:3 비중 이유","QLD(나스닥 2배)는 상승 탄력이 크지만 변동성도 큼. SSO(S&P 2배) 30%를 섞어 나스닥 집중 리스크를 완충 — 공격 70 / 안정 30의 균형. 계산기에서 비중은 조정 가능."],
+        ["웅덩이 정의","QLD 종가 < 자기 120일선 = '웅덩이'. 대시보드가 매일 자동 판정. 웅덩이인 날에만 TQQQ 추가 매수 시그널이 켜진다."],
+        ["얼마 추가?","웅덩이날 TQQQ를 일일 QLD 금액의 0.5~1.0배 추가(설정값, 1.0=표준). 매수법은 '주수'가 아니라 '금액' 기준."],
+        ["전체 웅덩이 · 깊이 안 가림","120선 아래면 전부 추가. 깊은 딥만 골라 넣으면 오히려 배수 하락(비효율). 깊이 비례·특정 깊이 필터는 백테스트상 손해였다."],
+        ["배수 상한","2~3배는 배수는 오르지만 MDD -72~-74%로 강세장 도박. 0.5~1.0배 권장. TQQQ(3x)는 장기 횡보 시 -99%까지 가능 → 반드시 상한을 둔다."],
+        ["기준선 = 공격성 다이얼","웅덩이 기준을 120선(보수) 대신 20·60선(공격)으로 바꾸면 TQQQ를 더 자주 넣어 배수·MDD 동반 상승. 현재는 120선 표준."],
       ]
     },
-    { title:"📅 왜 75일인가 — 실측 근거 (2015~2026)", color:"#1e3a8a", bg:"#eff4ff",
+    { title:"🛡️ 리스크 관리", color:"#b45309", bg:"#fffbeb",
       items:[
-        ["실측 데이터","QLD 일별종가(2015-01~2026-08, 2,914거래일, GOOGLEFINANCE)로 '종가<120일선 연속' 하방 구간을 직접 집계. 큰·중간 10구간 확인 (하방 ≥5거래일 & 최저괴리 ≤-5% 인정)."],
-        ["핵심 수치","전체 평균 하방 57.8거래일 · 중앙값 46 · 최장 143. 큰(6구간): 평균 81거래일·괴리 -31.9%. 중간(4구간): 평균 23거래일·괴리 -14.8%."],
-        ["75일의 의미","총알풀을 '균등 분할'해 소진하는 기준 일수. 실측상 큰 웅덩이 평균(81거래일)을 거의 커버하는 지점 = '한 번의 큰 웅덩이'를 총알풀로 버티도록 배분한 값."],
-        ["왜 중앙값(46)이 아니라 75인가","46·58(중앙값·전체평균)에 맞추면 큰 웅덩이(평균 81일)에서 총알이 중간에 바닥남 → 더 깊은 저점에서 무방비. 큰 구간까지 감당하려면 그보다 길어야 함."],
-        ["왜 143(최장)이 아니라 75인가","최장(143일, 2022 인플레 베어)에 맞추면 일일 금액이 너무 작아져 정작 저점에서 못 삼. 중간 웅덩이(평균 23일)에선 총알이 대부분 남아돌아 자본 비효율."],
-        ["75일이 균형점","큰 6개 중 다수(2016 58·2020 37·2025 52일 등)를 75일 안에 총알로 소화하고, 초장기인 2018(88)·2022(143)·2022후반(108)만 다음 방어선으로 위임. '주력은 큰 웅덩이에 집중, 극단적 장기하락은 총알풀로 안 막는다'는 설계."],
-        ["75일 이후엔 (2차 방어선)","총알풀 소진 후에도 하락 지속 시 → 매달 들어오는 월급만으로 매수 지속. 총알풀=1차 방어선, 월급=2차 방어선."],
-        ["그래도 안 끝나면 (무한매수)","월급 + 마이너스 통장으로 무한매수. 75일은 주력 집중 구간일 뿐, 매수 자체엔 상한이 없음. 위 실측 최장이 143일이므로 이 단계가 실제로 필요했던 사례는 2022 한 번."],
-        ["튜닝 가능","더 보수적으로 큰 구간 평균(81일)에 맞추거나, 더 공격적으로 중앙값(46일)로 낮출 수도 있음. 위 실측 분포가 그 선택의 근거 — 위 웅덩이 지도 이미지 참조."],
+        ["계좌 MDD vs 원금","계좌 평가 MDD는 -63~-74%지만 이는 '평가이익 반납'이지 원금 손실이 아니다. 매일 DCA시 평단 대비 최저는 QLD -12%·TQQQ -19% 수준(초반에 싸게 오래 모은 경로에 의존)."],
+        ["레버리지 감가","우상향 경로라 감가가 덜 드러났을 뿐, 횡보·하락장에선 변동성 감가가 잔인. '잃어버린 10년'형 장기 횡보가 이 전략의 진짜 공포."],
+        ["나스닥 붕괴 시나리오","장기 고금리·AI 버블 재평가·빅테크 집중·미국 예외주의 종료 등에서 QQQ가 무너지면 레버리지가 원금을 갉는다. 가벼운 분산(나스닥+S&P)은 수익 일부 포기하고 리더십 변화 보험."],
+        ["뇌동매매 금지","규칙은 대시보드가 판단, 사람은 실행만. 무서워서 매수를 거르거나 미리 파는 행위 금지. 생활자금과 철저히 분리한 여유자금만."],
       ]
     },
-    { title:"🌡️ 과열 지표 보는 법 (탐욕 자제용)", color:"#b45309", bg:"#fffbeb",
+    { title:"💰 익절 / 현금화 (옵션 — 필수 아님)", color:"#92400e", bg:"#fef3c7",
       items:[
-        ["용도 — 자제 브레이크","이 지표들은 '사라/팔아라' 신호가 아닙니다. 과열일 때 추격매수·몰빵 충동을 눌러 규칙(계산기 주수)대로만 하게 하는 브레이크. 타이밍이 조금 일러도 손해 없음 = 자제용으론 신뢰도 충분."],
-        ["QQQ 이격도 (가격 과열)","QQQ 현재가가 200일선에서 얼마나 위로 벌어졌나(%). VIX와 달리 상승장에서도 계속 반응. 대략 +6% 이상 과열, +12% 이상 극단 과열, 0% 부근 추세 복귀, -8% 이하 저평가."],
-        ["시장폭 RSP/SPY (폭 과열)","동일가중 S&P(RSP)÷시총가중 S&P(SPY) 비율. 소수 대형주만 끌고 가는 좁은 랠리(취약한 고점)일 때 이 비율이 떨어짐. 값 자체보다 20일 변화(▼)가 핵심 — ▼ -2% 이상이면 '속으로 곪는 상승' 경고."],
-        ["과열 배너 읽는 법","대시보드 지표 스트립 아래 배너 — 🟢 신호 없음 / 🟡 한쪽 과열(추격 자제) / 🔴 극단 과열 or 가격+폭 동시 과열(몰빵·추격 강력 자제). 색만 봐도 지금 탐욕 부려도 되는 국면인지 판단."],
-        ["주의 — 트리거 아님","과열이라고 매도하거나 매수 멈추면 안 됩니다. 웅덩전략은 120일선이 정한 규칙대로 돌아가고, 과열 지표는 오직 '내 손이 규칙을 벗어나려 할 때' 잡아주는 심리 안전장치입니다."],
-      ]
-    },
-    { title:"💰 익절 전략 (옵션 — 필수 아님)", color:"#92400e", bg:"#fef3c7",
-      items:[
-        ["⚠️ 옵션 전략","익절은 필수 규칙이 아닙니다. 지수 레버리지 ETF 특성상 풀 홀드 장기투자가 최종 수익률은 더 높을 수 있음. 익절은 수익률 일부 희생 대신 심리 안정·현금 확보를 택하는 선택지입니다."],
-        ["1단계 +25% (선택)","포지션 10% 매도 (QLD 우선) → 익절현금 SGOV 보관 / 📊 원금의 12.5% 확보 (누적 12.5%)"],
-        ["2단계 +50% (선택)","추가 10% 매도 → SGOV 보관 / 📊 원금의 15.0% 추가 확보 (누적 27.5%)"],
-        ["3단계 +100% (선택)","추가 10% 매도 → SGOV 보관 / 📊 원금의 20.0% 추가 확보 (누적 47.5%)"],
-        ["핵심 원칙","3단계 모두 실행 시 원금의 47.5% 현금 확보 + 잔여 70% 무한 보유. 익절 안 해도 전략상 문제 없음."],
+        ["옵션 전략","레버리지 ETF 특성상 풀 홀드 장기투자가 최종 수익률은 더 높을 수 있음. 익절은 수익률 일부 희생 대신 심리 안정·현금 확보를 택하는 선택지."],
+        ["단계 예시","평단 +25% → 10% 매도 / +50% → 추가 10% / +100% → 추가 10% (누적 상한 30%). 익절 자금은 현금성 자산으로 보관."],
+        ["핵심","익절 안 해도 전략상 문제 없음. 오히려 매일 매수를 흔들림 없이 지속하는 것이 본질."],
       ]
     },
   ];
@@ -1511,14 +1224,13 @@ function saveSettings() {
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","pond","ladder","swing","war","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","rules","ladder","swing","settings"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
-  if (id === "war") calcGoal();
   if (id === "ladder") ladderRender();
-  if (id === "rules") { calcTQQQLOC(); calcSOXLLOC(); }
-  if (id === "settings") calcShares();
+  if (id === "settings") dailyCompute();
+  if (id === "dashboard") { if (typeof renderDaily === "function") renderDaily(MD); }
 }
 
 const f  = (n, d=1) => (n != null && !isNaN(n)) ? parseFloat(n).toFixed(d) : "N/A";
@@ -1734,11 +1446,8 @@ async function fetchAll() {
     if (d.standbyDate) { S.standbyDate = d.standbyDate; }
     else { S.standbyDate = ""; }
     localStorage.setItem("qld_s11", JSON.stringify(S));
-    renderDashboard(MD);
+    renderDaily(MD);
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
-    fetchSPX();
-    fetchDev();
-    fetchBreadth();
   } catch(e) {
     console.error(e);
     const eb = document.getElementById("errBox");
@@ -2125,6 +1834,142 @@ function renderHiddenAlerts(d) {
     </div>`).join("");
 }
 
+// ══ 일일 매수액 산정 (설정 탭) ══
+function dailyLoad(){
+  if(S.buyMode == null)     S.buyMode     = "simple";
+  if(S.annualInvest == null)S.annualInvest= 100000000;
+  if(S.tradingDays == null) S.tradingDays = 252;
+  if(S.monthlyIncome == null)S.monthlyIncome = 0;
+  if(S.investRate == null)  S.investRate  = 30;
+  if(S.investYears == null) S.investYears = 20;
+  if(S.incomeGrowth == null)S.incomeGrowth= 3;
+  if(S.tqqqMult == null)    S.tqqqMult    = 1.0;
+  if(S.qldWeight == null)   S.qldWeight   = 100;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  const g = (id,v) => { const e = document.getElementById(id); if(e) e.value = v; };
+  g("s-annual", S.annualInvest); g("s-tdays", S.tradingDays); g("s-tdays2", S.tradingDays);
+  g("s-income", S.monthlyIncome || ""); g("s-rate", S.investRate);
+  g("s-years", S.investYears); g("s-growth", S.incomeGrowth); g("s-tqqqmult", S.tqqqMult);
+  g("s-qldweight", S.qldWeight);
+  setBuyMode(S.buyMode, true);
+  dailyCompute();
+}
+function setBuyMode(mode, silent){
+  S.buyMode = mode;
+  const bs = document.getElementById("buy-simple"), ba = document.getElementById("buy-adv");
+  if(bs) bs.style.display = mode === "simple" ? "block" : "none";
+  if(ba) ba.style.display = mode === "advanced" ? "block" : "none";
+  const btnS = document.getElementById("bm-simple"), btnA = document.getElementById("bm-adv");
+  if(btnS) btnS.classList.toggle("active", mode === "simple");
+  if(btnA) btnA.classList.toggle("active", mode === "advanced");
+  if(!silent) dailySave();
+}
+function dailySave(){
+  const gv = id => { const e = document.getElementById(id); return e ? e.value : ""; };
+  S.annualInvest = d2num(gv("s-annual"));
+  S.tradingDays  = d2num(gv("s-tdays")) || d2num(gv("s-tdays2")) || 252;
+  S.monthlyIncome= d2num(gv("s-income"));
+  S.investRate   = d2num(gv("s-rate"));
+  S.investYears  = d2num(gv("s-years"));
+  S.incomeGrowth = d2num(gv("s-growth"));
+  S.tqqqMult     = gv("s-tqqqmult") !== "" ? d2num(gv("s-tqqqmult")) : 1.0;
+  S.qldWeight    = gv("s-qldweight") !== "" ? Math.max(0, Math.min(100, d2num(gv("s-qldweight")))) : 100;
+  dailyCompute();
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  renderDaily(MD);
+}
+function dailyCompute(){
+  const td = S.tradingDays || 252;
+  const annual = (S.buyMode === "advanced")
+    ? (S.monthlyIncome || 0) * 12 * (S.investRate || 0) / 100
+    : (S.annualInvest || 0);
+  const daily = td ? annual / td : 0;
+  S.dailyBuy = daily;
+  const setT = (id,t) => { const e = document.getElementById(id); if(e) e.textContent = t; };
+  setT("s-daily-result", daily > 0 ? d2fmt(daily) : "—");
+  setT("s-daily-sub", annual > 0 ? `연 ${d2fmt(annual)} ÷ ${td}거래일` : "값을 입력하세요");
+  const qldW = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;
+  const ssoW = 100 - qldW;
+  setT("s-mix-sub", daily > 0
+    ? (ssoW > 0
+        ? `= QLD ${d2fmt(daily*qldW/100)} + SSO ${d2fmt(daily*ssoW/100)} (SSO ${ssoW}%)`
+        : "순수 QLD (SSO 안 섞음)")
+    : "");
+  if(S.buyMode === "advanced"){
+    const note = document.getElementById("adv-note");
+    if(note){
+      const monthly = (S.monthlyIncome || 0) * (S.investRate || 0) / 100;
+      const yrs = S.investYears || 0, gr = (S.incomeGrowth || 0) / 100;
+      let principal = 0, a = annual;
+      for(let i = 0; i < yrs; i++){ principal += a; a *= (1 + gr); }
+      note.innerHTML = `월 투자액 <b>${d2fmt(monthly)}</b> (소득의 ${S.investRate||0}%) · 연 <b>${d2fmt(annual)}</b><br>`
+        + `${yrs}년 지속 시 총 투입원금 ≈ <b>${d2fmt(principal)}</b> (연 ${S.incomeGrowth||0}% 증액 가정)<br>`
+        + `<span style="color:var(--text3);">※ 참고: 매일 QLD 백테스트 배수 12.7배(2012~2026) 적용 시 평가액 ≈ ${d2fmt(principal*12.7)} — 강세장 한 경로 기준, 보장 아님</span>`;
+    }
+  }
+}
+
+// ══ 매일매수 대시보드 렌더 ══
+function renderDaily(d){
+  const daily = d2num(S.dailyBuy) || 0;
+  const tmult = (S.tqqqMult != null && S.tqqqMult !== "") ? d2num(S.tqqqMult) : 1.0;
+  const qldW  = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;
+  const ssoW  = 100 - qldW;
+  const qldAmt = daily * qldW / 100;
+  const ssoAmt = daily * ssoW / 100;
+  const badge = document.getElementById("dd-badge");
+  const setBadge = (txt, bg, col) => { if(badge){ badge.textContent = txt; badge.style.background = bg; badge.style.color = col; } };
+  const ssoRow = document.getElementById("dd-sso-row");
+  if(ssoRow) ssoRow.style.display = ssoW > 0 ? "flex" : "none";
+
+  if(!d || d.qld == null){
+    setBadge("시세 대기", "var(--bg3)", "var(--text3)");
+    setText("dd-total", daily > 0 ? d2fmt(daily) : "설정 필요");
+    setText("dd-explain", daily > 0
+      ? "상단 새로고침하면 웅덩이 여부(QLD 120선)가 자동 반영됩니다."
+      : "설정 탭에서 '일일 매수액'을 먼저 정하세요.");
+    setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
+    setText("dd-sso-amt", ssoW > 0 ? d2fmt(ssoAmt) : "—");
+    setText("dd-tqqq-amt", "—");
+    setText("dd-total2", daily > 0 ? d2fmt(daily) : "—");
+    return;
+  }
+
+  const qld = d.qld, ma120 = d.ma120;
+  const inDip = (ma120 != null && qld < ma120);
+  const tqqqAdd = inDip ? qldAmt * tmult : 0;
+  const total = daily + tqqqAdd;
+  const gap = ma120 ? (qld - ma120) / ma120 * 100 : null;
+  const mixTxt = ssoW > 0 ? `QLD ${qldW}·SSO ${ssoW} 비율로 ` : "";
+
+  if(inDip){
+    setBadge("🔔 웅덩이 — TQQQ 추가", "var(--purple-lt)", "var(--purple)");
+    setText("dd-explain", daily > 0
+      ? `지금은 웅덩이예요 (QLD 120선 대비 ${gap.toFixed(1)}%). 매일 매수액 ${d2fmt(daily)}을 ${mixTxt}넣고, TQQQ를 QLD분의 ${tmult}배(${d2fmt(tqqqAdd)}) 추가로 넣습니다.`
+      : "웅덩이 상태입니다. 설정 탭에서 '일일 매수액'을 정하면 TQQQ 추가액이 계산됩니다.");
+  } else {
+    setBadge("평상시 — 매일 매수", "var(--blue-lt)", "var(--blue)");
+    setText("dd-explain", daily > 0
+      ? `지금은 평상시예요 (QLD 120선 위 +${gap.toFixed(1)}%). 매일 매수액 ${d2fmt(daily)}을 ${mixTxt}넣습니다. QLD가 120선 아래로 내려가면 TQQQ 추가 시그널이 켜집니다.`
+      : "평상시입니다. 설정 탭에서 '일일 매수액'을 먼저 정하세요.");
+  }
+  setText("dd-total", daily > 0 ? d2fmt(total) : "설정 필요");
+  setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
+  setText("dd-sso-amt", ssoW > 0 ? d2fmt(ssoAmt) : "—");
+  setText("dd-tqqq-amt", inDip ? (daily > 0 ? "+" + d2fmt(tqqqAdd) : "웅덩이 (금액 미설정)") : "– (웅덩이 아님)");
+  setText("dd-total2", daily > 0 ? d2fmt(total) : "—");
+
+  setText("dd-qld", `$${f(qld,2)}`);
+  setText("dd-ma120", `120선 ${ma120 ? "$"+f(ma120,2) : "—"}`);
+  setText("dd-gap", gap != null ? `${gap>=0?"+":""}${gap.toFixed(1)}%` : "—", gap==null?"var(--text3)":gap<0?"#7c3aed":"#16a34a");
+  setText("dd-tqqq", `TQQQ ${d.tqqq ? "$"+f(d.tqqq,2) : "—"}`);
+  if(d.fg != null){ setText("dd-fg", ""+d.fg, fgClr(d.fg)); setText("dd-fglabel", fgLbl(d.fg)); }
+  else setText("dd-fg", "—");
+  setText("dd-vix", d.vix != null ? f(d.vix) : "—");
+  const now = new Date();
+  setText("dd-upd", String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0"));
+}
+
 function renderStatic(d) {
   const el = elapsed();
   const mode = d ? determineMode(d) : null;
@@ -2158,7 +2003,7 @@ function renderRules() {
   const guideBox = document.getElementById("guideBox");
   if (guideBox) guideBox.style.display = localStorage.getItem("guideHidden")==="1" ? "none" : "block";
   const html = getRULES().map((sec, i) => `
-    <details class="strategy-block strat-acc"${i === 0 ? " open" : ""}>
+    <details class="strategy-block strat-acc">
       <summary class="strategy-header" style="background:${sec.bg};color:${sec.color};">
         <span>${sec.title}</span>
         <span class="strat-chevron">▸</span>
@@ -2371,14 +2216,13 @@ window.checkPW = async function() {
   }
 };
 
-// ── 웅덩이 심법 (비번 통과 시마다 랜덤 1개 · 3초 후 닫기 활성화) ──
+// ── DipBoost 심법 (비번 통과 시마다 랜덤 1개 · 3초 후 닫기 활성화) ──
 const SIMBEOP = [
-  { t:"투자는 결국 심법이다.", s:"차트도 뉴스도 아니다. 욕심과 공포를 다스리는 놈이 살아남는다. 마음이 무너지면 계좌도 같이 무너진다." },
-  { t:"규칙이 너보다 똑똑하다.", s:"판단은 시스템에 맡겨라. 니 손이 개입하는 순간 수익이 샌다. 뇌동매매가 계좌를 갉아먹는다." },
-  { t:"저점은 수평선에서 나눠 사고, 고점은 수평선에서 나눠 판다.", s:"정확한 바닥·꼭지는 아무도 못 맞힌다. 구간을 정해 기계적으로 분할하는 놈만 끝까지 살아남는다." },
-  { t:"총알 다 쏜 계좌엔 기회도 안 온다.", s:"현금 없으면 바닥에서 구경만 한다. 현금도 엄연한 포지션이다." },
-  { t:"레버리지는 방향이 맞아도 죽는다.", s:"2배든 3배든 똑같다. 횡보가 갉아먹으니까. 시간이 레버리지의 진짜 적이다 — SOXL이 등록금 받고 가르쳐줬잖아." },
-  { t:"계좌 자주 볼수록 손가락만 근질거린다.", s:"확인의 빈도 = 실수의 빈도. 규칙대로 샀으면 창 닫고 나가라." },
+  { t:"매일 사는 놈을 못 이긴다.", s:"바닥을 맞히려다 다 놓친다. 예측 대신 매일 같은 금액. 웅덩이를 기다리며 현금 쌓는 게 매일 적립에 진 걸 데이터가 증명했다." },
+  { t:"규칙이 너보다 똑똑하다.", s:"판단은 시스템에 맡기고 손은 실행만. 뇌동매매가 계좌를 갉아먹는다. 오늘 살 금액은 이미 정해져 있다." },
+  { t:"웅덩이는 공포가 아니라 세일이다.", s:"120선 아래는 벌 받는 자리가 아니라 TQQQ를 싸게 얹는 자리. 남들 팔 때 부스트를 켠다." },
+  { t:"레버리지는 우상향에 거는 베팅이다.", s:"방향이 맞아도 횡보가 갉는다. 그래서 배수에 상한을 둔다. 나스닥이 지면 이 전략도 진다 — 그걸 잊는 순간 끝이다." },
+  { t:"낙폭을 버티는 심리가 전부다.", s:"-70%를 몇 년 들고도 매일 사는 놈만 결실을 본다. 못 버틸 돈은 처음부터 넣지 마라. 생활비와 섞지 마라." },
 ];
 let simbeopTimer = null;
 window.showSimbeop = function() {
@@ -2640,7 +2484,7 @@ async function ladderScanAll(){
   btn.disabled = false; icon.textContent = "↻";
 }
 
-loadSettings(); renderStatic(null); renderRules(); ladderRender(); calcGoal();
+loadSettings(); renderStatic(null); renderRules(); ladderRender(); dailyLoad(); renderDaily(null);
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";
@@ -3694,6 +3538,85 @@ function swingRender() {
       ${dec.cls==="strong" && r!=null && r<=35 ? `<div style="font-size:10px;color:#15803d;margin-top:7px;font-weight:700;">✓✓ 우상향 + 과매도 동반 — 신호 강함</div>` : ""}
     </div>`;
   }).join("");
+}
+
+// ══ 대시보드2 · 하이브리드 전략 ══
+function d2num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function d2fmt(n){ return "₩" + Math.round(n || 0).toLocaleString(); }
+
+function dash2Load(){
+  if(S.d2_salary  == null) S.d2_salary  = 1000000;
+  if(S.d2_tdays   == null) S.d2_tdays   = 21;
+  if(S.d2_capmul  == null) S.d2_capmul  = 6;
+  if(S.d2_reserve == null) S.d2_reserve = 0;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  const g = (id,v) => { const e = document.getElementById(id); if(e) e.value = v; };
+  g("d2-salary", S.d2_salary); g("d2-tdays", S.d2_tdays); g("d2-capmul", S.d2_capmul); g("d2-reserve-in", S.d2_reserve);
+}
+function dash2Save(){
+  S.d2_salary  = d2num(document.getElementById("d2-salary") && document.getElementById("d2-salary").value);
+  S.d2_tdays   = d2num(document.getElementById("d2-tdays") && document.getElementById("d2-tdays").value) || 21;
+  S.d2_capmul  = d2num(document.getElementById("d2-capmul") && document.getElementById("d2-capmul").value);
+  S.d2_reserve = d2num(document.getElementById("d2-reserve-in") && document.getElementById("d2-reserve-in").value);
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  dash2Render();
+}
+function dash2Render(){
+  const salary = d2num(S.d2_salary), tdays = d2num(S.d2_tdays) || 21, capmul = d2num(S.d2_capmul), reserve = d2num(S.d2_reserve);
+  const cap = salary * capmul;
+  const d = MD || {};
+  const qld = d.qld, ma120 = d.ma120, sso = d.sso, ma120sso = d.ma120sso;
+  const haveP = (qld != null && ma120 != null);
+  const qDepth = haveP ? Math.max(0, (ma120 - qld) / ma120) : 0;   // QLD 120선 대비 하락률 (0.05=5%)
+  const qBelow = haveP ? (qld < ma120) : false;
+  const sBelow = (sso != null && ma120sso != null) ? (sso < ma120sso) : null;
+
+  const base70   = tdays ? salary * 0.7 / tdays : 0;
+  const baseFull = tdays ? salary / tdays : 0;
+
+  let badge, cls, base, draw = 0, note;
+  if(!haveP){
+    badge = "시세 대기"; cls = "d2-neutral"; base = base70;
+    note = "GAS 시세 연동을 기다리는 중이에요. '웅덩이 대기' 탭에서 새로고침하면 지금 상황이 자동으로 잡힙니다.";
+  } else if(!qBelow){
+    badge = "평시"; cls = "d2-calm"; base = base70;
+    const over = Math.max(0, reserve - cap);
+    draw = over;
+    note = over > 0
+      ? "지금은 평시인데 예비탄이 상한을 넘었어요. 이번 달 매수금의 70%(매일 나눠) + 상한 초과분을 함께 넣습니다."
+      : "지금은 평시예요. 이번 달 매수금의 70%를 매일 나눠 넣고, 나머지 30%는 예비탄으로 쌓아둡니다.";
+  } else if(qDepth < 0.05){
+    badge = "웅덩이 초입"; cls = "d2-fake"; base = baseFull;
+    note = "지금은 웅덩이 초입(얕은 딥, −5% 미만)이에요. 이번 달 매수금 전액을 매일 넣되, 예비탄은 아직 아껴둡니다(휩쏘 방어).";
+  } else if(sBelow === true || sBelow === null){
+    badge = "찐웅덩이"; cls = "d2-deep"; base = baseFull;
+    const rate = Math.min(0.9, 0.03 * (1 + qDepth * 25));
+    draw = reserve * rate;
+    note = "지금은 찐웅덩이예요. 이번 달 매수금 전액에 더해, 예비탄을 깊이에 비례해 " + (rate*100).toFixed(1) + "% 꺼내 함께 넣습니다." + (sBelow === null ? " (SSO 미연동 → QLD 단독 판정)" : "");
+  } else {
+    badge = "가짜 웅덩이"; cls = "d2-fake"; base = baseFull;
+    note = "지금은 가짜 웅덩이예요(SSO는 아직 120선 위). 이번 달 매수금 전액만 넣고, 예비탄은 보류합니다.";
+  }
+  const total = base + draw;
+
+  const $ = id => document.getElementById(id);
+  const b = $("d2-badge"); if(b){ b.className = "d2-badge " + cls; b.textContent = badge; }
+  if($("d2-today")) $("d2-today").textContent = d2fmt(total);
+  if($("d2-depth")) $("d2-depth").textContent = haveP ? (qBelow ? "QLD 120선 대비 −" + (qDepth*100).toFixed(1) + "%" : "QLD 120선 대비 +" + ((qld-ma120)/ma120*100).toFixed(1) + "%") : "";
+  if($("d2-note"))  $("d2-note").textContent = note;
+  if($("d2-base"))  $("d2-base").textContent = d2fmt(base);
+  if($("d2-draw"))  $("d2-draw").textContent = draw > 0 ? "+" + d2fmt(draw) : "–";
+  if($("d2-total")) $("d2-total").textContent = d2fmt(total);
+  if($("d2-reserve")) $("d2-reserve").textContent = d2fmt(reserve) + " / " + d2fmt(cap);
+  const fill = cap > 0 ? Math.min(100, reserve / cap * 100) : 0;
+  if($("d2-reserve-fill")) $("d2-reserve-fill").style.width = fill + "%";
+
+  // 히어로 카드 은은한 국면 배경
+  const hero = $("d2-hero");
+  if(hero){
+    const tint = { "d2-calm":"var(--blue-lt)", "d2-deep":"var(--green-lt)", "d2-fake":"var(--amber-lt)", "d2-neutral":"var(--bg2)" }[cls] || "var(--bg2)";
+    hero.style.background = tint;
+  }
 }
 
 const _origSwitchTab = window.switchTab;

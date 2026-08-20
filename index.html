@@ -955,6 +955,20 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD(나스닥 2배)는 수익 극대화, SSO(S&P 2배)는 안정성. 하루 매수액을 이 비율로 나눠 매수합니다. QLD 100 = SSO 안 섞음(순수 QLD).</div>
     </div>
     <div class="setting-group"><div class="setting-label">QLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-qldweight" placeholder="100" oninput="dailySave()"><div id="s-mix-sub" style="font-size:10px;color:var(--text3);margin-top:3px;"></div></div>
+
+    <div style="margin-top:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
+        <span style="font-size:11px;color:var(--text3);font-weight:700;">📈 기대수익 (백테스트 배수)</span>
+        <span id="mix-ret-val" style="font-size:13px;font-weight:900;color:var(--blue);">—</span>
+      </div>
+      <div style="height:10px;background:var(--bg3);border-radius:6px;overflow:hidden;"><div id="mix-ret-bar" style="height:100%;width:0;background:linear-gradient(90deg,#60a5fa,#2563eb);transition:width .35s;"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 5px;">
+        <span style="font-size:11px;color:var(--text3);font-weight:700;">🛡️ 안정성 (낙폭 방어)</span>
+        <span id="mix-mdd-val" style="font-size:13px;font-weight:900;color:var(--teal);">—</span>
+      </div>
+      <div style="height:10px;background:var(--bg3);border-radius:6px;overflow:hidden;"><div id="mix-mdd-bar" style="height:100%;width:0;background:linear-gradient(90deg,#5eead4,#0891b2);transition:width .35s;"></div></div>
+      <div id="mix-note" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;"></div>
+    </div>
   </div>
 
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
@@ -1895,6 +1909,25 @@ function dailyCompute(){
         ? `= QLD ${d2fmt(daily*qldW/100)} + SSO ${d2fmt(daily*ssoW/100)} (SSO ${ssoW}%)`
         : "순수 QLD (SSO 안 섞음)")
     : "");
+
+  // 혼합 비중별 기대수익·안정성 게이지 (백테스트 실측 선형보간, 매일적립 2012~2026)
+  // 순수 QLD: 배수 12.74 / 계좌MDD -63%,  순수 SSO: 배수 5.90 / MDD -59%
+  const QLD_MULT = 12.74, SSO_MULT = 5.90, QLD_MDD = 63, SSO_MDD = 59;
+  const w = qldW / 100;
+  const mult = SSO_MULT + (QLD_MULT - SSO_MULT) * w;   // 기대 배수
+  const mdd  = SSO_MDD  + (QLD_MDD  - SSO_MDD ) * w;    // 예상 낙폭(%)
+  // 수익 게이지: SSO(5.9)~QLD(12.74)를 0~100%로
+  const retPct = Math.max(0, Math.min(100, (mult - SSO_MULT) / (QLD_MULT - SSO_MULT) * 100));
+  // 안정성 게이지: 낙폭이 얕을수록 높게. MDD 59~63% → 안정성 100~0%로 (얕은 쪽이 안정)
+  const stabPct = Math.max(0, Math.min(100, (QLD_MDD - mdd) / (QLD_MDD - SSO_MDD) * 100));
+  const setBar = (id, pct) => { const e = document.getElementById(id); if(e) e.style.width = pct + "%"; };
+  setT("mix-ret-val", "약 " + mult.toFixed(1) + "배");
+  setT("mix-mdd-val", "MDD 약 -" + mdd.toFixed(0) + "%");
+  setBar("mix-ret-bar", retPct);
+  setBar("mix-mdd-bar", stabPct);
+  setT("mix-note", ssoW > 0
+    ? `SSO ${ssoW}% 섞으면 기대 배수 ${mult.toFixed(1)}배로 낮아지는 대신 변동성이 완만해집니다(나스닥보다 덜 출렁). 다만 둘 다 2배 레버리지라 최악 낙폭 차이는 -${mdd.toFixed(0)}% 수준으로 크지 않음 — SSO의 이점은 '더 얕은 바닥'보다 '덜 흔들리는 여정'에 가깝습니다. ※ 순수지수 매일적립 실측(2012~2026) 근사·TQQQ 부스트 미반영, 참고용.`
+    : `순수 QLD = 기대수익 최대(${QLD_MULT}배)·낙폭도 최대(-${QLD_MDD}%). SSO를 섞을수록 수익은 낮아지고 변동성이 완만해집니다. 단 둘 다 2배 레버리지라 바닥 깊이 자체 차이는 작음. ※ 실측 근사, 참고용.`);
   if(S.buyMode === "advanced"){
     const note = document.getElementById("adv-note");
     if(note){

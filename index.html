@@ -940,10 +940,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div class="setting-group" style="flex:1;"><div class="setting-label">투자율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="1" id="s-rate" placeholder="30" oninput="dailySave()"></div>
       <div class="setting-group" style="flex:1;"><div class="setting-label">연 거래일수</div><input class="setting-input" type="number" inputmode="numeric" id="s-tdays2" placeholder="252" oninput="dailySave()"></div>
     </div>
-    <div style="display:flex;gap:10px;">
-      <div class="setting-group" style="flex:1;"><div class="setting-label">투자 지속연수</div><input class="setting-input" type="number" inputmode="numeric" id="s-years" placeholder="20" oninput="dailySave()"></div>
-      <div class="setting-group" style="flex:1;"><div class="setting-label">연 소득증가율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="0.5" id="s-growth" placeholder="3" oninput="dailySave()"></div>
-    </div>
+    <div class="setting-group"><div class="setting-label">연 소득증가율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="0.5" id="s-growth" placeholder="3" oninput="dailySave()"></div>
     <div id="adv-note" style="font-size:11px;color:var(--text2);line-height:1.7;background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:12px;"></div>
   </div>
 
@@ -962,7 +959,11 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div class="setting-group" style="flex:1;"><div class="setting-label">QLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-qldweight" placeholder="100" oninput="dailySave()"></div>
       <div class="setting-group" style="flex:1;"><div class="setting-label">GLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-gldweight" placeholder="0" oninput="dailySave()"></div>
     </div>
-    <div id="s-mix-sub" style="font-size:11px;color:var(--text2);font-weight:600;margin:-4px 0 10px;"></div>
+    <div id="s-sso-auto" style="display:flex;justify-content:space-between;align-items:center;background:var(--teal-lt);border:1px solid rgba(8,145,178,0.22);border-radius:9px;padding:8px 12px;margin:2px 0 8px;">
+      <span style="font-size:11px;color:var(--teal);font-weight:800;">SSO 자동 배분</span>
+      <span id="s-sso-pct" style="font-size:15px;color:var(--teal);font-weight:900;">—</span>
+    </div>
+    <div id="s-mix-sub" style="font-size:11px;color:var(--text2);font-weight:600;margin:-2px 0 10px;"></div>
 
     <div style="margin-top:6px;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
@@ -991,9 +992,13 @@ details.strat-acc > summary:active { opacity: 0.85; }
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
     <div style="background:#eef2ff;border:1px solid rgba(79,70,229,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
       <div style="font-size:11px;color:#4f46e5;font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔮 미래가치 시뮬레이터</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">위 일일 매수액·비중으로 N년 적립하면 대략 얼마가 되는지. 실측 배수를 연성장률로 환산한 <b>추정</b>. 웅덩이 TQQQ 부스트는 아래 보라색 줄에 별도 반영, 세금·수수료 미반영.</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">적립 기간 동안 원금을 넣고, 그 뒤 총 투자 기간까지는 <b>추가 매수 없이 거치</b>(같은 수익률로 굴림)합니다. 웅덩이 TQQQ 부스트는 아래 보라색 줄에 별도 반영, 세금·수수료 미반영.</div>
     </div>
-    <div class="setting-group"><div class="setting-label">투자 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-projyears" placeholder="10" oninput="dailySave()"></div>
+    <div style="display:flex;gap:10px;">
+      <div class="setting-group" style="flex:1;"><div class="setting-label">적립 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-accyears" placeholder="10" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">실제 매수하는 기간</div></div>
+      <div class="setting-group" style="flex:1;"><div class="setting-label">총 투자 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-projyears" placeholder="10" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">거치 포함 전체</div></div>
+    </div>
+    <div id="proj-phase" style="font-size:10.5px;color:var(--text3);line-height:1.6;margin:-2px 0 10px;"></div>
 
     <div class="card" style="background:#eef2ff;border:1.5px solid rgba(79,70,229,0.22);">
       <div style="font-size:11px;color:#4f46e5;font-weight:800;">예상 평가액 · 기본 (부스트 제외)</div>
@@ -1912,12 +1917,14 @@ function dailyLoad(){
   if(S.qldWeight == null)   S.qldWeight   = 100;
   if(S.gldWeight == null)   S.gldWeight   = 0;
   if(S.projYears == null)   S.projYears   = 10;
+  if(S.accYears == null)    S.accYears    = 10;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   const g = (id,v) => { const e = document.getElementById(id); if(e) e.value = v; };
   g("s-annual", S.annualInvest); g("s-tdays", S.tradingDays); g("s-tdays2", S.tradingDays);
   g("s-income", S.monthlyIncome || ""); g("s-rate", S.investRate);
-  g("s-years", S.investYears); g("s-growth", S.incomeGrowth); g("s-tqqqmult", S.tqqqMult);
-  g("s-qldweight", S.qldWeight); g("s-gldweight", S.gldWeight); g("s-projyears", S.projYears);
+  g("s-growth", S.incomeGrowth); g("s-tqqqmult", S.tqqqMult);
+  g("s-qldweight", S.qldWeight); g("s-gldweight", S.gldWeight);
+  g("s-projyears", S.projYears); g("s-accyears", S.accYears);
   setBuyMode(S.buyMode, true);
   dailyCompute();
 }
@@ -1937,13 +1944,14 @@ function dailySave(){
   S.tradingDays  = d2num(gv("s-tdays")) || d2num(gv("s-tdays2")) || 252;
   S.monthlyIncome= d2num(gv("s-income"));
   S.investRate   = d2num(gv("s-rate"));
-  S.investYears  = d2num(gv("s-years"));
   S.incomeGrowth = d2num(gv("s-growth"));
   S.tqqqMult     = gv("s-tqqqmult") !== "" ? d2num(gv("s-tqqqmult")) : 1.0;
   S.qldWeight    = gv("s-qldweight") !== "" ? Math.max(0, Math.min(100, d2num(gv("s-qldweight")))) : 100;
   S.gldWeight    = gv("s-gldweight") !== "" ? Math.max(0, Math.min(100, d2num(gv("s-gldweight")))) : 0;
   if(S.qldWeight + S.gldWeight > 100){ S.gldWeight = 100 - S.qldWeight; const ge = document.getElementById("s-gldweight"); if(ge) ge.value = S.gldWeight; }
   S.projYears    = gv("s-projyears") !== "" ? Math.max(1, Math.min(40, d2num(gv("s-projyears")))) : 10;
+  S.accYears     = gv("s-accyears") !== "" ? Math.max(1, Math.min(40, d2num(gv("s-accyears")))) : 10;
+  if(S.accYears > S.projYears){ S.accYears = S.projYears; const ae = document.getElementById("s-accyears"); if(ae) ae.value = S.accYears; }
   dailyCompute();
   localStorage.setItem("qld_s11", JSON.stringify(S));
   renderDaily(MD);
@@ -1961,6 +1969,7 @@ function dailyCompute(){
   const qldW = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;
   const gldW = (S.gldWeight != null && S.gldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.gldWeight))) : 0;
   const ssoW = Math.max(0, 100 - qldW - gldW);
+  setT("s-sso-pct", `${ssoW}%` + (daily > 0 ? `  ·  ${d2fmt(daily*ssoW/100)}` : ""));
   setT("s-mix-sub", daily > 0
     ? (ssoW > 0 || gldW > 0
         ? `QLD ${d2fmt(daily*qldW/100)}  ·  SSO ${d2fmt(daily*ssoW/100)}  ·  GLD ${d2fmt(daily*gldW/100)}`
@@ -1995,8 +2004,11 @@ function dailyCompute(){
     }
   }
 
-  // 🔮 미래가치 시뮬레이터 (적립식 미래가치)
+  // 🔮 미래가치 시뮬레이터 (적립 Yc년 + 거치 Yp-Yc년)
   const projYears = (S.projYears != null && S.projYears !== "") ? Math.max(1, Math.min(40, d2num(S.projYears))) : 10;
+  let accYears = (S.accYears != null && S.accYears !== "") ? Math.max(1, Math.min(40, d2num(S.accYears))) : 10;
+  if(accYears > projYears) accYears = projYears;
+  const holdYears = projYears - accYears;
   const annualBuy = (S.dailyBuy || 0) * td;   // 연 투입금 (= dailyBuy × 거래일)
   const annuity = (r, N) => (Math.abs(r) < 1e-9) ? N : ((Math.pow(1+r, N) - 1) / r);  // 연말 적립 미래가치계수(합)
   // ★핵심: 백테스트 '적립배수'는 거치식이 아니라 14.2년 DCA 결과물이므로,
@@ -2004,9 +2016,11 @@ function dailyCompute(){
   const BT_YEARS = 14.2;
   const solveRet = mlt => { let lo=0, hi=1.5; for(let i=0;i<80;i++){ const m=(lo+hi)/2; if(annuity(m,BT_YEARS)/BT_YEARS < mlt) lo=m; else hi=m; } return (lo+hi)/2; };
   const cQ = solveRet(QLD_MULT), cS = solveRet(SSO_MULT), cG = solveRet(GLD_MULT);  // ≈ QLD 33.7%·SSO 23.9%·GLD 11.7%
-  const fvMix = annualBuy * (wQ*annuity(cQ, projYears) + wS*annuity(cS, projYears) + wG*annuity(cG, projYears));
-  const fvQLD = annualBuy * annuity(cQ, projYears);     // 순수 QLD 100% 비교
-  const principalP = annualBuy * projYears;
+  // 자산별: Yc년 적립 → Yp-Yc년 거치(같은 수익률로 굴림)
+  const fvOf = (r, w) => annualBuy * w * annuity(r, accYears) * Math.pow(1+r, holdYears);
+  const fvMix = fvOf(cQ, wQ) + fvOf(cS, wS) + fvOf(cG, wG);
+  const fvQLD = fvOf(cQ, 1);            // 순수 QLD 100% 비교
+  const principalP = annualBuy * accYears;   // 원금은 적립 기간만
   const blendedCagr = wQ*cQ + wS*cS + wG*cG;
   // 웅덩이 TQQQ 부스트: 실측상 1.0배가 최종배수 12.74→14.93(+17.2%). QLD 레그에만·비중 비례
   const tmultP = (S.tqqqMult != null && S.tqqqMult !== "") ? d2num(S.tqqqMult) : 1.0;
@@ -2014,9 +2028,15 @@ function dailyCompute(){
   const fvBoost = fvMix * boostFactor;
   const multP = principalP > 0 ? fvBoost / principalP : 0;   // 원금대비는 부스트 포함 기준
   setT("proj-value", annualBuy > 0 ? d2fmt(fvMix) : "일일 매수액 필요");
-  setT("proj-sub", annualBuy > 0 ? `연 ${d2fmt(annualBuy)} × ${projYears}년 = 원금 ${d2fmt(principalP)}` : "설정에서 '일일 매수액'을 먼저 정하세요");
+  setT("proj-sub", annualBuy > 0 ? `연 ${d2fmt(annualBuy)} × ${accYears}년 적립 = 원금 ${d2fmt(principalP)}` : "설정에서 '일일 매수액'을 먼저 정하세요");
   setT("proj-mult", annualBuy > 0 ? "×" + multP.toFixed(1) : "—");
   setT("proj-cagr", "약 " + (blendedCagr*100).toFixed(1) + "%");
+  const phase = document.getElementById("proj-phase");
+  if(phase){
+    phase.textContent = holdYears > 0
+      ? `${accYears}년 적립 후 ${holdYears}년 거치 (거치 구간은 추가 매수 없이 같은 연수익률로 굴림)`
+      : `${accYears}년 내내 적립 (거치 없음)`;
+  }
   const boostRow = document.getElementById("proj-boost-row");
   if(boostRow){
     if(annualBuy > 0 && tmultP > 0 && qldW > 0){
@@ -2039,12 +2059,11 @@ function dailyCompute(){
     const note = document.getElementById("adv-note");
     if(note){
       const monthly = (S.monthlyIncome || 0) * (S.investRate || 0) / 100;
-      const yrs = S.investYears || 0, gr = (S.incomeGrowth || 0) / 100;
+      const yrs = accYears, gr = (S.incomeGrowth || 0) / 100;
       let principal = 0, a = annual;
       for(let i = 0; i < yrs; i++){ principal += a; a *= (1 + gr); }
       note.innerHTML = `월 투자액 <b>${d2fmt(monthly)}</b> (소득의 ${S.investRate||0}%) · 연 <b>${d2fmt(annual)}</b><br>`
-        + `${yrs}년 지속 시 총 투입원금 ≈ <b>${d2fmt(principal)}</b> (연 ${S.incomeGrowth||0}% 증액 가정)<br>`
-        + `<span style="color:var(--text3);">※ 참고: 매일 QLD 백테스트 배수 12.7배(2012~2026) 적용 시 평가액 ≈ ${d2fmt(principal*12.7)} — 강세장 한 경로 기준, 보장 아님</span>`;
+        + `적립 ${yrs}년 총 투입원금 ≈ <b>${d2fmt(principal)}</b> (연 ${S.incomeGrowth||0}% 증액 가정)`;
     }
   }
 }

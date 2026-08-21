@@ -555,7 +555,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div class="card-label">📊 전략별 비교 (나스닥 · 연1억 페이스 · 2012~2026)</div>
     <div style="overflow-x:auto;">
       <table class="bt-table">
-        <thead><tr><th>전략</th><th class="num">배수</th><th class="num">평가액(억)</th><th class="num">MDD</th></tr></thead>
+        <thead><tr><th>전략</th><th class="num">적립배수*</th><th class="num">평가액(억)</th><th class="num">MDD</th></tr></thead>
         <tbody>
           <tr><td>매일 QLD만</td><td class="num">12.74</td><td class="num">179.8</td><td class="num">-63%</td></tr>
           <tr><td>웅덩이 대기(모아서 투입)</td><td class="num">11.49</td><td class="num">161.4</td><td class="num">-63%</td></tr>
@@ -565,13 +565,16 @@ details.strat-acc > summary:active { opacity: 0.85; }
       </table>
     </div>
     <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6;">웅덩이 '대기'가 꼴찌(11.49). 매일 매수(12.74)에 웅덩이날 TQQQ 추가 시 <b style="color:var(--blue);">14.93배</b>로 최고.</div>
+    <div style="font-size:10.5px;color:var(--amber);line-height:1.65;margin-top:8px;background:var(--amber-lt);border:1px solid rgba(217,119,6,0.2);border-radius:9px;padding:9px 11px;">
+      <b>* '적립배수'는 거치식 배수가 아닙니다.</b> 14.3년(2012~2026) 동안 <b>매일 적립</b>했을 때 계좌 전체가 원금 대비 몇 배가 됐는지입니다. 한 번에 넣고 묵힌 값이 아니라, 늦게 넣은 돈일수록 굴러간 기간이 짧아 <b>기간에 크게 좌우</b>됩니다 — 같은 페이스라도 <b>10년이면 ≈2.5배, 20년이면 ≈8~9배</b>. '12.74배'는 14.3년을 꽉 채운 값이니, 짧은 기간에 이 배수를 기대하면 안 됩니다. (실제 내 기간 기준 금액은 설정 탭 '미래가치 시뮬레이터'에서 확인)
+    </div>
   </div>
 
   <div class="card" style="margin-bottom:12px;">
     <div class="card-label">🔔 웅덩이 TQQQ 추가량 최적 (배수 × 딥범위)</div>
     <div style="overflow-x:auto;">
       <table class="bt-table">
-        <thead><tr><th>TQQQ 배수</th><th>딥 범위</th><th class="num">배수</th><th class="num">MDD</th></tr></thead>
+        <thead><tr><th>TQQQ 배수</th><th>딥 범위</th><th class="num">적립배수*</th><th class="num">MDD</th></tr></thead>
         <tbody>
           <tr><td>0.5x</td><td>전체 웅덩이</td><td class="num">13.94</td><td class="num">-67%</td></tr>
           <tr class="highlight-blue"><td><b>1.0x</b></td><td><b>전체 웅덩이</b></td><td class="num">14.93</td><td class="num">-69%</td></tr>

@@ -566,7 +566,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
     </div>
     <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6;">웅덩이 '대기'가 꼴찌(11.49). 매일 매수(12.74)에 웅덩이날 TQQQ 추가 시 <b style="color:var(--blue);">14.93배</b>로 최고.</div>
     <div style="font-size:10.5px;color:var(--amber);line-height:1.65;margin-top:8px;background:var(--amber-lt);border:1px solid rgba(217,119,6,0.2);border-radius:9px;padding:9px 11px;">
-      <b>* '적립배수'는 거치식 배수가 아닙니다.</b> 14.3년(2012~2026) 동안 <b>매일 적립</b>했을 때 계좌 전체가 원금 대비 몇 배가 됐는지입니다. 한 번에 넣고 묵힌 값이 아니라, 늦게 넣은 돈일수록 굴러간 기간이 짧아 <b>기간에 크게 좌우</b>됩니다 — 같은 페이스라도 <b>10년이면 ≈2.5배, 20년이면 ≈8~9배</b>. '12.74배'는 14.3년을 꽉 채운 값이니, 짧은 기간에 이 배수를 기대하면 안 됩니다. (실제 내 기간 기준 금액은 설정 탭 '미래가치 시뮬레이터'에서 확인)
+      <b>* '적립배수'는 거치식 배수가 아닙니다.</b> 14.2년(2012~2026) 동안 <b>매일 적립</b>했을 때 계좌 전체가 원금 대비 몇 배가 됐는지입니다. 한 번에 넣고 묵힌 값이 아니라, 늦게 넣은 돈일수록 굴러간 기간이 짧아 <b>기간에 크게 좌우</b>됩니다 — 같은 페이스라도 <b>10년 ≈5배, 15년 ≈15배, 14.2년이 딱 12.74배</b>. 이는 당시 연 수익률(QLD 약 34%)이 이어진다는 가정이니, 20~30년으로 늘리면 숫자가 비현실적으로 커집니다(강세장 산물). 실제 내 기간 금액은 설정 탭 '미래가치 시뮬레이터'에서 확인하세요.
     </div>
   </div>
 
@@ -1018,7 +1018,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       </div>
       <div id="proj-compare" style="font-size:11px;color:var(--text2);line-height:1.7;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);"></div>
     </div>
-    <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 단일 강세장(2012~2026) 배수 기반 추정 — 미래 보장 아님. '잃어버린 10년'이 오면 이 숫자는 무의미하고, GLD 비중이 계좌를 지키는 쪽으로 작동합니다.</div>
+    <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 이 값은 <b>2012~2026의 연 수익률(QLD 약 34%·SSO 24%·GLD 12%)이 그대로 이어진다</b>는 가정입니다. 34%는 역대급 강세장 산물이라 <b>20~30년 지속은 비현실적</b> — 기간이 길수록(특히 15년+) 실제와 크게 벌어집니다. '잃어버린 10년'이 오면 이 숫자는 무의미하고 GLD가 계좌를 지키는 쪽으로 작동합니다. 단기(≈10년) 상대비교용으로 보세요.</div>
   </div>
 
   <div style="font-size:10px;color:var(--text3);line-height:1.7;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
@@ -1995,12 +1995,15 @@ function dailyCompute(){
     }
   }
 
-  // 🔮 미래가치 시뮬레이터 (적립식 미래가치, 실측배수→CAGR 환산)
+  // 🔮 미래가치 시뮬레이터 (적립식 미래가치)
   const projYears = (S.projYears != null && S.projYears !== "") ? Math.max(1, Math.min(40, d2num(S.projYears))) : 10;
   const annualBuy = (S.dailyBuy || 0) * td;   // 연 투입금 (= dailyBuy × 거래일)
-  const cagrOf = mlt => Math.pow(mlt, 1/14.3) - 1;      // 실측기간 ≈14.3년(2012~2026)
-  const cQ = cagrOf(QLD_MULT), cS = cagrOf(SSO_MULT), cG = cagrOf(GLD_MULT);
-  const annuity = (r, N) => (Math.abs(r) < 1e-9) ? N : ((Math.pow(1+r, N) - 1) / r);  // 연말 적립 미래가치계수
+  const annuity = (r, N) => (Math.abs(r) < 1e-9) ? N : ((Math.pow(1+r, N) - 1) / r);  // 연말 적립 미래가치계수(합)
+  // ★핵심: 백테스트 '적립배수'는 거치식이 아니라 14.2년 DCA 결과물이므로,
+  //   그 배수를 재현하는 '실제 연수익률'을 역산해야 함(단순 mult^(1/N) 아님).
+  const BT_YEARS = 14.2;
+  const solveRet = mlt => { let lo=0, hi=1.5; for(let i=0;i<80;i++){ const m=(lo+hi)/2; if(annuity(m,BT_YEARS)/BT_YEARS < mlt) lo=m; else hi=m; } return (lo+hi)/2; };
+  const cQ = solveRet(QLD_MULT), cS = solveRet(SSO_MULT), cG = solveRet(GLD_MULT);  // ≈ QLD 33.7%·SSO 23.9%·GLD 11.7%
   const fvMix = annualBuy * (wQ*annuity(cQ, projYears) + wS*annuity(cS, projYears) + wG*annuity(cG, projYears));
   const fvQLD = annualBuy * annuity(cQ, projYears);     // 순수 QLD 100% 비교
   const principalP = annualBuy * projYears;

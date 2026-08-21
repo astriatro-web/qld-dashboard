@@ -516,7 +516,8 @@ details.strat-acc > summary:active { opacity: 0.85; }
   <div class="card">
     <div class="card-label">🧾 오늘의 매수 구성</div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD (매일 정액)</span><b id="dd-qld-amt">—</b></div>
-    <div id="dd-sso-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">SSO (안정 배분)</span><b id="dd-sso-amt" style="color:var(--teal);">—</b></div>
+    <div id="dd-sso-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">SSO (주식 안정)</span><b id="dd-sso-amt" style="color:var(--teal);">—</b></div>
+    <div id="dd-gld-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">GLD (금 · 보험)</span><b id="dd-gld-amt" style="color:var(--amber);">—</b></div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">TQQQ (웅덩이 추가)</span><b id="dd-tqqq-amt" style="color:var(--purple);">—</b></div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;border-top:2px solid var(--text1);"><span style="font-weight:800;">합계</span><b id="dd-total2">—</b></div>
   </div>
@@ -951,10 +952,14 @@ details.strat-acc > summary:active { opacity: 0.85; }
 
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
     <div style="background:var(--teal-lt);border:1px solid rgba(8,145,178,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--teal);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">⚖️ 포트 구성 (QLD : SSO)</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD(나스닥 2배)는 수익 극대화, SSO(S&P 2배)는 안정성. 하루 매수액을 이 비율로 나눠 매수합니다. QLD 100 = SSO 안 섞음(순수 QLD).</div>
+      <div style="font-size:11px;color:var(--teal);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">⚖️ 포트 구성 (QLD : SSO : GLD)</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD(나스닥 2배)=수익 극대, SSO(S&P 2배)=주식 안정, GLD(금)=<b>보험</b>. QLD·GLD 비중을 정하면 SSO가 자동으로 나머지를 채웁니다. QLD 100 = 순수 QLD.</div>
     </div>
-    <div class="setting-group"><div class="setting-label">QLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-qldweight" placeholder="100" oninput="dailySave()"><div id="s-mix-sub" style="font-size:10px;color:var(--text3);margin-top:3px;"></div></div>
+    <div style="display:flex;gap:10px;">
+      <div class="setting-group" style="flex:1;"><div class="setting-label">QLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-qldweight" placeholder="100" oninput="dailySave()"></div>
+      <div class="setting-group" style="flex:1;"><div class="setting-label">GLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-gldweight" placeholder="0" oninput="dailySave()"></div>
+    </div>
+    <div id="s-mix-sub" style="font-size:11px;color:var(--text2);font-weight:600;margin:-4px 0 10px;"></div>
 
     <div style="margin-top:6px;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
@@ -968,6 +973,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       </div>
       <div style="height:10px;background:var(--bg3);border-radius:6px;overflow:hidden;"><div id="mix-mdd-bar" style="height:100%;width:0;background:linear-gradient(90deg,#5eead4,#0891b2);transition:width .35s;"></div></div>
       <div id="mix-note" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;"></div>
+      <div id="gld-note" style="display:none;font-size:10.5px;color:var(--amber);line-height:1.6;margin-top:8px;background:var(--amber-lt);border:1px solid rgba(217,119,6,0.2);border-radius:9px;padding:9px 11px;"></div>
     </div>
   </div>
 
@@ -1152,8 +1158,17 @@ function getRULES() {
       items:[
         ["계좌 MDD vs 원금","계좌 평가 MDD는 -63~-74%지만 이는 '평가이익 반납'이지 원금 손실이 아니다. 매일 DCA시 평단 대비 최저는 QLD -12%·TQQQ -19% 수준(초반에 싸게 오래 모은 경로에 의존)."],
         ["레버리지 감가","우상향 경로라 감가가 덜 드러났을 뿐, 횡보·하락장에선 변동성 감가가 잔인. '잃어버린 10년'형 장기 횡보가 이 전략의 진짜 공포."],
-        ["나스닥 붕괴 시나리오","장기 고금리·AI 버블 재평가·빅테크 집중·미국 예외주의 종료 등에서 QQQ가 무너지면 레버리지가 원금을 갉는다. 가벼운 분산(나스닥+S&P)은 수익 일부 포기하고 리더십 변화 보험."],
+        ["나스닥 붕괴 시나리오","장기 고금리·AI 버블 재평가·빅테크 집중·미국 예외주의 종료 등으로 QQQ가 무너지면 레버리지가 원금을 갉는다. 대응은 아래 '포트 구성' 참고 — S&P(SSO) 분산은 변동성만 줄일 뿐, 장기 소멸 방어는 금(GLD)만 가능하다."],
         ["뇌동매매 금지","규칙은 대시보드가 판단, 사람은 실행만. 무서워서 매수를 거르거나 미리 파는 행위 금지. 생활자금과 철저히 분리한 여유자금만."],
+      ]
+    },
+    { title:"⚖️ 포트 구성 · 분산과 보험", color:"#0891b2", bg:"#e0f2fe",
+      items:[
+        ["기본은 QLD 하나","30년 시계열이면 분산은 늘 수익을 깎았다(백테스트 일관). 나스닥 우상향을 믿으면 QLD 단일이 순수 기대수익 최강. 방어자산은 '덜 번 만큼'의 보험료다."],
+        ["붕괴는 두 가지 방식","①급락형(2008·2020·2022): QLD −60~−84%, 이땐 SSO·GLD도 대체로 같이 빠진다(특히 2022). 분산은 낙폭을 줄일 뿐 방향은 같다. ②장기 소멸형('잃어버린 10년'): 나스닥이 10년+ 횡보하면 레버리지는 변동성 감가로 −90%대에서 못 돌아온다 — 회복 자체가 수학적으로 불가."],
+        ["SSO는 변동성 방어, GLD는 소멸 방어","SSO(S&P 2배)는 나스닥보다 덜 출렁일 뿐 소멸형엔 같이 죽는다(결국 주식). 장기 소멸을 진짜 막는 건 금뿐 — 2000~2011 나스닥이 죽어있을 때 금은 4~5배 올라 계좌를 살렸다. 지난 백테스트가 방어자산을 계속 '손해'로 보인 건 2013~2026에 소멸형 재앙이 안 와 보험금 청구가 없었을 뿐이다."],
+        ["방어 우선순위","1개=QLD → 2개=+GLD(금) → 3개=+SCHD(배당) → 4개=+TLT(국채). TLT는 12.9년간 1.08배(사실상 죽은 돈)에 2022엔 주식과 같이 −47% → 디플레 침체 전용 보험이라 맨 끝."],
+        ["결국 믿음의 문제","'나스닥은 30년 안에 반드시 회복한다'를 믿으면 QLD 하나가 정답. '잃어버린 10년이 다시 올 수 있다'를 진지하게 보면 금 10~20%는 덜 버는 보험료가 아니라 레버리지 영구손실을 막는 유일한 안전장치. 20~30년 적립·집·연금 등 별도 안전판이 있으면 이 USD 계좌는 '공격 슬리브' → GLD 10~15%가 균형점."],
       ]
     },
     { title:"💰 익절 / 현금화 (옵션 — 필수 아님)", color:"#92400e", bg:"#fef3c7",
@@ -1859,12 +1874,13 @@ function dailyLoad(){
   if(S.incomeGrowth == null)S.incomeGrowth= 3;
   if(S.tqqqMult == null)    S.tqqqMult    = 1.0;
   if(S.qldWeight == null)   S.qldWeight   = 100;
+  if(S.gldWeight == null)   S.gldWeight   = 0;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   const g = (id,v) => { const e = document.getElementById(id); if(e) e.value = v; };
   g("s-annual", S.annualInvest); g("s-tdays", S.tradingDays); g("s-tdays2", S.tradingDays);
   g("s-income", S.monthlyIncome || ""); g("s-rate", S.investRate);
   g("s-years", S.investYears); g("s-growth", S.incomeGrowth); g("s-tqqqmult", S.tqqqMult);
-  g("s-qldweight", S.qldWeight);
+  g("s-qldweight", S.qldWeight); g("s-gldweight", S.gldWeight);
   setBuyMode(S.buyMode, true);
   dailyCompute();
 }
@@ -1888,6 +1904,8 @@ function dailySave(){
   S.incomeGrowth = d2num(gv("s-growth"));
   S.tqqqMult     = gv("s-tqqqmult") !== "" ? d2num(gv("s-tqqqmult")) : 1.0;
   S.qldWeight    = gv("s-qldweight") !== "" ? Math.max(0, Math.min(100, d2num(gv("s-qldweight")))) : 100;
+  S.gldWeight    = gv("s-gldweight") !== "" ? Math.max(0, Math.min(100, d2num(gv("s-gldweight")))) : 0;
+  if(S.qldWeight + S.gldWeight > 100){ S.gldWeight = 100 - S.qldWeight; const ge = document.getElementById("s-gldweight"); if(ge) ge.value = S.gldWeight; }
   dailyCompute();
   localStorage.setItem("qld_s11", JSON.stringify(S));
   renderDaily(MD);
@@ -1903,31 +1921,41 @@ function dailyCompute(){
   setT("s-daily-result", daily > 0 ? d2fmt(daily) : "—");
   setT("s-daily-sub", annual > 0 ? `연 ${d2fmt(annual)} ÷ ${td}거래일` : "값을 입력하세요");
   const qldW = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;
-  const ssoW = 100 - qldW;
+  const gldW = (S.gldWeight != null && S.gldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.gldWeight))) : 0;
+  const ssoW = Math.max(0, 100 - qldW - gldW);
   setT("s-mix-sub", daily > 0
-    ? (ssoW > 0
-        ? `= QLD ${d2fmt(daily*qldW/100)} + SSO ${d2fmt(daily*ssoW/100)} (SSO ${ssoW}%)`
-        : "순수 QLD (SSO 안 섞음)")
+    ? (ssoW > 0 || gldW > 0
+        ? `QLD ${d2fmt(daily*qldW/100)}  ·  SSO ${d2fmt(daily*ssoW/100)}  ·  GLD ${d2fmt(daily*gldW/100)}`
+        : "순수 QLD (분산 안 함)")
     : "");
 
-  // 혼합 비중별 기대수익·안정성 게이지 (백테스트 실측 선형보간, 매일적립 2012~2026)
-  // 순수 QLD: 배수 12.74 / 계좌MDD -63%,  순수 SSO: 배수 5.90 / MDD -59%
-  const QLD_MULT = 12.74, SSO_MULT = 5.90, QLD_MDD = 63, SSO_MDD = 59;
-  const w = qldW / 100;
-  const mult = SSO_MULT + (QLD_MULT - SSO_MULT) * w;   // 기대 배수
-  const mdd  = SSO_MDD  + (QLD_MDD  - SSO_MDD ) * w;    // 예상 낙폭(%)
-  // 수익 게이지: SSO(5.9)~QLD(12.74)를 0~100%로
-  const retPct = Math.max(0, Math.min(100, (mult - SSO_MULT) / (QLD_MULT - SSO_MULT) * 100));
-  // 안정성 게이지: 낙폭이 얕을수록 높게. MDD 59~63% → 안정성 100~0%로 (얕은 쪽이 안정)
-  const stabPct = Math.max(0, Math.min(100, (QLD_MDD - mdd) / (QLD_MDD - SSO_MDD) * 100));
+  // 3자산 기대수익·안정성 게이지 (매일적립 실측근사 2012~2026)
+  // QLD: 배수 12.74/계좌MDD -63%,  SSO: 5.90/-59%,  GLD: 2.30/-22%
+  const QLD_MULT=12.74, SSO_MULT=5.90, GLD_MULT=2.30, QLD_MDD=63, SSO_MDD=59, GLD_MDD=22;
+  const wQ=qldW/100, wS=ssoW/100, wG=gldW/100;
+  const mult = wQ*QLD_MULT + wS*SSO_MULT + wG*GLD_MULT;   // 적립이라 배수는 가중평균(정확)
+  const mdd  = wQ*QLD_MDD  + wS*SSO_MDD  + wG*GLD_MDD;     // 낙폭은 근사(금 저상관이라 실제론 더 얕을 수 있음)
+  const retPct  = Math.max(0, Math.min(100, (mult - GLD_MULT) / (QLD_MULT - GLD_MULT) * 100));
+  const stabPct = Math.max(0, Math.min(100, (QLD_MDD - mdd) / (QLD_MDD - GLD_MDD) * 100));
   const setBar = (id, pct) => { const e = document.getElementById(id); if(e) e.style.width = pct + "%"; };
   setT("mix-ret-val", "약 " + mult.toFixed(1) + "배");
   setT("mix-mdd-val", "MDD 약 -" + mdd.toFixed(0) + "%");
   setBar("mix-ret-bar", retPct);
   setBar("mix-mdd-bar", stabPct);
-  setT("mix-note", ssoW > 0
-    ? `SSO ${ssoW}% 섞으면 기대 배수 ${mult.toFixed(1)}배로 낮아지는 대신 변동성이 완만해집니다(나스닥보다 덜 출렁). 다만 둘 다 2배 레버리지라 최악 낙폭 차이는 -${mdd.toFixed(0)}% 수준으로 크지 않음 — SSO의 이점은 '더 얕은 바닥'보다 '덜 흔들리는 여정'에 가깝습니다. ※ 순수지수 매일적립 실측(2012~2026) 근사·TQQQ 부스트 미반영, 참고용.`
-    : `순수 QLD = 기대수익 최대(${QLD_MULT}배)·낙폭도 최대(-${QLD_MDD}%). SSO를 섞을수록 수익은 낮아지고 변동성이 완만해집니다. 단 둘 다 2배 레버리지라 바닥 깊이 자체 차이는 작음. ※ 실측 근사, 참고용.`);
+  setT("mix-note", (ssoW > 0 || gldW > 0)
+    ? `기대 배수 ${mult.toFixed(1)}배 · 예상 낙폭 약 -${mdd.toFixed(0)}%. 분산할수록 수익은 낮아지고 흔들림은 줄어듭니다. ※ 순수지수 매일적립 실측 근사(2012~2026)·TQQQ 부스트 미반영, 참고용.`
+    : `순수 QLD = 기대수익 최대(${QLD_MULT}배)·낙폭도 최대(-${QLD_MDD}%). SSO/GLD를 섞을수록 수익↓·안정성↑.`);
+
+  // GLD 보험 설명 (금 비중 있을 때만)
+  const gn = document.getElementById("gld-note");
+  if(gn){
+    if(gldW > 0){
+      gn.style.display = "block";
+      gn.innerHTML = `🥇 <b>GLD ${gldW}%는 수익용이 아니라 보험</b>입니다. 급락형(2022)엔 금도 같이 빠지지만, '잃어버린 10년'형 장기 소멸(나스닥 10년+ 횡보→레버리지 영구손실)엔 금이 오히려 올라 계좌를 살립니다(2000~2011 금 4~5배). 위 게이지는 <b>급락형 낙폭</b>만 반영하고, 이 <b>영구소멸 방어</b> 가치는 못 담습니다. 20~30년·별도 안전판(집·연금) 보유 시 공격 슬리브엔 10~15%가 균형점.`;
+    } else {
+      gn.style.display = "none";
+    }
+  }
   if(S.buyMode === "advanced"){
     const note = document.getElementById("adv-note");
     if(note){
@@ -1947,13 +1975,17 @@ function renderDaily(d){
   const daily = d2num(S.dailyBuy) || 0;
   const tmult = (S.tqqqMult != null && S.tqqqMult !== "") ? d2num(S.tqqqMult) : 1.0;
   const qldW  = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;
-  const ssoW  = 100 - qldW;
+  const gldW  = (S.gldWeight != null && S.gldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.gldWeight))) : 0;
+  const ssoW  = Math.max(0, 100 - qldW - gldW);
   const qldAmt = daily * qldW / 100;
   const ssoAmt = daily * ssoW / 100;
+  const gldAmt = daily * gldW / 100;
   const badge = document.getElementById("dd-badge");
   const setBadge = (txt, bg, col) => { if(badge){ badge.textContent = txt; badge.style.background = bg; badge.style.color = col; } };
   const ssoRow = document.getElementById("dd-sso-row");
+  const gldRow = document.getElementById("dd-gld-row");
   if(ssoRow) ssoRow.style.display = ssoW > 0 ? "flex" : "none";
+  if(gldRow) gldRow.style.display = gldW > 0 ? "flex" : "none";
 
   if(!d || d.qld == null){
     setBadge("시세 대기", "var(--bg3)", "var(--text3)");
@@ -1963,6 +1995,7 @@ function renderDaily(d){
       : "설정 탭에서 '일일 매수액'을 먼저 정하세요.");
     setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
     setText("dd-sso-amt", ssoW > 0 ? d2fmt(ssoAmt) : "—");
+    setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) : "—");
     setText("dd-tqqq-amt", "—");
     setText("dd-total2", daily > 0 ? d2fmt(daily) : "—");
     return;
@@ -1973,7 +2006,11 @@ function renderDaily(d){
   const tqqqAdd = inDip ? qldAmt * tmult : 0;
   const total = daily + tqqqAdd;
   const gap = ma120 ? (qld - ma120) / ma120 * 100 : null;
-  const mixTxt = ssoW > 0 ? `QLD ${qldW}·SSO ${ssoW} 비율로 ` : "";
+  const parts = [];
+  if(qldW > 0) parts.push(`QLD ${qldW}`);
+  if(ssoW > 0) parts.push(`SSO ${ssoW}`);
+  if(gldW > 0) parts.push(`GLD ${gldW}`);
+  const mixTxt = parts.length > 1 ? `${parts.join("·")} 비율로 ` : "";
 
   if(inDip){
     setBadge("🔔 웅덩이 — TQQQ 추가", "var(--purple-lt)", "var(--purple)");
@@ -1989,6 +2026,7 @@ function renderDaily(d){
   setText("dd-total", daily > 0 ? d2fmt(total) : "설정 필요");
   setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
   setText("dd-sso-amt", ssoW > 0 ? d2fmt(ssoAmt) : "—");
+  setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) : "—");
   setText("dd-tqqq-amt", inDip ? (daily > 0 ? "+" + d2fmt(tqqqAdd) : "웅덩이 (금액 미설정)") : "– (웅덩이 아님)");
   setText("dd-total2", daily > 0 ? d2fmt(total) : "—");
 

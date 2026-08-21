@@ -978,19 +978,34 @@ details.strat-acc > summary:active { opacity: 0.85; }
   </div>
 
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
+    <div style="background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--purple);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔔 웅덩이 TQQQ 추가 배수</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD가 120선 아래(웅덩이)일 때, 일일 QLD의 몇 배로 TQQQ를 추가 매수할지. 백테스트 권장 0.5~1.0배(1.0=표준).</div>
+    </div>
+    <div class="setting-group"><div class="setting-label">TQQQ 배수 (0.5 ~ 1.0)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="2" id="s-tqqqmult" placeholder="1.0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">2~3배는 MDD -72~-74%로 강세장 도박 — 권장 안 함.</div></div>
+  </div>
+
+  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
     <div style="background:#eef2ff;border:1px solid rgba(79,70,229,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
       <div style="font-size:11px;color:#4f46e5;font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔮 미래가치 시뮬레이터</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">위 일일 매수액·비중으로 N년 적립하면 대략 얼마가 되는지. 실측 배수를 연성장률로 환산한 <b>추정</b>이며, TQQQ 부스트·세금 미반영(보수적).</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">위 일일 매수액·비중으로 N년 적립하면 대략 얼마가 되는지. 실측 배수를 연성장률로 환산한 <b>추정</b>. 웅덩이 TQQQ 부스트는 아래 보라색 줄에 별도 반영, 세금·수수료 미반영.</div>
     </div>
     <div class="setting-group"><div class="setting-label">투자 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-projyears" placeholder="10" oninput="dailySave()"></div>
 
     <div class="card" style="background:#eef2ff;border:1.5px solid rgba(79,70,229,0.22);">
-      <div style="font-size:11px;color:#4f46e5;font-weight:800;">예상 평가액 (약)</div>
-      <div id="proj-value" style="font-size:27px;font-weight:900;color:#4f46e5;line-height:1.2;margin-top:2px;">—</div>
+      <div style="font-size:11px;color:#4f46e5;font-weight:800;">예상 평가액 · 기본 (부스트 제외)</div>
+      <div id="proj-value" style="font-size:24px;font-weight:900;color:#4f46e5;line-height:1.2;margin-top:2px;">—</div>
       <div id="proj-sub" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
-      <div style="display:flex;gap:8px;margin-top:10px;">
+
+      <div id="proj-boost-row" style="display:none;margin-top:12px;padding:10px 12px;background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:10px;">
+        <div style="font-size:10px;color:var(--purple);font-weight:800;">🔔 웅덩이 TQQQ 부스트 포함</div>
+        <div id="proj-boost" style="font-size:26px;font-weight:900;color:var(--purple);line-height:1.15;margin-top:2px;">—</div>
+        <div id="proj-boost-sub" style="font-size:10px;color:var(--text2);margin-top:3px;"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;">
         <div style="flex:1;background:var(--bg2);border-radius:8px;padding:8px;text-align:center;">
-          <div style="font-size:9px;color:var(--text3);">원금 대비</div>
+          <div style="font-size:9px;color:var(--text3);">원금 대비 (부스트 포함)</div>
           <div id="proj-mult" style="font-size:15px;font-weight:900;color:var(--text1);">—</div>
         </div>
         <div style="flex:1;background:var(--bg2);border-radius:8px;padding:8px;text-align:center;">
@@ -1001,14 +1016,6 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div id="proj-compare" style="font-size:11px;color:var(--text2);line-height:1.7;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);"></div>
     </div>
     <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 단일 강세장(2012~2026) 배수 기반 추정 — 미래 보장 아님. '잃어버린 10년'이 오면 이 숫자는 무의미하고, GLD 비중이 계좌를 지키는 쪽으로 작동합니다.</div>
-  </div>
-
-  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
-    <div style="background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--purple);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔔 웅덩이 TQQQ 추가 배수</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD가 120선 아래(웅덩이)일 때, 일일 QLD의 몇 배로 TQQQ를 추가 매수할지. 백테스트 권장 0.5~1.0배(1.0=표준).</div>
-    </div>
-    <div class="setting-group"><div class="setting-label">TQQQ 배수 (0.5 ~ 1.0)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="2" id="s-tqqqmult" placeholder="1.0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">2~3배는 MDD -72~-74%로 강세장 도박 — 권장 안 함.</div></div>
   </div>
 
   <div style="font-size:10px;color:var(--text3);line-height:1.7;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
@@ -1994,12 +2001,26 @@ function dailyCompute(){
   const fvMix = annualBuy * (wQ*annuity(cQ, projYears) + wS*annuity(cS, projYears) + wG*annuity(cG, projYears));
   const fvQLD = annualBuy * annuity(cQ, projYears);     // 순수 QLD 100% 비교
   const principalP = annualBuy * projYears;
-  const multP = principalP > 0 ? fvMix / principalP : 0;
   const blendedCagr = wQ*cQ + wS*cS + wG*cG;
+  // 웅덩이 TQQQ 부스트: 실측상 1.0배가 최종배수 12.74→14.93(+17.2%). QLD 레그에만·비중 비례
+  const tmultP = (S.tqqqMult != null && S.tqqqMult !== "") ? d2num(S.tqqqMult) : 1.0;
+  const boostFactor = 1 + 0.172 * tmultP * (qldW / 100);
+  const fvBoost = fvMix * boostFactor;
+  const multP = principalP > 0 ? fvBoost / principalP : 0;   // 원금대비는 부스트 포함 기준
   setT("proj-value", annualBuy > 0 ? d2fmt(fvMix) : "일일 매수액 필요");
   setT("proj-sub", annualBuy > 0 ? `연 ${d2fmt(annualBuy)} × ${projYears}년 = 원금 ${d2fmt(principalP)}` : "설정에서 '일일 매수액'을 먼저 정하세요");
   setT("proj-mult", annualBuy > 0 ? "×" + multP.toFixed(1) : "—");
   setT("proj-cagr", "약 " + (blendedCagr*100).toFixed(1) + "%");
+  const boostRow = document.getElementById("proj-boost-row");
+  if(boostRow){
+    if(annualBuy > 0 && tmultP > 0 && qldW > 0){
+      boostRow.style.display = "block";
+      setT("proj-boost", d2fmt(fvBoost));
+      setT("proj-boost-sub", `TQQQ ${tmultP}배 적용 · 기본 대비 +${((boostFactor-1)*100).toFixed(0)}% (웅덩이날 QLD분에만 추가, 실측 근사)`);
+    } else {
+      boostRow.style.display = "none";
+    }
+  }
   const cmp = document.getElementById("proj-compare");
   if(cmp){
     if(annualBuy > 0 && (ssoW > 0 || gldW > 0)){

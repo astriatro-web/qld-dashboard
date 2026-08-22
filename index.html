@@ -989,7 +989,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div id="tq-rec" style="background:var(--bg2);border:1.5px dashed rgba(124,58,237,0.35);border-radius:11px;padding:11px 13px;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:10px;color:var(--text3);font-weight:700;">내 상황 기반 추천 배수</div>
+          <div style="font-size:10px;color:var(--text3);font-weight:700;">내 상황 기반 추천 배수 <span style="font-weight:500;">(현금 여유↑ → 배수↑)</span></div>
           <div id="tq-rec-val" style="font-size:20px;font-weight:900;color:var(--purple);line-height:1.15;">—</div>
         </div>
         <button type="button" id="tq-rec-apply" onclick="applyTqRec()" style="background:var(--purple);color:#fff;border:none;border-radius:9px;padding:9px 15px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">적용</button>
@@ -2073,15 +2073,15 @@ function dailyCompute(){
       cmp.innerHTML = `순수 QLD 100% = 기대 최대. SSO·GLD를 섞으면 이 금액은 줄지만 하락·소멸 방어가 붙습니다. 비중을 바꿔 비교해 보세요.`;
     } else { cmp.innerHTML = ""; }
   }
-  // ── TQQQ 배수 추천 (투자율 + GLD비중 + 투자기간) ──
+  // ── TQQQ 배수 추천 (현금 여유 = 낮은 투자율일수록 배수↑) + GLD비중 + 투자기간 ──
   const rateForRec = (S.buyMode === "advanced") ? (S.investRate || 0) : null;
   let base, baseWhy;
   if(rateForRec == null){
     base = 0.6; baseWhy = "심플 모드(투자율 없음) — 기간·GLD만 반영";       // 투자율 미상 → 중립 기준
-  } else if(rateForRec <= 15){ base = 0.4; baseWhy = `투자율 ${rateForRec}%(빠듯)`; }
-  else if(rateForRec <= 30){ base = 0.6; baseWhy = `투자율 ${rateForRec}%(보통)`; }
-  else if(rateForRec <= 50){ base = 0.8; baseWhy = `투자율 ${rateForRec}%(여유)`; }
-  else { base = 1.0; baseWhy = `투자율 ${rateForRec}%(공격)`; }
+  } else if(rateForRec <= 15){ base = 1.0; baseWhy = `투자율 ${rateForRec}%(현금 여유 큼)`; }
+  else if(rateForRec <= 30){ base = 0.8; baseWhy = `투자율 ${rateForRec}%(현금 여유 있음)`; }
+  else if(rateForRec <= 50){ base = 0.6; baseWhy = `투자율 ${rateForRec}%(여유 보통)`; }
+  else { base = 0.4; baseWhy = `투자율 ${rateForRec}%(월급 대부분 투입·현금 빠듯)`; }
   let rec = base; const adj = [];
   if(gldW >= 15){ rec -= 0.1; adj.push("GLD 보수 −0.1"); }
   else if(gldW === 0){ rec += 0.1; adj.push("GLD 0% 공격 +0.1"); }

@@ -522,6 +522,31 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;border-top:2px solid var(--text1);"><span style="font-weight:800;">합계</span><b id="dd-total2">—</b></div>
   </div>
 
+  <!-- 🎯 목표 달성 보상 -->
+  <div class="card" id="reward-card">
+    <div class="card-label">🎯 목표 달성 보상</div>
+    <div style="font-size:11px;color:var(--text3);font-weight:700;">예상 누적 평가액</div>
+    <div id="rw-current" style="font-size:24px;font-weight:900;color:var(--blue);line-height:1.15;margin-top:2px;">—</div>
+    <div id="rw-basis" style="font-size:10px;color:var(--text3);margin-top:3px;line-height:1.5;"></div>
+
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+      <button type="button" onclick="rwSetStartToday()" style="flex:1;min-width:110px;background:var(--bg3);color:var(--text2);border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">▶ 오늘부터 매수 시작</button>
+      <div style="flex:1;min-width:110px;display:flex;gap:4px;">
+        <input id="rw-calib" type="number" inputmode="numeric" placeholder="실제 잔고 보정" style="flex:1;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:inherit;background:var(--bg2);color:var(--text1);">
+        <button type="button" onclick="rwCalibrate()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">보정</button>
+      </div>
+    </div>
+
+    <div id="rw-list" style="margin-top:12px;"></div>
+
+    <div style="display:flex;gap:4px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);">
+      <input id="rw-new-amt" type="number" inputmode="numeric" placeholder="목표액(₩)" style="flex:1;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:inherit;background:var(--bg2);color:var(--text1);">
+      <input id="rw-new-name" type="text" placeholder="보상 (예: 여행)" style="flex:1.2;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:inherit;background:var(--bg2);color:var(--text1);">
+      <button type="button" onclick="rwAddMilestone()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">+</button>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;">예상 누적은 '매수 시작일부터의 <b>평일 수</b> × 일일 매수액'으로 자동 추정(원금 기준, 주말 제외·미국 공휴일 미반영)입니다. 실제 매수가·수익률과 다르니 가끔 <b>실제 잔고로 보정</b>하세요.</div>
+  </div>
+
   <!-- 라이브 시세 -->
   <div class="grid2">
     <div class="mc"><div class="mc-label">QLD</div><div class="mc-value" id="dd-qld" style="color:var(--text3);">—</div><div class="mc-sub" id="dd-ma120">120선 —</div></div>
@@ -1004,7 +1029,14 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div style="font-size:11px;color:#4f46e5;font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔮 미래가치 시뮬레이터</div>
       <div style="font-size:11px;color:var(--text3);line-height:1.7;">적립 기간 동안 원금을 넣고, 그 뒤 총 투자 기간까지는 <b>추가 매수 없이 거치</b>(같은 수익률로 굴림)합니다. 웅덩이 TQQQ 부스트는 아래 보라색 줄에 별도 반영, 세금·수수료 미반영.</div>
     </div>
-    <div style="display:flex;gap:10px;">
+    <div style="font-size:10px;color:var(--text3);font-weight:700;margin-bottom:5px;">수익률 가정</div>
+    <div style="display:flex;gap:6px;margin-bottom:6px;">
+      <button type="button" id="scn-backtest" onclick="setScenario('backtest')" style="flex:1;padding:9px 4px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg2);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--text2);line-height:1.3;">🚀 백테<br><span style="font-size:9px;font-weight:600;">2012~2026</span></button>
+      <button type="button" id="scn-conservative" onclick="setScenario('conservative')" style="flex:1;padding:9px 4px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg2);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--text2);line-height:1.3;">⚖️ 보수<br><span style="font-size:9px;font-weight:600;">장기 현실</span></button>
+      <button type="button" id="scn-lostdecade" onclick="setScenario('lostdecade')" style="flex:1;padding:9px 4px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg2);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--text2);line-height:1.3;">💀 최악<br><span style="font-size:9px;font-weight:600;">잃어버린 10년</span></button>
+    </div>
+    <div id="scn-note" style="font-size:10px;color:var(--text3);line-height:1.6;margin-bottom:10px;"></div>
+
       <div class="setting-group" style="flex:1;"><div class="setting-label">적립 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-accyears" placeholder="10" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">실제 매수하는 기간</div></div>
       <div class="setting-group" style="flex:1;"><div class="setting-label">총 투자 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-projyears" placeholder="10" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">거치 포함 전체</div></div>
     </div>
@@ -1034,6 +1066,23 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div id="proj-compare" style="font-size:11px;color:var(--text2);line-height:1.7;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);"></div>
     </div>
     <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 이 값은 <b>2012~2026의 연 수익률(QLD 약 34%·SSO 24%·GLD 12%)이 그대로 이어진다</b>는 가정입니다. 34%는 역대급 강세장 산물이라 <b>20~30년 지속은 비현실적</b> — 기간이 길수록(특히 15년+) 실제와 크게 벌어집니다. '잃어버린 10년'이 오면 이 숫자는 무의미하고 GLD가 계좌를 지키는 쪽으로 작동합니다. 단기(≈10년) 상대비교용으로 보세요.</div>
+
+  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
+    <div style="background:#f0fdf4;border:1px solid rgba(22,163,74,0.22);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;color:#16a34a;font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🏖️ 노후 인출 시뮬레이터</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">위 '총 투자 기간' 끝(=인출 시작) 잔고에서 매달 정해진 금액을 빼며, 남은 잔고는 계속 같은 수익률로 굴립니다. 월 인출액 0이면 꺼짐.</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <div class="setting-group" style="flex:1;"><div class="setting-label">월 인출액 (₩/월)</div><input class="setting-input" type="number" inputmode="numeric" id="s-wd-monthly" placeholder="0" oninput="dailySave()"></div>
+      <div class="setting-group" style="flex:1;"><div class="setting-label">인출 관찰 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="60" id="s-wd-years" placeholder="30" oninput="dailySave()"></div>
+    </div>
+    <div id="wd-result" class="card" style="display:none;background:#f0fdf4;border:1.5px solid rgba(22,163,74,0.22);">
+      <div style="font-size:11px;color:#16a34a;font-weight:800;">인출 시작 잔고</div>
+      <div id="wd-start" style="font-size:20px;font-weight:900;color:#16a34a;line-height:1.2;margin-top:2px;">—</div>
+      <div id="wd-verdict" style="font-size:13px;font-weight:800;margin-top:8px;">—</div>
+      <div id="wd-detail" style="font-size:11px;color:var(--text2);line-height:1.7;margin-top:6px;"></div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 인출 중에도 위와 같은 수익률을 가정 — 은퇴기에 100% 레버리지 유지 + 인출은 <b>초반 폭락 시(수익률 순서 리스크) 계좌가 급속 고갈</b>될 수 있어 실제로는 위험합니다. 이 모델은 그 순서 위험을 반영하지 않는 낙관적 근사입니다.</div>
   </div>
 
   <div style="font-size:10px;color:var(--text3);line-height:1.7;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
@@ -1928,6 +1977,9 @@ function dailyLoad(){
   if(S.gldWeight == null)   S.gldWeight   = 0;
   if(S.projYears == null)   S.projYears   = 10;
   if(S.accYears == null)    S.accYears    = 10;
+  if(S.wdMonthly == null)   S.wdMonthly   = 0;
+  if(S.wdYears == null)     S.wdYears     = 30;
+  if(S.retScenario == null) S.retScenario = "backtest";
   localStorage.setItem("qld_s11", JSON.stringify(S));
   const g = (id,v) => { const e = document.getElementById(id); if(e) e.value = v; };
   g("s-annual", S.annualInvest); g("s-tdays", S.tradingDays); g("s-tdays2", S.tradingDays);
@@ -1935,6 +1987,7 @@ function dailyLoad(){
   g("s-growth", S.incomeGrowth); g("s-tqqqmult", S.tqqqMult);
   g("s-qldweight", S.qldWeight); g("s-gldweight", S.gldWeight);
   g("s-projyears", S.projYears); g("s-accyears", S.accYears);
+  g("s-wd-monthly", S.wdMonthly || ""); g("s-wd-years", S.wdYears);
   setBuyMode(S.buyMode, true);
   dailyCompute();
 }
@@ -1947,6 +2000,113 @@ function setBuyMode(mode, silent){
   if(btnS) btnS.classList.toggle("active", mode === "simple");
   if(btnA) btnA.classList.toggle("active", mode === "advanced");
   if(!silent) dailySave();
+}
+function setScenario(name){
+  S.retScenario = name;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  dailyCompute();
+}
+
+// ── 🎯 목표 달성 보상 시스템 ──
+let RW = null;
+function rwLoad(){
+  try { RW = JSON.parse(localStorage.getItem("qld_reward") || "{}"); } catch(e){ RW = {}; }
+  if(!RW.milestones) RW.milestones = [];
+  return RW;
+}
+function rwSave(){ localStorage.setItem("qld_reward", JSON.stringify(RW)); }
+function rwWeekdaysBetween(fromMs, toMs){
+  // fromMs~toMs 사이의 평일(월~금) 수. 주말 제외(미국 공휴일은 무시 — 보정으로 커버)
+  if(toMs <= fromMs) return 0;
+  const DAY = 86400000;
+  const start = new Date(fromMs); start.setHours(0,0,0,0);
+  const end = new Date(toMs); end.setHours(0,0,0,0);
+  const totalDays = Math.round((end - start) / DAY);
+  const fullWeeks = Math.floor(totalDays / 7);
+  let weekdays = fullWeeks * 5;
+  const remainder = totalDays - fullWeeks * 7;
+  let dow = start.getDay();   // 0=일 … 6=토
+  for(let i = 0; i < remainder; i++){
+    dow = (dow + 1) % 7;      // 다음 날부터 카운트
+    if(dow !== 0 && dow !== 6) weekdays++;
+  }
+  return weekdays;
+}
+function rwCurrentValue(){
+  const dailyBuy = d2num((S && S.dailyBuy) || 0);
+  const now = Date.now();
+  if(RW.calibValue != null && RW.calibDate){
+    return RW.calibValue + dailyBuy * rwWeekdaysBetween(RW.calibDate, now);   // 보정값 + 이후 평일 매수분
+  }
+  if(RW.startDate){
+    return dailyBuy * rwWeekdaysBetween(RW.startDate, now);                    // 시작일부터 평일 누적
+  }
+  return 0;
+}
+function rwSetStartToday(){
+  rwLoad(); RW.startDate = Date.now(); RW.calibValue = null; RW.calibDate = null; rwSave(); renderRewards();
+}
+function rwCalibrate(){
+  rwLoad();
+  const v = d2num((document.getElementById("rw-calib")||{}).value);
+  if(v > 0){ RW.calibValue = v; RW.calibDate = Date.now(); if(!RW.startDate) RW.startDate = Date.now(); rwSave();
+    const e = document.getElementById("rw-calib"); if(e) e.value = ""; renderRewards(); }
+}
+function rwAddMilestone(){
+  rwLoad();
+  const amt = d2num((document.getElementById("rw-new-amt")||{}).value);
+  const name = ((document.getElementById("rw-new-name")||{}).value || "").trim();
+  if(amt > 0 && name){
+    RW.milestones.push({ id: Date.now(), amount: amt, name: name });
+    RW.milestones.sort((a,b) => a.amount - b.amount);
+    rwSave();
+    const a = document.getElementById("rw-new-amt"); if(a) a.value = "";
+    const n = document.getElementById("rw-new-name"); if(n) n.value = "";
+    renderRewards();
+  }
+}
+function rwDelMilestone(id){
+  rwLoad(); RW.milestones = RW.milestones.filter(m => m.id !== id); rwSave(); renderRewards();
+}
+function renderRewards(){
+  rwLoad();
+  const cur = rwCurrentValue();
+  setText("rw-current", cur > 0 ? d2fmt(cur) : "시작일 설정 필요");
+  const basis = document.getElementById("rw-basis");
+  if(basis){
+    if(RW.calibValue != null && RW.calibDate){
+      basis.textContent = `${new Date(RW.calibDate).toLocaleDateString("ko-KR")} 보정 ${d2fmt(RW.calibValue)} + 이후 적립분`;
+    } else if(RW.startDate){
+      basis.textContent = `${new Date(RW.startDate).toLocaleDateString("ko-KR")} 시작 · 원금 누적 기준`;
+    } else {
+      basis.textContent = "‘오늘부터 매수 시작’을 누르거나 실제 잔고로 보정하세요.";
+    }
+  }
+  const list = document.getElementById("rw-list");
+  if(!list) return;
+  if(!RW.milestones.length){
+    list.innerHTML = `<div style="font-size:11px;color:var(--text3);text-align:center;padding:10px 0;">아래에서 목표와 보상을 등록해 보세요 (예: 1억 → 좋은 커피머신)</div>`;
+    return;
+  }
+  // 다음 미달성 목표 찾기
+  const nextIdx = RW.milestones.findIndex(m => cur < m.amount);
+  list.innerHTML = RW.milestones.map((m, i) => {
+    const done = cur >= m.amount;
+    const pct = Math.max(0, Math.min(100, cur / m.amount * 100));
+    const isNext = (i === nextIdx);
+    const remain = m.amount - cur;
+    return `<div style="padding:9px 11px;border-radius:10px;margin-bottom:7px;background:${done?'var(--blue-lt)':'var(--bg2)'};border:1px solid ${done?'rgba(37,99,235,0.25)':isNext?'rgba(37,99,235,0.35)':'var(--border)'};">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:800;color:${done?'var(--blue)':'var(--text1)'};">${done?'🎉':'🔒'} ${m.name}</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;font-weight:800;color:var(--text2);">${d2fmt(m.amount)}</span>
+          <span onclick="rwDelMilestone(${m.id})" style="font-size:14px;color:var(--text3);cursor:pointer;line-height:1;">×</span>
+        </span>
+      </div>
+      <div style="height:7px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:${pct}%;background:${done?'linear-gradient(90deg,#60a5fa,#2563eb)':'var(--text3)'};transition:width .4s;"></div></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px;">${done? '달성 완료! 🎁' : `${pct.toFixed(0)}% · ${d2fmt(remain)} 남음`}</div>
+    </div>`;
+  }).join("");
 }
 function applyTqRec(){
   if(window._tqRec == null) return;
@@ -1970,6 +2130,8 @@ function dailySave(){
   S.projYears    = gv("s-projyears") !== "" ? Math.max(1, Math.min(40, d2num(gv("s-projyears")))) : 10;
   S.accYears     = gv("s-accyears") !== "" ? Math.max(1, Math.min(40, d2num(gv("s-accyears")))) : 10;
   if(S.accYears > S.projYears){ S.accYears = S.projYears; const ae = document.getElementById("s-accyears"); if(ae) ae.value = S.accYears; }
+  S.wdMonthly    = d2num(gv("s-wd-monthly"));
+  S.wdYears      = gv("s-wd-years") !== "" ? Math.max(1, Math.min(60, d2num(gv("s-wd-years")))) : 30;
   dailyCompute();
   localStorage.setItem("qld_s11", JSON.stringify(S));
   renderDaily(MD);
@@ -2033,7 +2195,33 @@ function dailyCompute(){
   //   그 배수를 재현하는 '실제 연수익률'을 역산해야 함(단순 mult^(1/N) 아님).
   const BT_YEARS = 14.2;
   const solveRet = mlt => { let lo=0, hi=1.5; for(let i=0;i<80;i++){ const m=(lo+hi)/2; if(annuity(m,BT_YEARS)/BT_YEARS < mlt) lo=m; else hi=m; } return (lo+hi)/2; };
-  const cQ = solveRet(QLD_MULT), cS = solveRet(SSO_MULT), cG = solveRet(GLD_MULT);  // ≈ QLD 33.7%·SSO 23.9%·GLD 11.7%
+  const scenario = S.retScenario || "backtest";
+  let cQ, cS, cG;
+  if(scenario === "conservative"){
+    cQ = 0.15; cS = 0.10; cG = 0.05;        // 장기 현실 가정(레버리지 감가 반영)
+  } else if(scenario === "lostdecade"){
+    cQ = -0.08; cS = -0.03; cG = 0.12;      // 잃어버린 10년: 나스닥 소멸, 금은 상승
+  } else {
+    cQ = solveRet(QLD_MULT); cS = solveRet(SSO_MULT); cG = solveRet(GLD_MULT);  // 백테 ≈ QLD 33.7%·SSO 23.9%·GLD 11.7%
+  }
+  // 시나리오 버튼 활성 표시 + 설명
+  ["backtest","conservative","lostdecade"].forEach(name => {
+    const btn = document.getElementById("scn-" + name);
+    if(btn){
+      const on = (scenario === name);
+      btn.style.background = on ? "var(--blue)" : "var(--bg2)";
+      btn.style.color = on ? "#fff" : "var(--text2)";
+      btn.style.borderColor = on ? "var(--blue)" : "var(--border)";
+    }
+  });
+  const scnNote = document.getElementById("scn-note");
+  if(scnNote){
+    scnNote.innerHTML = scenario === "conservative"
+      ? "⚖️ 장기 현실 가정 — QLD 15% · SSO 10% · GLD 5%. 강세장 34%가 영원할 수 없다는 전제의 보수적 시나리오."
+      : scenario === "lostdecade"
+      ? "💀 잃어버린 10년 — QLD <b>−8%</b> · SSO <b>−3%</b> · GLD <b>+12%</b>. 나스닥 장기 소멸로 레버리지가 녹을 때, <b>금(GLD)만 계좌를 지킵니다</b>. GLD 비중을 올려보며 방어력을 확인하세요."
+      : "🚀 백테 — QLD 33.7% · SSO 23.9% · GLD 11.7% (2012~2026 실측). 역대급 강세장 한 경로라 미래 보장 아님.";
+  }
   // 자산별: Yc년 적립 → Yp-Yc년 거치(같은 수익률로 굴림)
   const fvOf = (r, w) => annualBuy * w * annuity(r, accYears) * Math.pow(1+r, holdYears);
   const fvMix = fvOf(cQ, wQ) + fvOf(cS, wS) + fvOf(cG, wG);
@@ -2073,6 +2261,40 @@ function dailyCompute(){
       cmp.innerHTML = `순수 QLD 100% = 기대 최대. SSO·GLD를 섞으면 이 금액은 줄지만 하락·소멸 방어가 붙습니다. 비중을 바꿔 비교해 보세요.`;
     } else { cmp.innerHTML = ""; }
   }
+
+  // 🏖️ 노후 인출 시뮬레이션 (시작잔고=부스트 포함 평가액, 연초 인출 후 성장)
+  const wdMonthly = S.wdMonthly || 0;
+  const wdYears = (S.wdYears != null && S.wdYears !== "") ? Math.max(1, Math.min(60, d2num(S.wdYears))) : 30;
+  const wdBox = document.getElementById("wd-result");
+  if(wdBox){
+    if(annualBuy > 0 && wdMonthly > 0){
+      wdBox.style.display = "block";
+      const P0 = fvBoost, r = blendedCagr, W = wdMonthly * 12;
+      let bal = P0, depleteYear = null, balAtWindow = null;
+      for(let y = 1; y <= 60; y++){
+        bal = bal - W;                       // 연초 인출
+        if(bal <= 0){ depleteYear = y; break; }
+        bal = bal * (1 + r);                 // 남은 잔고 성장
+        if(y === wdYears) balAtWindow = bal;
+      }
+      setT("wd-start", d2fmt(P0));
+      const vd = document.getElementById("wd-verdict");
+      const firstYearGrowth = P0 * r;        // 첫 해 성장분
+      const sustainable = (W <= firstYearGrowth);   // 인출 < 성장이면 원금 안 줄고 오히려 늚
+      if(depleteYear){
+        if(vd){ vd.textContent = `⚠️ 약 ${depleteYear}년 만에 고갈`; vd.style.color = "#dc2626"; }
+        setText("wd-detail", `월 ${d2fmt(wdMonthly)}(연 ${d2fmt(W)}) 인출 시 ${depleteYear}년차에 잔고 소진. 인출액을 줄이거나 시작 잔고를 더 키워야 합니다.`);
+      } else if(sustainable){
+        if(vd){ vd.textContent = `✅ 평생 유지 (원금 안 줄고 오히려 증가)`; vd.style.color = "#16a34a"; }
+        setText("wd-detail", `연 성장분(≈${d2fmt(firstYearGrowth)}) > 연 인출액(${d2fmt(W)})이라 잔고가 계속 늘어납니다. ${wdYears}년 후 잔고 ≈ ${d2fmt(balAtWindow)}. (단, 아래 순서 위험 주의)`);
+      } else {
+        if(vd){ vd.textContent = `🟡 ${wdYears}년+ 유지 (서서히 감소)`; vd.style.color = "#d97706"; }
+        setText("wd-detail", `월 ${d2fmt(wdMonthly)} 인출 시 ${wdYears}년 후 잔고 ≈ ${d2fmt(balAtWindow)}. 60년 내 고갈 안 됨(관찰 기간 늘려 확인 가능).`);
+      }
+    } else {
+      wdBox.style.display = "none";
+    }
+  }
   // ── TQQQ 배수 추천 (현금 여유 = 낮은 투자율일수록 배수↑) + GLD비중 + 투자기간 ──
   const rateForRec = (S.buyMode === "advanced") ? (S.investRate || 0) : null;
   let base, baseWhy;
@@ -2106,6 +2328,7 @@ function dailyCompute(){
         + `적립 ${yrs}년 총 투입원금 ≈ <b>${d2fmt(principal)}</b> (연 ${S.incomeGrowth||0}% 증액 가정)`;
     }
   }
+  if(typeof renderRewards === "function") renderRewards();
 }
 
 // ══ 매일매수 대시보드 렌더 ══
@@ -2693,7 +2916,7 @@ async function ladderScanAll(){
   btn.disabled = false; icon.textContent = "↻";
 }
 
-loadSettings(); renderStatic(null); renderRules(); ladderRender(); dailyLoad(); renderDaily(null);
+loadSettings(); renderStatic(null); renderRules(); ladderRender(); dailyLoad(); renderDaily(null); renderRewards();
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";

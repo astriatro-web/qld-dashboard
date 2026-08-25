@@ -516,7 +516,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
   <div class="card">
     <div class="card-label">🧾 오늘의 매수 구성</div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD (매일 정액)</span><b id="dd-qld-amt">—</b></div>
-    <div id="dd-sso-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">SSO (주식 안정)</span><b id="dd-sso-amt" style="color:var(--teal);">—</b></div>
+    <div id="dd-sso-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span id="dd-sso-label" style="color:var(--text3);">SCHD (배당 방어)</span><b id="dd-sso-amt" style="color:var(--teal);">—</b></div>
     <div id="dd-gld-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">GLD (금 · 보험)</span><b id="dd-gld-amt" style="color:var(--amber);">—</b></div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">TQQQ (웅덩이 추가)</span><b id="dd-tqqq-amt" style="color:var(--purple);">—</b></div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;border-top:2px solid var(--text1);"><span style="font-weight:800;">합계</span><b id="dd-total2">—</b></div>
@@ -977,15 +977,19 @@ details.strat-acc > summary:active { opacity: 0.85; }
 
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
     <div style="background:var(--teal-lt);border:1px solid rgba(8,145,178,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--teal);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">⚖️ 포트 구성 (QLD : SSO : GLD)</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD(나스닥 2배)=수익 극대, SSO(S&P 2배)=주식 안정, GLD(금)=<b>보험</b>. QLD·GLD 비중을 정하면 SSO가 자동으로 나머지를 채웁니다. QLD 100 = 순수 QLD.</div>
+      <div style="font-size:11px;color:var(--teal);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">⚖️ 포트 구성 (QLD : 중간자산 : GLD)</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD(나스닥 2배)=수익 극대, 중간자산=주식 방어, GLD(금)=<b>보험</b>. QLD·GLD 비중을 정하면 중간자산이 자동으로 나머지를 채웁니다. QLD 100 = 순수 QLD.</div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button type="button" id="mid-sso" onclick="setMidAsset('sso')" style="flex:1;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:8px;padding:7px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">SSO · S&P 2배<br><span style="font-weight:600;font-size:9.5px;color:var(--text3);">공격적 안정 · 배당 낮음</span></button>
+        <button type="button" id="mid-schd" onclick="setMidAsset('schd')" style="flex:1;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:8px;padding:7px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">SCHD · 배당<br><span style="font-weight:600;font-size:9.5px;color:var(--text3);">견고한 방어 · 배당 3%</span></button>
+      </div>
     </div>
     <div style="display:flex;gap:10px;">
       <div class="setting-group" style="flex:1;"><div class="setting-label">QLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-qldweight" placeholder="100" oninput="dailySave()"></div>
       <div class="setting-group" style="flex:1;"><div class="setting-label">GLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-gldweight" placeholder="0" oninput="dailySave()"></div>
     </div>
     <div id="s-sso-auto" style="display:flex;justify-content:space-between;align-items:center;background:var(--teal-lt);border:1px solid rgba(8,145,178,0.22);border-radius:9px;padding:8px 12px;margin:2px 0 8px;">
-      <span style="font-size:11px;color:var(--teal);font-weight:800;">SSO 자동 배분</span>
+      <span style="font-size:11px;color:var(--teal);font-weight:800;">SCHD 자동 배분</span>
       <span id="s-sso-pct" style="font-size:15px;color:var(--teal);font-weight:900;">—</span>
     </div>
     <div id="s-mix-sub" style="font-size:11px;color:var(--text2);font-weight:600;margin:-2px 0 10px;"></div>
@@ -1064,8 +1068,13 @@ details.strat-acc > summary:active { opacity: 0.85; }
         </div>
       </div>
       <div id="proj-compare" style="font-size:11px;color:var(--text2);line-height:1.7;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);"></div>
+      <div id="proj-div-row" style="display:none;margin-top:10px;padding:10px 12px;background:var(--teal-lt);border:1px solid rgba(8,145,178,0.22);border-radius:10px;">
+        <div style="font-size:11px;color:var(--teal);font-weight:800;">💵 예상 배당 소득 (SCHD)</div>
+        <div id="proj-div" style="font-size:20px;font-weight:900;color:var(--teal);line-height:1.2;margin-top:2px;">—</div>
+        <div id="proj-div-sub" style="font-size:10px;color:var(--text2);margin-top:4px;line-height:1.6;"></div>
+      </div>
     </div>
-    <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 이 값은 <b>2012~2026의 연 수익률(QLD 약 34%·SSO 24%·GLD 12%)이 그대로 이어진다</b>는 가정입니다. 34%는 역대급 강세장 산물이라 <b>20~30년 지속은 비현실적</b> — 기간이 길수록(특히 15년+) 실제와 크게 벌어집니다. '잃어버린 10년'이 오면 이 숫자는 무의미하고 GLD가 계좌를 지키는 쪽으로 작동합니다. 단기(≈10년) 상대비교용으로 보세요.</div>
+    <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 이 값은 <b>과거 연 수익률(QLD 약 34%·SCHD 14%·GLD 12%)이 그대로 이어진다</b>는 가정입니다. 34%는 역대급 강세장 산물이라 <b>20~30년 지속은 비현실적</b> — 기간이 길수록(특히 15년+) 실제와 크게 벌어집니다. '잃어버린 10년'이 오면 이 숫자는 무의미하고 SCHD·GLD가 계좌를 지키는 쪽으로 작동합니다. 단기(≈10년) 상대비교용으로 보세요.</div>
 
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
     <div style="background:#f0fdf4;border:1px solid rgba(22,163,74,0.22);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
@@ -1564,7 +1573,7 @@ async function fetchAll() {
       fg:d.fg||S.fg||null, ma20:d.ma20, ma60:d.ma60, ma120:d.ma120,
       ma120sso:d.ma120sso||null,
       ma200spy:d.ma200spy, spym:d.spym||null,
-      tqqq:d.tqqq||null, soxl:d.soxl||null, gld:d.gld||null,
+      tqqq:d.tqqq||null, soxl:d.soxl||null, gld:d.gld||null, schd:d.schd||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null,
       standbyDate: d.standbyDate || null,
       standbyWhipsawNote: d.standbyWhipsawNote || null,
@@ -1981,6 +1990,7 @@ function dailyLoad(){
   if(S.wdMonthly == null)   S.wdMonthly   = 0;
   if(S.wdYears == null)     S.wdYears     = 30;
   if(S.retScenario == null) S.retScenario = "backtest";
+  if(S.midAsset == null)    S.midAsset    = "schd";
   localStorage.setItem("qld_s11", JSON.stringify(S));
   const g = (id,v) => { const e = document.getElementById(id); if(e) e.value = v; };
   g("s-annual", S.annualInvest); g("s-tdays", S.tradingDays); g("s-tdays2", S.tradingDays);
@@ -2006,6 +2016,17 @@ function setScenario(name){
   S.retScenario = name;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   dailyCompute();
+}
+function setMidAsset(name){
+  const prev = S.midAsset || "schd";
+  if(name !== prev && typeof RW !== "undefined" && RW && RW.cost && RW.cost.sso > 0){
+    if(!confirm("중간 자산을 " + (name==="sso"?"SSO":"SCHD") + "로 바꿀까요?\n\n보상 트래커에 이미 쌓인 중간자산(" + (prev==="sso"?"SSO":"SCHD") + ") 적립분은 새 자산 시세로 평가돼 값이 어긋날 수 있어요. 바꾼 뒤 '실제 잔고 보정'을 한 번 눌러 맞추면 됩니다.")) return;
+  }
+  S.midAsset = name;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  dailyCompute();
+  if(typeof renderDaily === "function" && typeof MD !== "undefined") renderDaily(MD);
+  if(typeof renderRewards === "function") renderRewards();
 }
 
 // ── 🎯 목표 달성 보상 시스템 (자산별 주수 적립 → 실시세 평가) ──
@@ -2034,7 +2055,9 @@ function rwWeekdaysBetween(fromMs, toMs){
 }
 function rwPrices(){
   const md = (typeof MD !== "undefined" && MD) ? MD : {};
-  return { qld: md.qld || null, sso: md.sso || null, gld: md.gld || null, fx: md.usdkrw || 1380 };
+  const midAsset = (S && S.midAsset === "sso") ? "sso" : "schd";
+  const mid = midAsset === "sso" ? (md.sso || null) : (md.schd || null);
+  return { qld: md.qld || null, mid: mid, midAsset: midAsset, gld: md.gld || null, fx: md.usdkrw || 1380 };
 }
 // 지난 적립 이후 쌓인 평일수만큼 자산별 주수를 현재가로 적립
 function rwAccrue(){
@@ -2056,7 +2079,7 @@ function rwAccrue(){
   // QLD
   const qKRW = dailyBuy*qldW/100*wd; RW.shares.qld += add(dailyBuy*qldW/100, P.qld); RW.cost.qld += qKRW;
   // SSO
-  if(ssoW>0){ const sKRW = dailyBuy*ssoW/100*wd; if(P.sso){ RW.shares.sso += add(dailyBuy*ssoW/100, P.sso); } RW.cost.sso += sKRW; }
+  if(ssoW>0){ const sKRW = dailyBuy*ssoW/100*wd; if(P.mid){ RW.shares.sso += add(dailyBuy*ssoW/100, P.mid); } RW.cost.sso += sKRW; }
   // GLD (시세 있으면 주수, 없으면 원금만)
   if(gldW>0){ const gKRW = dailyBuy*gldW/100*wd; if(P.gld){ RW.shares.gld += add(dailyBuy*gldW/100, P.gld); } RW.cost.gld += gKRW; }
   RW.lastAccrualMs = now;
@@ -2068,11 +2091,11 @@ function rwValue(){
   const fx = P.fx;
   // 평가액: 시세 있는 자산은 주수×현재가×환율, GLD 시세 없으면 원금으로 대체
   const vQ = P.qld ? RW.shares.qld * P.qld * fx : 0;
-  const vS = P.sso ? RW.shares.sso * P.sso * fx : RW.cost.sso;   // sso 시세 없으면 원금
+  const vS = P.mid ? RW.shares.sso * P.mid * fx : RW.cost.sso;   // 중간자산 시세 없으면 원금
   const vG = P.gld ? RW.shares.gld * P.gld * fx : RW.cost.gld;   // gld 시세 없으면 원금
   const value = vQ + vS + vG;
   const cost = (RW.cost.qld||0) + (RW.cost.sso||0) + (RW.cost.gld||0);
-  return { value, cost, gldNoPrice: (RW.cost.gld>0 && !P.gld) };
+  return { value, cost, gldNoPrice: (RW.cost.gld>0 && !P.gld), midNoPrice: (RW.cost.sso>0 && !P.mid), midName: (P.midAsset==="sso"?"SSO":"SCHD") };
 }
 function rwSetStartToday(){
   rwLoad();
@@ -2100,7 +2123,7 @@ function rwCalibrate(){
       const P = rwPrices(); const fx = P.fx;
       const qldW=(S.qldWeight!=null?d2num(S.qldWeight):100), gldW=(S.gldWeight!=null?d2num(S.gldWeight):0), ssoW=Math.max(0,100-qldW-gldW);
       if(P.qld) RW.shares.qld = (v*qldW/100)/fx/P.qld;
-      if(P.sso) RW.shares.sso = (v*ssoW/100)/fx/P.sso;
+      if(P.mid) RW.shares.sso = (v*ssoW/100)/fx/P.mid;
       if(P.gld) RW.shares.gld = (v*gldW/100)/fx/P.gld;
     }
     if(!RW.startDate) RW.startDate = Date.now();
@@ -2128,7 +2151,7 @@ function rwDelMilestone(id){
 }
 function renderRewards(){
   rwLoad(); rwAccrue();
-  const { value, cost, gldNoPrice } = rwValue();
+  const { value, cost, gldNoPrice, midNoPrice, midName } = rwValue();
   const cur = value;
   setText("rw-current", cur > 0 ? d2fmt(cur) : (RW.startDate ? "새로고침 대기" : "시작일 설정 필요"));
   const basis = document.getElementById("rw-basis");
@@ -2138,6 +2161,7 @@ function renderRewards(){
       const col = pnl >= 0 ? "#16a34a" : "#dc2626";
       basis.innerHTML = `원금 ${d2fmt(cost)} · <span style="color:${col};font-weight:800;">평가손익 ${pnl>=0?"+":""}${d2fmt(pnl)} (${pnl>=0?"+":""}${pct.toFixed(1)}%)</span>`
         + (gldNoPrice ? `<br><span style="color:var(--amber);">※ GLD 시세가 피드에 없어 원금으로만 반영(시트에 gld 추가 시 수익 반영)</span>` : "")
+        + (midNoPrice ? `<br><span style="color:var(--amber);">※ ${midName} 시세가 피드에 없어 원금으로만 반영(시트에 ${midName.toLowerCase()} 추가 시 수익 반영)</span>` : "")
         + (RW.startDate ? `<br><span style="color:var(--text3);">${new Date(RW.startDate).toLocaleDateString("ko-KR")} 시작 · 상단 새로고침 때마다 실시세로 적립</span>` : "");
     } else if(RW.startDate){
       basis.innerHTML = `<span style="color:var(--blue);font-weight:700;">${new Date(RW.startDate).toLocaleDateString("ko-KR")} 매수 시작됨 ✓</span><br><span style="color:var(--text3);">상단 새로고침으로 시세를 불러오면 실시세로 주수가 적립됩니다.</span>`;
@@ -2211,16 +2235,33 @@ function dailyCompute(){
   const qldW = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;
   const gldW = (S.gldWeight != null && S.gldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.gldWeight))) : 0;
   const ssoW = Math.max(0, 100 - qldW - gldW);
+  // 중간 자산 선택 (SSO=S&P 2배 공격안정 / SCHD=배당 견고방어)
+  const midAsset = (S.midAsset === "sso") ? "sso" : "schd";
+  const midName = midAsset === "sso" ? "SSO" : "SCHD";
+  ["sso","schd"].forEach(a => {
+    const b = document.getElementById("mid-" + a);
+    if(b){ const on = (midAsset === a);
+      b.style.background = on ? "var(--teal)" : "var(--bg2)";
+      b.style.borderColor = on ? "var(--teal)" : "var(--border)";
+      b.style.color = on ? "#fff" : "var(--text2)";
+      const sub = b.querySelector("span"); if(sub) sub.style.color = on ? "rgba(255,255,255,0.85)" : "var(--text3)";
+    }
+  });
   setT("s-sso-pct", `${ssoW}%` + (daily > 0 ? `  ·  ${d2fmt(daily*ssoW/100)}` : ""));
+  const midBadge = document.querySelector("#s-sso-auto span");
+  if(midBadge) midBadge.textContent = midName + " 자동 배분";
   setT("s-mix-sub", daily > 0
     ? (ssoW > 0 || gldW > 0
-        ? `QLD ${d2fmt(daily*qldW/100)}  ·  SSO ${d2fmt(daily*ssoW/100)}  ·  GLD ${d2fmt(daily*gldW/100)}`
+        ? `QLD ${d2fmt(daily*qldW/100)}  ·  ${midName} ${d2fmt(daily*ssoW/100)}  ·  GLD ${d2fmt(daily*gldW/100)}`
         : "순수 QLD (분산 안 함)")
     : "");
 
-  // 3자산 기대수익·안정성 게이지 (매일적립 실측근사 2012~2026)
-  // QLD: 배수 12.74/계좌MDD -63%,  SSO: 5.90/-59%,  GLD: 2.30/-22%
-  const QLD_MULT=12.74, SSO_MULT=5.90, GLD_MULT=2.30, QLD_MDD=63, SSO_MDD=59, GLD_MDD=22;
+  // 3자산 기대수익·안정성 게이지 (매일적립 실측근사)
+  // QLD 12.74/-63%,  SSO 5.90/-59%,  SCHD 2.67/-33%(배당재투자 13.7% CAGR),  GLD 2.30/-22%
+  const QLD_MULT=12.74, GLD_MULT=2.30, QLD_MDD=63, GLD_MDD=22;
+  const SSO_MULT = midAsset === "sso" ? 5.90 : 2.67;
+  const SSO_MDD  = midAsset === "sso" ? 59 : 33;
+  const MID_YIELD = midAsset === "sso" ? 0 : 0.03;   // SCHD만 배당수익률 ≈ 3.0%(2026)
   const wQ=qldW/100, wS=ssoW/100, wG=gldW/100;
   const mult = wQ*QLD_MULT + wS*SSO_MULT + wG*GLD_MULT;   // 적립이라 배수는 가중평균(정확)
   const mdd  = wQ*QLD_MDD  + wS*SSO_MDD  + wG*GLD_MDD;     // 낙폭은 근사(금 저상관이라 실제론 더 얕을 수 있음)
@@ -2232,8 +2273,8 @@ function dailyCompute(){
   setBar("mix-ret-bar", retPct);
   setBar("mix-mdd-bar", stabPct);
   setT("mix-note", (ssoW > 0 || gldW > 0)
-    ? `기대 배수 ${mult.toFixed(1)}배 · 예상 낙폭 약 -${mdd.toFixed(0)}%. 분산할수록 수익은 낮아지고 흔들림은 줄어듭니다. ※ 순수지수 매일적립 실측 근사(2012~2026)·TQQQ 부스트 미반영, 참고용.`
-    : `순수 QLD = 기대수익 최대(${QLD_MULT}배)·낙폭도 최대(-${QLD_MDD}%). SSO/GLD를 섞을수록 수익↓·안정성↑.`);
+    ? `기대 배수 ${mult.toFixed(1)}배 · 예상 낙폭 약 -${mdd.toFixed(0)}%. 분산할수록 수익은 낮아지고 흔들림은 줄어듭니다. ※ 순수지수 매일적립 실측 근사·TQQQ 부스트 미반영, 참고용.`
+    : `순수 QLD = 기대수익 최대(${QLD_MULT}배)·낙폭도 최대(-${QLD_MDD}%). ${midName}/GLD를 섞을수록 수익↓·안정성↑.`);
 
   // GLD 보험 설명 (금 비중 있을 때만)
   const gn = document.getElementById("gld-note");
@@ -2260,11 +2301,11 @@ function dailyCompute(){
   const scenario = S.retScenario || "backtest";
   let cQ, cS, cG;
   if(scenario === "conservative"){
-    cQ = 0.15; cS = 0.10; cG = 0.05;        // 장기 현실 가정(레버리지 감가 반영)
+    cQ = 0.15; cS = (midAsset==="sso"?0.10:0.09); cG = 0.05;   // 장기 현실 가정
   } else if(scenario === "lostdecade"){
-    cQ = -0.08; cS = -0.03; cG = 0.12;      // 잃어버린 10년: 나스닥 소멸, 금은 상승
+    cQ = -0.08; cS = (midAsset==="sso"?-0.03:0.05); cG = 0.12; // 잃어버린 10년: 나스닥 소멸(SSO도 레버리지라 하락 / SCHD 배당가치는 버팀), 금 상승
   } else {
-    cQ = solveRet(QLD_MULT); cS = solveRet(SSO_MULT); cG = solveRet(GLD_MULT);  // 백테 ≈ QLD 33.7%·SSO 23.9%·GLD 11.7%
+    cQ = solveRet(QLD_MULT); cS = solveRet(SSO_MULT); cG = solveRet(GLD_MULT);  // 백테: SSO 23.9% / SCHD 13.7%
   }
   // 시나리오 버튼 활성 표시 + 설명
   ["backtest","conservative","lostdecade"].forEach(name => {
@@ -2278,11 +2319,14 @@ function dailyCompute(){
   });
   const scnNote = document.getElementById("scn-note");
   if(scnNote){
+    const cSpct = (cS*100).toFixed(cS<0?0:1);
     scnNote.innerHTML = scenario === "conservative"
-      ? "⚖️ 장기 현실 가정 — QLD 15% · SSO 10% · GLD 5%. 강세장 34%가 영원할 수 없다는 전제의 보수적 시나리오."
+      ? `⚖️ 장기 현실 가정 — QLD 15% · ${midName} ${(cS*100).toFixed(0)}% · GLD 5%. 강세장 34%가 영원할 수 없다는 전제의 보수적 시나리오.`
       : scenario === "lostdecade"
-      ? "💀 잃어버린 10년 — QLD <b>−8%</b> · SSO <b>−3%</b> · GLD <b>+12%</b>. 나스닥 장기 소멸로 레버리지가 녹을 때, <b>금(GLD)만 계좌를 지킵니다</b>. GLD 비중을 올려보며 방어력을 확인하세요."
-      : "🚀 백테 — QLD 33.7% · SSO 23.9% · GLD 11.7% (2012~2026 실측). 역대급 강세장 한 경로라 미래 보장 아님.";
+      ? (midAsset==="sso"
+          ? `💀 잃어버린 10년 — QLD <b>−8%</b> · SSO <b>−3%</b> · GLD <b>+12%</b>. 나스닥 장기 소멸로 레버리지가 녹을 때, SSO도 레버리지라 함께 하락하고 <b>금(GLD)만 계좌를 지킵니다</b>. 방어를 원하면 SCHD·GLD 비중을 올려보세요.`
+          : `💀 잃어버린 10년 — QLD <b>−8%</b> · SCHD <b>+5%</b> · GLD <b>+12%</b>. 나스닥 장기 소멸로 레버리지가 녹을 때, <b>배당가치(SCHD)와 금(GLD)이 계좌를 지킵니다</b>(2000~2011 가치·배당주 플러스).`)
+      : `🚀 백테 — QLD 33.7% · ${midName} ${(cS*100).toFixed(1)}% · GLD 11.7% (${midAsset==="sso"?"2012~2026":"배당 재투자"} 실측 근사). 역대급 강세장 한 경로라 미래 보장 아님.`;
   }
   // 자산별: Yc년 적립 → Yp-Yc년 거치(같은 수익률로 굴림)
   const fvOf = (r, w) => annualBuy * w * annuity(r, accYears) * Math.pow(1+r, holdYears);
@@ -2320,8 +2364,22 @@ function dailyCompute(){
     if(annualBuy > 0 && (ssoW > 0 || gldW > 0)){
       cmp.innerHTML = `순수 QLD 100%라면 ≈ <b>${d2fmt(fvQLD)}</b>(도박). 지금 비중은 그 <b>${(fvMix/fvQLD*100).toFixed(0)}%</b> 수준 — 덜 벌지만 덜 흔들리고, 소멸 시나리오에 대비됩니다.`;
     } else if(annualBuy > 0){
-      cmp.innerHTML = `순수 QLD 100% = 기대 최대. SSO·GLD를 섞으면 이 금액은 줄지만 하락·소멸 방어가 붙습니다. 비중을 바꿔 비교해 보세요.`;
+      cmp.innerHTML = `순수 QLD 100% = 기대 최대. ${midName}·GLD를 섞으면 이 금액은 줄지만 하락·소멸 방어가 붙습니다. 비중을 바꿔 비교해 보세요.`;
     } else { cmp.innerHTML = ""; }
+  }
+
+  // 💵 예상 배당액 (SCHD 선택 시만 · 적립 종료 시점 슬리브 평가액 × 현재 배당수익률)
+  const divRow = document.getElementById("proj-div-row");
+  if(divRow){
+    const schdFV = fvOf(cS, wS);                 // 중간자산 슬리브 미래가치(배당 재투자 포함)
+    const annualDiv = schdFV * MID_YIELD;        // 연 배당(현재수익률 3.0% 기준)
+    if(annualBuy > 0 && ssoW > 0 && midAsset === "schd"){
+      divRow.style.display = "block";
+      setT("proj-div", d2fmt(annualDiv) + " / 년");
+      setT("proj-div-sub", `SCHD ${ssoW}% 슬리브 ${d2fmt(schdFV)} × 배당수익률 3.0% · 월 ${d2fmt(annualDiv/12)} 수준. ※ 배당은 이미 총수익(13.7%)에 재투자로 반영됨 — 위 평가액에 더하는 게 아니라, 그때 현금으로 받으면 나오는 연 소득 참고치. 배당은 매년 성장(≈11%/년)해 실제 수령액은 더 커집니다.`);
+    } else {
+      divRow.style.display = "none";
+    }
   }
 
   // 🏖️ 노후 인출 시뮬레이션 (시작잔고=부스트 포함 평가액, 연초 인출 후 성장)
@@ -2407,6 +2465,8 @@ function renderDaily(d){
   const setBadge = (txt, bg, col) => { if(badge){ badge.textContent = txt; badge.style.background = bg; badge.style.color = col; } };
   const ssoRow = document.getElementById("dd-sso-row");
   const gldRow = document.getElementById("dd-gld-row");
+  const midLbl = document.getElementById("dd-sso-label");
+  if(midLbl) midLbl.textContent = (S.midAsset === "sso") ? "SSO (S&P 안정)" : "SCHD (배당 방어)";
   if(ssoRow) ssoRow.style.display = ssoW > 0 ? "flex" : "none";
   if(gldRow) gldRow.style.display = gldW > 0 ? "flex" : "none";
 

@@ -1044,12 +1044,14 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div class="setting-group" style="flex:1;"><div class="setting-label">적립 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-accyears" placeholder="10" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">실제 매수하는 기간</div></div>
       <div class="setting-group" style="flex:1;"><div class="setting-label">총 투자 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-projyears" placeholder="10" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">거치 포함 전체</div></div>
     </div>
+    <div class="setting-group"><div class="setting-label">물가상승률 (연 %, 실질가치 환산용)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="20" id="s-inflrate" placeholder="2.5" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">미래 금액을 '오늘 돈 가치'로 환산 (기본 2.5%)</div></div>
     <div id="proj-phase" style="font-size:10.5px;color:var(--text3);line-height:1.6;margin:-2px 0 10px;"></div>
 
     <div class="card" style="background:#eef2ff;border:1.5px solid rgba(79,70,229,0.22);">
       <div style="font-size:11px;color:#4f46e5;font-weight:800;">예상 평가액 · 기본 (부스트 제외)</div>
       <div id="proj-value" style="font-size:24px;font-weight:900;color:#4f46e5;line-height:1.2;margin-top:2px;">—</div>
       <div id="proj-sub" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
+      <div id="proj-real" style="font-size:11px;color:var(--text2);margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);line-height:1.6;"></div>
 
       <div id="proj-boost-row" style="display:none;margin-top:12px;padding:10px 12px;background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:10px;">
         <div style="font-size:10px;color:var(--purple);font-weight:800;">🔔 웅덩이 TQQQ 부스트 포함</div>
@@ -1986,6 +1988,7 @@ function dailyLoad(){
   if(S.qldWeight == null)   S.qldWeight   = 100;
   if(S.gldWeight == null)   S.gldWeight   = 0;
   if(S.projYears == null)   S.projYears   = 10;
+  if(S.inflRate == null)    S.inflRate    = 2.5;
   if(S.accYears == null)    S.accYears    = 10;
   if(S.wdMonthly == null)   S.wdMonthly   = 0;
   if(S.wdYears == null)     S.wdYears     = 30;
@@ -1998,6 +2001,7 @@ function dailyLoad(){
   g("s-growth", S.incomeGrowth); g("s-tqqqmult", S.tqqqMult);
   g("s-qldweight", S.qldWeight); g("s-gldweight", S.gldWeight);
   g("s-projyears", S.projYears); g("s-accyears", S.accYears);
+  g("s-inflrate", S.inflRate);
   g("s-wd-monthly", S.wdMonthly || ""); g("s-wd-years", S.wdYears);
   setBuyMode(S.buyMode, true);
   dailyCompute();
@@ -2214,6 +2218,7 @@ function dailySave(){
   S.gldWeight    = gv("s-gldweight") !== "" ? Math.max(0, Math.min(100, d2num(gv("s-gldweight")))) : 0;
   if(S.qldWeight + S.gldWeight > 100){ S.gldWeight = 100 - S.qldWeight; const ge = document.getElementById("s-gldweight"); if(ge) ge.value = S.gldWeight; }
   S.projYears    = gv("s-projyears") !== "" ? Math.max(1, Math.min(40, d2num(gv("s-projyears")))) : 10;
+  S.inflRate     = gv("s-inflrate") !== "" ? Math.max(0, Math.min(20, d2num(gv("s-inflrate")))) : 2.5;
   S.accYears     = gv("s-accyears") !== "" ? Math.max(1, Math.min(40, d2num(gv("s-accyears")))) : 10;
   if(S.accYears > S.projYears){ S.accYears = S.projYears; const ae = document.getElementById("s-accyears"); if(ae) ae.value = S.accYears; }
   S.wdMonthly    = d2num(gv("s-wd-monthly"));
@@ -2341,6 +2346,21 @@ function dailyCompute(){
   const multP = principalP > 0 ? fvBoost / principalP : 0;   // 원금대비는 부스트 포함 기준
   setT("proj-value", annualBuy > 0 ? d2fmt(fvMix) : "일일 매수액 필요");
   setT("proj-sub", annualBuy > 0 ? `연 ${d2fmt(annualBuy)} × ${accYears}년 적립 = 원금 ${d2fmt(principalP)}` : "설정에서 '일일 매수액'을 먼저 정하세요");
+  // 💴 실질가치: 미래 명목금액을 오늘 돈 가치로 할인 (÷ (1+물가)^기간)
+  const inflR = (S.inflRate != null && S.inflRate !== "") ? Math.max(0, Math.min(20, d2num(S.inflRate))) : 2.5;
+  const realEl = document.getElementById("proj-real");
+  if(realEl){
+    if(annualBuy > 0 && inflR > 0){
+      const disc = Math.pow(1 + inflR/100, projYears);
+      const realMix = fvMix / disc;
+      const realBoost = fvBoost / disc;
+      realEl.innerHTML = `💴 <b>오늘 돈 가치로는 ≈ ${d2fmt(realMix)}</b>`
+        + (boostFactor > 1 ? ` (부스트 포함 ${d2fmt(realBoost)})` : "")
+        + `<br><span style="color:var(--text3);">물가 연 ${inflR}% · ${projYears}년 반영. 명목 ${d2fmt(fvMix)}의 실제 구매력은 오늘 기준 이 정도입니다.</span>`;
+    } else if(annualBuy > 0){
+      realEl.innerHTML = `<span style="color:var(--text3);">물가상승률 0% — 실질가치 = 명목금액</span>`;
+    } else { realEl.innerHTML = ""; }
+  }
   setT("proj-mult", annualBuy > 0 ? "×" + multP.toFixed(1) : "—");
   setT("proj-cagr", "약 " + (blendedCagr*100).toFixed(1) + "%");
   const phase = document.getElementById("proj-phase");

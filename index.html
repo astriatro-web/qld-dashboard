@@ -525,7 +525,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
   <!-- 🎯 목표 달성 보상 -->
   <div class="card" id="reward-card">
     <div class="card-label">🎯 목표 달성 보상</div>
-    <div style="font-size:11px;color:var(--text3);font-weight:700;">예상 누적 평가액</div>
+    <div style="font-size:11px;color:var(--text3);font-weight:700;">현재 평가액 (실시세)</div>
     <div id="rw-current" style="font-size:24px;font-weight:900;color:var(--blue);line-height:1.15;margin-top:2px;">—</div>
     <div id="rw-basis" style="font-size:10px;color:var(--text3);margin-top:3px;line-height:1.5;"></div>
 
@@ -544,7 +544,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <input id="rw-new-name" type="text" placeholder="보상 (예: 여행)" style="flex:1.2;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:inherit;background:var(--bg2);color:var(--text1);">
       <button type="button" onclick="rwAddMilestone()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">+</button>
     </div>
-    <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;">예상 누적은 '매수 시작일부터의 <b>평일 수</b> × 일일 매수액'으로 자동 추정(원금 기준, 주말 제외·미국 공휴일 미반영)입니다. 실제 매수가·수익률과 다르니 가끔 <b>실제 잔고로 보정</b>하세요.</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;">상단 <b>새로고침</b> 때마다 그날까지 쌓인 평일수만큼 <b>실시세로 주수를 적립</b>해 평가액(수익 포함)을 계산합니다. 자주 안 열면 그 사이 매수가 한 시점 가격으로 뭉뚱그려지니, 가끔 <b>실제 잔고로 보정</b>하세요. (주말 제외·미국 공휴일·TQQQ 부스트 미반영)</div>
   </div>
 
   <!-- 라이브 시세 -->
@@ -1564,7 +1564,7 @@ async function fetchAll() {
       fg:d.fg||S.fg||null, ma20:d.ma20, ma60:d.ma60, ma120:d.ma120,
       ma120sso:d.ma120sso||null,
       ma200spy:d.ma200spy, spym:d.spym||null,
-      tqqq:d.tqqq||null, soxl:d.soxl||null,
+      tqqq:d.tqqq||null, soxl:d.soxl||null, gld:d.gld||null,
       ma200tqqq:d.ma200tqqq||null, ma300soxl:d.ma300soxl||null,
       standbyDate: d.standbyDate || null,
       standbyWhipsawNote: d.standbyWhipsawNote || null,
@@ -1576,6 +1576,7 @@ async function fetchAll() {
     else { S.standbyDate = ""; }
     localStorage.setItem("qld_s11", JSON.stringify(S));
     renderDaily(MD);
+    if(typeof renderRewards === "function") renderRewards();
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
   } catch(e) {
     console.error(e);
@@ -2007,16 +2008,18 @@ function setScenario(name){
   dailyCompute();
 }
 
-// ── 🎯 목표 달성 보상 시스템 ──
+// ── 🎯 목표 달성 보상 시스템 (자산별 주수 적립 → 실시세 평가) ──
 let RW = null;
 function rwLoad(){
   try { RW = JSON.parse(localStorage.getItem("qld_reward") || "{}"); } catch(e){ RW = {}; }
   if(!RW.milestones) RW.milestones = [];
+  if(!RW.shares) RW.shares = { qld:0, sso:0, gld:0 };
+  if(!RW.cost)   RW.cost   = { qld:0, sso:0, gld:0 };   // 원금(KRW)
   return RW;
 }
 function rwSave(){ localStorage.setItem("qld_reward", JSON.stringify(RW)); }
 function rwWeekdaysBetween(fromMs, toMs){
-  // fromMs~toMs 사이의 평일(월~금) 수. 주말 제외(미국 공휴일은 무시 — 보정으로 커버)
+  // fromMs~toMs 사이의 평일(월~금) 수. 주말 제외(미국 공휴일 무시)
   if(toMs <= fromMs) return 0;
   const DAY = 86400000;
   const start = new Date(fromMs); start.setHours(0,0,0,0);
@@ -2025,32 +2028,81 @@ function rwWeekdaysBetween(fromMs, toMs){
   const fullWeeks = Math.floor(totalDays / 7);
   let weekdays = fullWeeks * 5;
   const remainder = totalDays - fullWeeks * 7;
-  let dow = start.getDay();   // 0=일 … 6=토
-  for(let i = 0; i < remainder; i++){
-    dow = (dow + 1) % 7;      // 다음 날부터 카운트
-    if(dow !== 0 && dow !== 6) weekdays++;
-  }
+  let dow = start.getDay();
+  for(let i = 0; i < remainder; i++){ dow = (dow + 1) % 7; if(dow !== 0 && dow !== 6) weekdays++; }
   return weekdays;
 }
-function rwCurrentValue(){
+function rwPrices(){
+  const md = (typeof MD !== "undefined" && MD) ? MD : {};
+  return { qld: md.qld || null, sso: md.sso || null, gld: md.gld || null, fx: md.usdkrw || 1380 };
+}
+// 지난 적립 이후 쌓인 평일수만큼 자산별 주수를 현재가로 적립
+function rwAccrue(){
+  rwLoad();
+  const anchor = RW.lastAccrualMs || RW.startDate;
+  if(!anchor) return;                       // 시작 안 함
   const dailyBuy = d2num((S && S.dailyBuy) || 0);
+  if(dailyBuy <= 0) return;
+  const P = rwPrices();
+  if(!P.qld) return;                        // 시세 없으면 적립 보류(다음 갱신 때)
   const now = Date.now();
-  if(RW.calibValue != null && RW.calibDate){
-    return RW.calibValue + dailyBuy * rwWeekdaysBetween(RW.calibDate, now);   // 보정값 + 이후 평일 매수분
-  }
-  if(RW.startDate){
-    return dailyBuy * rwWeekdaysBetween(RW.startDate, now);                    // 시작일부터 평일 누적
-  }
-  return 0;
+  const wd = rwWeekdaysBetween(anchor, now);
+  if(wd <= 0) return;
+  const qldW = (S.qldWeight!=null&&S.qldWeight!=="")?Math.max(0,Math.min(100,d2num(S.qldWeight))):100;
+  const gldW = (S.gldWeight!=null&&S.gldWeight!=="")?Math.max(0,Math.min(100,d2num(S.gldWeight))):0;
+  const ssoW = Math.max(0, 100 - qldW - gldW);
+  const fx = P.fx;
+  const add = (krwPerDay, price) => (price ? (krwPerDay * wd / fx) / price : 0);
+  // QLD
+  const qKRW = dailyBuy*qldW/100*wd; RW.shares.qld += add(dailyBuy*qldW/100, P.qld); RW.cost.qld += qKRW;
+  // SSO
+  if(ssoW>0){ const sKRW = dailyBuy*ssoW/100*wd; if(P.sso){ RW.shares.sso += add(dailyBuy*ssoW/100, P.sso); } RW.cost.sso += sKRW; }
+  // GLD (시세 있으면 주수, 없으면 원금만)
+  if(gldW>0){ const gKRW = dailyBuy*gldW/100*wd; if(P.gld){ RW.shares.gld += add(dailyBuy*gldW/100, P.gld); } RW.cost.gld += gKRW; }
+  RW.lastAccrualMs = now;
+  rwSave();
+}
+function rwValue(){
+  rwLoad();
+  const P = rwPrices();
+  const fx = P.fx;
+  // 평가액: 시세 있는 자산은 주수×현재가×환율, GLD 시세 없으면 원금으로 대체
+  const vQ = P.qld ? RW.shares.qld * P.qld * fx : 0;
+  const vS = P.sso ? RW.shares.sso * P.sso * fx : RW.cost.sso;   // sso 시세 없으면 원금
+  const vG = P.gld ? RW.shares.gld * P.gld * fx : RW.cost.gld;   // gld 시세 없으면 원금
+  const value = vQ + vS + vG;
+  const cost = (RW.cost.qld||0) + (RW.cost.sso||0) + (RW.cost.gld||0);
+  return { value, cost, gldNoPrice: (RW.cost.gld>0 && !P.gld) };
 }
 function rwSetStartToday(){
-  rwLoad(); RW.startDate = Date.now(); RW.calibValue = null; RW.calibDate = null; rwSave(); renderRewards();
+  rwLoad();
+  RW.startDate = Date.now(); RW.lastAccrualMs = Date.now();
+  RW.shares = { qld:0, sso:0, gld:0 }; RW.cost = { qld:0, sso:0, gld:0 };
+  RW.calibValue = null; RW.calibDate = null;
+  rwSave(); renderRewards();
 }
 function rwCalibrate(){
-  rwLoad();
+  rwLoad(); rwAccrue();
   const v = d2num((document.getElementById("rw-calib")||{}).value);
-  if(v > 0){ RW.calibValue = v; RW.calibDate = Date.now(); if(!RW.startDate) RW.startDate = Date.now(); rwSave();
-    const e = document.getElementById("rw-calib"); if(e) e.value = ""; renderRewards(); }
+  if(v > 0){
+    const cur = rwValue().value;
+    if(cur > 0){
+      const f = v / cur;                    // 실제 잔고에 맞춰 주수 스케일(자산 비율 유지)
+      RW.shares.qld *= f; RW.shares.sso *= f; RW.shares.gld *= f;
+    } else {
+      // 아직 주수 0이면 현재 비중으로 시드
+      const P = rwPrices(); const fx = P.fx;
+      const qldW=(S.qldWeight!=null?d2num(S.qldWeight):100), gldW=(S.gldWeight!=null?d2num(S.gldWeight):0), ssoW=Math.max(0,100-qldW-gldW);
+      if(P.qld) RW.shares.qld = (v*qldW/100)/fx/P.qld;
+      if(P.sso) RW.shares.sso = (v*ssoW/100)/fx/P.sso;
+      if(P.gld) RW.shares.gld = (v*gldW/100)/fx/P.gld;
+    }
+    if(!RW.startDate) RW.startDate = Date.now();
+    RW.lastAccrualMs = Date.now();
+    rwSave();
+    const e = document.getElementById("rw-calib"); if(e) e.value = "";
+    renderRewards();
+  }
 }
 function rwAddMilestone(){
   rwLoad();
@@ -2069,17 +2121,20 @@ function rwDelMilestone(id){
   rwLoad(); RW.milestones = RW.milestones.filter(m => m.id !== id); rwSave(); renderRewards();
 }
 function renderRewards(){
-  rwLoad();
-  const cur = rwCurrentValue();
+  rwLoad(); rwAccrue();
+  const { value, cost, gldNoPrice } = rwValue();
+  const cur = value;
   setText("rw-current", cur > 0 ? d2fmt(cur) : "시작일 설정 필요");
   const basis = document.getElementById("rw-basis");
   if(basis){
-    if(RW.calibValue != null && RW.calibDate){
-      basis.textContent = `${new Date(RW.calibDate).toLocaleDateString("ko-KR")} 보정 ${d2fmt(RW.calibValue)} + 이후 적립분`;
-    } else if(RW.startDate){
-      basis.textContent = `${new Date(RW.startDate).toLocaleDateString("ko-KR")} 시작 · 원금 누적 기준`;
+    if(cur > 0 && cost > 0){
+      const pnl = cur - cost, pct = pnl / cost * 100;
+      const col = pnl >= 0 ? "#16a34a" : "#dc2626";
+      basis.innerHTML = `원금 ${d2fmt(cost)} · <span style="color:${col};font-weight:800;">평가손익 ${pnl>=0?"+":""}${d2fmt(pnl)} (${pnl>=0?"+":""}${pct.toFixed(1)}%)</span>`
+        + (gldNoPrice ? `<br><span style="color:var(--amber);">※ GLD 시세가 피드에 없어 원금으로만 반영(시트에 gld 추가 시 수익 반영)</span>` : "")
+        + (RW.startDate ? `<br><span style="color:var(--text3);">${new Date(RW.startDate).toLocaleDateString("ko-KR")} 시작 · 상단 새로고침 때마다 실시세로 적립</span>` : "");
     } else {
-      basis.textContent = "‘오늘부터 매수 시작’을 누르거나 실제 잔고로 보정하세요.";
+      basis.textContent = "'오늘부터 매수 시작'을 누른 뒤, 상단 새로고침으로 시세를 불러오면 실시세로 적립됩니다.";
     }
   }
   const list = document.getElementById("rw-list");
@@ -2088,11 +2143,10 @@ function renderRewards(){
     list.innerHTML = `<div style="font-size:11px;color:var(--text3);text-align:center;padding:10px 0;">아래에서 목표와 보상을 등록해 보세요 (예: 1억 → 좋은 커피머신)</div>`;
     return;
   }
-  // 다음 미달성 목표 찾기
   const nextIdx = RW.milestones.findIndex(m => cur < m.amount);
   list.innerHTML = RW.milestones.map((m, i) => {
     const done = cur >= m.amount;
-    const pct = Math.max(0, Math.min(100, cur / m.amount * 100));
+    const pct = Math.max(0, Math.min(100, m.amount>0 ? cur / m.amount * 100 : 0));
     const isNext = (i === nextIdx);
     const remain = m.amount - cur;
     return `<div style="padding:9px 11px;border-radius:10px;margin-bottom:7px;background:${done?'var(--blue-lt)':'var(--bg2)'};border:1px solid ${done?'rgba(37,99,235,0.25)':isNext?'rgba(37,99,235,0.35)':'var(--border)'};">

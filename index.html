@@ -2076,10 +2076,16 @@ function rwValue(){
 }
 function rwSetStartToday(){
   rwLoad();
+  if(RW.startDate && !confirm("매수 시작일을 오늘로 다시 설정할까요?\n(기존에 쌓인 적립 주수·원금이 초기화됩니다)")) return;
   RW.startDate = Date.now(); RW.lastAccrualMs = Date.now();
   RW.shares = { qld:0, sso:0, gld:0 }; RW.cost = { qld:0, sso:0, gld:0 };
   RW.calibValue = null; RW.calibDate = null;
   rwSave(); renderRewards();
+  // 시세가 아직 없으면 바로 불러와 적립 시작
+  if((typeof MD === "undefined" || !MD || !MD.qld) && typeof fetchAll === "function"){
+    fetchAll();
+  }
+  alert("오늘부터 매수 시작으로 설정했어요. 상단 새로고침 때마다 실시세로 적립됩니다.");
 }
 function rwCalibrate(){
   rwLoad(); rwAccrue();
@@ -2124,7 +2130,7 @@ function renderRewards(){
   rwLoad(); rwAccrue();
   const { value, cost, gldNoPrice } = rwValue();
   const cur = value;
-  setText("rw-current", cur > 0 ? d2fmt(cur) : "시작일 설정 필요");
+  setText("rw-current", cur > 0 ? d2fmt(cur) : (RW.startDate ? "새로고침 대기" : "시작일 설정 필요"));
   const basis = document.getElementById("rw-basis");
   if(basis){
     if(cur > 0 && cost > 0){
@@ -2133,6 +2139,8 @@ function renderRewards(){
       basis.innerHTML = `원금 ${d2fmt(cost)} · <span style="color:${col};font-weight:800;">평가손익 ${pnl>=0?"+":""}${d2fmt(pnl)} (${pnl>=0?"+":""}${pct.toFixed(1)}%)</span>`
         + (gldNoPrice ? `<br><span style="color:var(--amber);">※ GLD 시세가 피드에 없어 원금으로만 반영(시트에 gld 추가 시 수익 반영)</span>` : "")
         + (RW.startDate ? `<br><span style="color:var(--text3);">${new Date(RW.startDate).toLocaleDateString("ko-KR")} 시작 · 상단 새로고침 때마다 실시세로 적립</span>` : "");
+    } else if(RW.startDate){
+      basis.innerHTML = `<span style="color:var(--blue);font-weight:700;">${new Date(RW.startDate).toLocaleDateString("ko-KR")} 매수 시작됨 ✓</span><br><span style="color:var(--text3);">상단 새로고침으로 시세를 불러오면 실시세로 주수가 적립됩니다.</span>`;
     } else {
       basis.textContent = "'오늘부터 매수 시작'을 누른 뒤, 상단 새로고침으로 시세를 불러오면 실시세로 적립됩니다.";
     }

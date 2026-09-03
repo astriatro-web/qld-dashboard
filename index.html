@@ -1083,6 +1083,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
     </div>
     <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 이 값은 <b>과거 연 수익률(QLD 약 34%·SCHD 14%·GLD 12%)이 그대로 이어진다</b>는 가정입니다. 34%는 역대급 강세장 산물이라 <b>20~30년 지속은 비현실적</b> — 기간이 길수록(특히 15년+) 실제와 크게 벌어집니다. '잃어버린 10년'이 오면 이 숫자는 무의미하고 SCHD·GLD가 계좌를 지키는 쪽으로 작동합니다. 단기(≈10년) 상대비교용으로 보세요.</div>
 
+
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
     <div style="background:#f0fdf4;border:1px solid rgba(22,163,74,0.22);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
       <div style="font-size:11px;color:#16a34a;font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🏖️ 노후 인출 시뮬레이터</div>
@@ -2431,7 +2432,6 @@ function dailyCompute(){
     }
   }
 
-  // 🏖️ 노후 인출 시뮬레이션 (시작잔고=부스트 포함 평가액, 연초 인출 후 성장)
   const wdMonthly = S.wdMonthly || 0;
   const wdYears = (S.wdYears != null && S.wdYears !== "") ? Math.max(1, Math.min(60, d2num(S.wdYears))) : 30;
   const wdBox = document.getElementById("wd-result");
@@ -2985,18 +2985,65 @@ function ladderRender(){
           ${budgetLine}
         </div>
         <div style="display:flex;gap:4px;">
+          <button onclick="ladderValuationAI('${e.id}')" style="background:#eef2ff;border:1px solid rgba(79,70,229,0.3);border-radius:7px;padding:4px 8px;font-size:10px;color:#4f46e5;font-weight:700;cursor:pointer;white-space:nowrap;">🔍 밸류에이션</button>
           <button onclick="ladderAddOpen('${e.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:4px 8px;font-size:10px;color:var(--text2);cursor:pointer;">수정</button>
           <button onclick="ladderRemove('${e.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:4px 8px;font-size:10px;color:#dc2626;cursor:pointer;">삭제</button>
         </div>
       </div>
+      <div id="ladder-ai-${e.id}" style="display:none;margin-bottom:10px;"></div>
       <div style="background:${st.color==='#dc2626'?'#fef2f2':'var(--bg3)'};border-radius:9px;padding:7px 10px;font-size:11.5px;font-weight:700;color:${st.color};margin-bottom:10px;">${st.txt}</div>
       ${ladderTable(rungs, e.fills, e.current, e.id, e.budget)}
     </div>`;
   }).join("");
 }
 
-function ladderAddOpen(id){
-  ladderEditId = id || null;
+// 🔍 밸류에이션 붕괴 평가 — GAS의 Claude AI 경유
+async function ladderValuationAI(id){
+  const e = LADDER.find(x => x.id === id);
+  if(!e) return;
+  const box = document.getElementById("ladder-ai-" + id);
+  if(!box) return;
+  box.style.display = "block";
+  box.innerHTML = `<div style="background:#eef2ff;border:1px solid rgba(79,70,229,0.25);border-radius:10px;padding:12px;font-size:12px;color:#4f46e5;font-weight:700;">🔍 ${e.ticker} 펀더멘털 분석 중… (재무 조회 + AI, 10초쯤)</div>`;
+  try {
+    const params = new URLSearchParams({ action: "valuation", ticker: e.ticker });
+    const res = await fetch(GAS_URL + "?" + params.toString(), { method: "GET", mode: "cors", redirect: "follow" });
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.error || "분석 실패");
+    const map = {
+      SOLID:  { label: "펀더멘털 견고", col: "#16a34a", bg: "#f0fdf4", bd: "rgba(22,163,74,0.3)", emo: "🟢" },
+      FAIR:   { label: "적정",         col: "#0891b2", bg: "#ecfeff", bd: "rgba(8,145,178,0.3)", emo: "🔵" },
+      PRICEY: { label: "고평가 부담",   col: "#d97706", bg: "#fffbeb", bd: "rgba(217,119,6,0.35)", emo: "🟠" },
+      BROKEN: { label: "밸류에이션 붕괴", col: "#dc2626", bg: "#fef2f2", bd: "rgba(220,38,38,0.35)", emo: "🔴" }
+    };
+    const g = map[d.grade] || { label: d.grade||"판정", col: "var(--text2)", bg: "var(--bg3)", bd: "var(--border)", emo: "⚪" };
+    const m = d.metrics || {};
+    const facts = (d.factors || []).map(f => `<li style="margin-bottom:2px;">${f}</li>`).join("");
+    const chip = (lbl, val, unit) => val!=null && val!=="-" && val!=="NaN"
+      ? `<span style="display:inline-block;background:rgba(0,0,0,0.04);border-radius:6px;padding:2px 7px;margin:2px 3px 0 0;font-size:10px;color:var(--text2);"><b style="color:var(--text1);">${lbl}</b> ${val}${unit||""}</span>` : "";
+    box.innerHTML = `<div style="background:${g.bg};border:1.5px solid ${g.bd};border-radius:12px;padding:13px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;font-weight:900;color:${g.col};">${g.emo} ${g.label}</span>
+        <span style="font-size:11px;font-weight:800;color:${g.col};">밸류 건강도 ${d.score!=null?d.score:"—"}/100</span>
+      </div>
+      ${d.name ? `<div style="font-size:10px;color:var(--text3);margin-top:1px;">${d.name}</div>` : ""}
+      <div style="font-size:12.5px;font-weight:700;color:var(--text1);margin-top:6px;line-height:1.5;">${d.headline||""}</div>
+      <div style="margin-top:8px;">
+        ${chip("PER", m.trailingPE)}${chip("선행PER", m.forwardPE)}${chip("PEG", m.pegRatio)}${chip("PBR", m.priceToBook)}${chip("PSR", m.priceToSales)}
+        ${chip("이익성장", m.earningsGrowth, "%")}${chip("매출성장", m.revenueGrowth, "%")}${chip("순이익률", m.profitMargin, "%")}${chip("ROE", m.roe, "%")}${chip("D/E", m.debtToEquity)}
+      </div>
+      ${d.valuation ? `<div style="font-size:11.5px;color:var(--text2);margin-top:8px;line-height:1.6;"><b>💲 밸류에이션:</b> ${d.valuation}</div>` : ""}
+      ${facts ? `<ul style="font-size:11px;color:var(--text2);margin:8px 0 0;padding-left:16px;line-height:1.6;">${facts}</ul>` : ""}
+      ${d.ladder_advice ? `<div style="font-size:11.5px;color:${g.col};margin-top:8px;padding-top:7px;border-top:1px dashed ${g.bd};line-height:1.6;"><b>📐 래더 관점:</b> ${d.ladder_advice}</div>` : ""}
+      ${d.caution ? `<div style="font-size:10.5px;color:var(--amber);margin-top:6px;line-height:1.6;">⚠️ ${d.caution}</div>` : ""}
+      <div style="font-size:9.5px;color:var(--text3);margin-top:8px;line-height:1.6;">현재가 ${m.price!=null?"$"+m.price:"—"}${m.fromHigh!=null?` · 고점대비 ${m.fromHigh}%`:""}${m.targetMeanPrice!=null?` · 목표가 $${m.targetMeanPrice}`:""}${m.recommendationKey?` · 의견 ${m.recommendationKey}`:""}<br>${d.fetched_at||""} · 실시간 재무 기반 AI 참고용, 투자 자문 아님</div>
+    </div>`;
+  } catch(err) {
+    box.innerHTML = `<div style="background:#fef2f2;border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:11px;font-size:11.5px;color:#dc2626;">분석 실패: ${err.message}<br><span style="color:var(--text3);">GAS에 valuation 액션이 배포됐는지, ETF·신규상장(재무지표 없음)이 아닌지 확인해 주세요.</span></div>`;
+  }
+}
+
+function ladderAddOpen(id){  ladderEditId = id || null;
   const e = id ? LADDER.find(x => x.id === id) : null;
   document.getElementById("ladder-modal-title").textContent = e ? "종목 수정" : "종목 추가";
   document.getElementById("ladder-ticker").value = e ? e.ticker : "";

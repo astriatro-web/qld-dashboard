@@ -993,6 +993,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <span id="s-sso-pct" style="font-size:15px;color:var(--teal);font-weight:900;">—</span>
     </div>
     <div id="s-mix-sub" style="font-size:11px;color:var(--text2);font-weight:600;margin:-2px 0 10px;"></div>
+    <button type="button" onclick="applyRecMix()" style="width:100%;background:#ecfdf5;border:1.5px solid rgba(16,163,74,0.3);border-radius:9px;padding:9px;font-size:11.5px;font-weight:800;color:#15803d;cursor:pointer;font-family:inherit;margin-bottom:10px;">⭐ 백테 권장 구성 적용 (공격 82 · 금 7 · 방어 11)</button>
 
     <div style="margin-top:6px;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
@@ -1282,10 +1283,13 @@ function getRULES() {
     { title:"⚖️ 포트 구성 · 분산과 보험", color:"#0891b2", bg:"#e0f2fe",
       items:[
         ["기본은 QLD 하나","30년 시계열이면 분산은 늘 수익을 깎았다(백테스트 일관). 나스닥 우상향을 믿으면 QLD 단일이 순수 기대수익 최강. 방어자산은 '덜 번 만큼'의 보험료다."],
-        ["붕괴는 두 가지 방식","①급락형(2008·2020·2022): QLD −60~−84%, 이땐 SSO·GLD도 대체로 같이 빠진다(특히 2022). 분산은 낙폭을 줄일 뿐 방향은 같다. ②장기 소멸형('잃어버린 10년'): 나스닥이 10년+ 횡보하면 레버리지는 변동성 감가로 −90%대에서 못 돌아온다 — 회복 자체가 수학적으로 불가."],
-        ["SSO는 변동성 방어, GLD는 소멸 방어","SSO(S&P 2배)는 나스닥보다 덜 출렁일 뿐 소멸형엔 같이 죽는다(결국 주식). 장기 소멸을 진짜 막는 건 금뿐 — 2000~2011 나스닥이 죽어있을 때 금은 4~5배 올라 계좌를 살렸다. 지난 백테스트가 방어자산을 계속 '손해'로 보인 건 2013~2026에 소멸형 재앙이 안 와 보험금 청구가 없었을 뿐이다."],
-        ["방어 우선순위","1개=QLD → 2개=+GLD(금) → 3개=+SCHD(배당) → 4개=+TLT(국채). TLT는 12.9년간 1.08배(사실상 죽은 돈)에 2022엔 주식과 같이 −47% → 디플레 침체 전용 보험이라 맨 끝."],
-        ["결국 믿음의 문제","'나스닥은 30년 안에 반드시 회복한다'를 믿으면 QLD 하나가 정답. '잃어버린 10년이 다시 올 수 있다'를 진지하게 보면 금 10~20%는 덜 버는 보험료가 아니라 레버리지 영구손실을 막는 유일한 안전장치. 20~30년 적립·집·연금 등 별도 안전판이 있으면 이 USD 계좌는 '공격 슬리브' → GLD 10~15%가 균형점."],
+        ["붕괴는 두 가지 방식","①급락형(2008·2020·2022): QLD −60~−84%, 이땐 SSO·SCHD도 대체로 같이 빠진다(특히 2022). ②장기 소멸형('잃어버린 10년'): 나스닥이 10년+ 횡보하면 레버리지는 변동성 감가로 −90%대에서 못 돌아온다 — 회복 자체가 수학적으로 불가."],
+        ["★리밸런싱이 분산의 진짜 수익원","분산 자체는 수익을 깎지만, 연 1회 리밸런싱을 넣으면 얘기가 달라진다. 엔진80/금20: 고정비중 7.76배(−64%) → <b>연1회 리밸 8.39배(−55%)</b>. 수익이 오르고 MDD가 −9%p 급감. 원리=오른 자산(금)을 팔아 폭락한 QLD를 싸게 담는 자동 저가매수. <b>방어자산을 넣을 거면 리밸런싱은 필수</b> — 이게 없으면 분산은 그냥 손해."],
+        ["위기 실전 데이터(총수익)","코로나2020: QLD −51%·DBMF −6·STIP −2. 약세장2022: QLD −62%·<b>DBMF +35%</b>·STIP −7·VXUS −27. 금은 '무상관(안 빠져서 방어)', DBMF(추세추종)는 '역상관(오히려 벌어서 방어)'. 2022처럼 주식·채권 동반폭락에 TLT는 −47%로 같이 죽었다."],
+        ["방어자산 성격표","금(GLD) 배수3.12·MDD−28%: ⭐무상관·잃어버린10년/통화위기 헤지. DBMF(추세추종) 1.40·−26%: ⭐위기알파(2022 +35%)·역상관·능동방어. SCHD(배당) 4.30·−33%: 배당현금흐름. STIP(물가채) 1.20·−9%: near-cash 실탄(거의 안 빠짐). VXUS(전세계) 1.97·−35%: 미국예외주의종료 전용(현재 부진). TLT(장기국채) 1.08·−47%: 디플레 전용·죽은 돈."],
+        ["방어 우선순위(개정)","금(GLD) ≥ DBMF ≥ STIP &gt; SCHD &gt; VXUS·TLT. 금=무상관 헤지 1순위, DBMF=위기알파(다만 7년 데이터뿐), STIP=안 빠지는 실탄, SCHD=배당 현금흐름, VXUS·TLT는 특수상황 전용이라 맨 끝."],
+        ["★권장 구성(백테 기반)","공격 82%(매일 QLD + 웅덩이 TQQQ 1.0배) + 방어 18%(금7·SCHD6·STIP5) + <b>연1회 리밸런싱</b> → 백테 11.07배/MDD −57% (vs 100%엔진 12.99배/−69%). 수익 −15% 내주고 낙폭을 −12%p 줄인 균형점. TQQQ는 1.0→0.6 낮춰도 MDD가 −57→−56%로 거의 안 변하고 수익만 −6% 손해 → <b>방어자산 있으면 TQQQ 1.0 유지가 효율적</b>(하향은 방어자산과 역할 중복)."],
+        ["결국 믿음의 문제","'나스닥은 30년 안에 반드시 회복한다'를 믿으면 QLD 하나가 정답. '잃어버린 10년이 다시 올 수 있다'를 진지하게 보면 금·DBMF 10~20%는 덜 버는 보험료가 아니라 레버리지 영구손실을 막는 안전장치. ※ 이 백테 구간(2013~2026)엔 소멸형 재앙이 없어 방어자산의 진짜 보험금은 미검증 — 실전 방어효과는 이 숫자보다 클 수 있다. 5자산 최적화가 '금'으로 수렴한 건 2024~26 금 급등 반영(과최적화 경계)."],
       ]
     },
     { title:"💰 익절 / 현금화 (옵션 — 필수 아님)", color:"#92400e", bg:"#fef3c7",
@@ -2027,8 +2031,22 @@ function setScenario(name){
   localStorage.setItem("qld_s11", JSON.stringify(S));
   dailyCompute();
 }
-function setMidAsset(name){
-  const prev = S.midAsset || "schd";
+// ⭐ 백테 권장 구성 적용 — 공격 82% + 금 7% + 방어(SCHD) 11%(=SCHD 6 + STIP 5 통합) + TQQQ 1.0 + 연1회 리밸
+function applyRecMix(){
+  if(!confirm("백테 권장 구성으로 설정할까요?\n\n· QLD 82% + 금(GLD) 7% + SCHD 11%\n· 중간자산 SCHD, 웅덩이 TQQQ 1.0배\n· 연 1회 리밸런싱 권장\n\n(백테 11.07배 / MDD −57%. SCHD 11%는 원 권장의 SCHD 6% + STIP 5%를 합친 근사 — 앱은 STIP·DBMF 슬라이더가 아직 없습니다.)")) return;
+  S.qldWeight = 82; S.gldWeight = 7;          // 중간(SCHD) 자동 = 11
+  S.midAsset = "schd";
+  S.tqqqMult = 1.0;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  const q=document.getElementById("s-qldweight"); if(q) q.value = 82;
+  const g=document.getElementById("s-gldweight"); if(g) g.value = 7;
+  const t=document.getElementById("s-tqqqmult"); if(t) t.value = 1.0;
+  dailyCompute();
+  if(typeof renderDaily==="function" && typeof MD!=="undefined") renderDaily(MD);
+  if(typeof renderRewards==="function") renderRewards();
+  alert("권장 구성 적용 완료. 방어자산을 넣었으니 연 1회 리밸런싱을 함께 하시는 게 핵심입니다(리밸런싱이 분산의 진짜 수익원).");
+}
+function setMidAsset(name){  const prev = S.midAsset || "schd";
   if(name !== prev && typeof RW !== "undefined" && RW && RW.cost && RW.cost.sso > 0){
     if(!confirm("중간 자산을 " + (name==="sso"?"SSO":"SCHD") + "로 바꿀까요?\n\n보상 트래커에 이미 쌓인 중간자산(" + (prev==="sso"?"SSO":"SCHD") + ") 적립분은 새 자산 시세로 평가돼 값이 어긋날 수 있어요. 바꾼 뒤 '실제 잔고 보정'을 한 번 눌러 맞추면 됩니다.")) return;
   }
@@ -2268,8 +2286,8 @@ function dailyCompute(){
     : "");
 
   // 3자산 기대수익·안정성 게이지 (매일적립 실측근사)
-  // QLD 12.74/-63%,  SSO 5.90/-59%,  SCHD 2.67/-33%(배당재투자 13.7% CAGR),  GLD 2.30/-22%
-  const QLD_MULT=12.74, GLD_MULT=2.30, QLD_MDD=63, GLD_MDD=22;
+  // QLD 12.74/-63%,  SSO 5.90/-59%,  SCHD 2.67/-33%(배당재투자 13.7% CAGR),  GLD 2.30/-28%(2013~2026)
+  const QLD_MULT=12.74, GLD_MULT=2.30, QLD_MDD=63, GLD_MDD=28;
   const SSO_MULT = midAsset === "sso" ? 5.90 : 2.67;
   const SSO_MDD  = midAsset === "sso" ? 59 : 33;
   const MID_YIELD = midAsset === "sso" ? 0 : 0.03;   // SCHD만 배당수익률 ≈ 3.0%(2026)
@@ -2284,7 +2302,7 @@ function dailyCompute(){
   setBar("mix-ret-bar", retPct);
   setBar("mix-mdd-bar", stabPct);
   setT("mix-note", (ssoW > 0 || gldW > 0)
-    ? `기대 배수 ${mult.toFixed(1)}배 · 예상 낙폭 약 -${mdd.toFixed(0)}%. 분산할수록 수익은 낮아지고 흔들림은 줄어듭니다. ※ 순수지수 매일적립 실측 근사·TQQQ 부스트 미반영, 참고용.`
+    ? `기대 배수 ${mult.toFixed(1)}배 · 예상 낙폭 약 -${mdd.toFixed(0)}%. 분산할수록 수익은 낮아지고 흔들림은 줄어듭니다. 이 낙폭은 <b>연 1회 리밸런싱</b>을 전제로 한 근사입니다 — 리밸런싱이 분산의 진짜 수익원(엔진80/금20 고정 −64%→리밸 −55%). ※ 매일적립 실측 근사·TQQQ 부스트 미반영, 참고용.`
     : `순수 QLD = 기대수익 최대(${QLD_MULT}배)·낙폭도 최대(-${QLD_MDD}%). ${midName}/GLD를 섞을수록 수익↓·안정성↑.`);
 
   // GLD 보험 설명 (금 비중 있을 때만)
@@ -2474,8 +2492,9 @@ function dailyCompute(){
   else if(rateForRec <= 50){ base = 0.6; baseWhy = `투자율 ${rateForRec}%(여유 보통)`; }
   else { base = 0.4; baseWhy = `투자율 ${rateForRec}%(월급 대부분 투입·현금 빠듯)`; }
   let rec = base; const adj = [];
-  if(gldW >= 15){ rec -= 0.1; adj.push("GLD 보수 −0.1"); }
-  else if(gldW === 0){ rec += 0.1; adj.push("GLD 0% 공격 +0.1"); }
+  // ★백테 검증: 방어자산이 있으면 TQQQ 하향은 비효율(1.0→0.6 낮춰도 MDD −57→−56%로 거의 동일, 수익만 −6%).
+  //   → GLD 등 방어자산 보유 시 TQQQ를 낮추지 않고 1.0 유지가 효율적. (예전의 'GLD 있으면 −0.1' 로직 제거)
+  if(gldW > 0 || (ssoW > 0)){ adj.push("방어자산 보유 → TQQQ 유지가 효율(하향 불필요)"); }
   if(projYears >= 20){ rec += 0.1; adj.push("장기 20년+ +0.1"); }
   else if(projYears <= 7){ rec -= 0.1; adj.push("단기 ≤7년 −0.1"); }
   rec = Math.max(0.3, Math.min(1.0, Math.round(rec*10)/10));   // 상한 1.0(2~3배 도박 비권장)
@@ -2797,7 +2816,7 @@ function calcGoal() {
 }
 
 // ── 비밀번호 ──
-const PW_HASH = "48a85e327b158440fc52b0604058d7c6200759fd90244a1b1692fc6834bbe419"; // "0528"
+const PW_HASH = "0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c"; // 입장 비번
 async function sha256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");

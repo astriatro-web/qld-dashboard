@@ -2925,7 +2925,8 @@ async function sha256(str) {
 window.checkPW = async function() {
   const val = document.getElementById("pwInput").value;
   const hash = await sha256(val);
-  const stored = localStorage.getItem("qld_pw_hash") || PW_HASH;
+  const stored = PW_HASH;   // 항상 코드의 비번만 사용 (옛 localStorage 덮어쓰기 무시)
+  try { localStorage.removeItem("qld_pw_hash"); } catch(e){}
   if (hash === stored) {
     sessionStorage.setItem("qld_auth","1");
     document.getElementById("pwModal").style.display="none";

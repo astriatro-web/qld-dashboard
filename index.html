@@ -515,59 +515,27 @@ details.strat-acc > summary:active { opacity: 0.85; }
   <!-- 오늘의 매수 구성 -->
   <div class="card">
     <div class="card-label">🧾 오늘의 매수 구성</div>
-    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD (매일 정액)</span><b id="dd-qld-amt">—</b></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD <span id="dd-qld-w" style="font-size:11px;">(이격 가중)</span></span><b id="dd-qld-amt">—</b></div>
     <div id="dd-sso-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span id="dd-sso-label" style="color:var(--text3);">SCHD (배당 방어)</span><b id="dd-sso-amt" style="color:var(--teal);">—</b></div>
     <div id="dd-gld-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">GLD (금 · 보험)</span><b id="dd-gld-amt" style="color:var(--amber);">—</b></div>
-    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">TQQQ (웅덩이 추가)</span><b id="dd-tqqq-amt" style="color:var(--purple);">—</b></div>
-    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;border-top:2px solid var(--text1);"><span style="font-weight:800;">합계</span><b id="dd-total2">—</b></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">TQQQ (예비탄에서 · 웅덩이만)</span><b id="dd-tqqq-amt" style="color:var(--purple);">—</b></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;border-top:2px solid var(--text1);"><span style="font-weight:800;">오늘 실제 매수 합계</span><b id="dd-total2">—</b></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px dashed var(--border);"><span style="color:var(--text3);">💰 예비탄 적립 / 인출</span><b id="dd-res-flow" style="color:#0f766e;">—</b></div>
   </div>
 
-  <!-- 🎯 목표 달성 보상 -->
-  <div class="card" id="reward-card">
-    <div class="card-label">🎯 목표 달성 보상</div>
-    <div style="font-size:11px;color:var(--text3);font-weight:700;">현재 평가액 (실시세)</div>
-    <div id="rw-current" style="font-size:24px;font-weight:900;color:var(--blue);line-height:1.15;margin-top:2px;">—</div>
-    <div id="rw-basis" style="font-size:10px;color:var(--text3);margin-top:3px;line-height:1.5;"></div>
-
-    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-      <button type="button" onclick="rwSetStartToday()" style="flex:1;min-width:110px;background:var(--bg3);color:var(--text2);border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">▶ 오늘부터 매수 시작</button>
-      <div style="flex:1;min-width:110px;display:flex;gap:4px;">
-        <input id="rw-calib" type="number" inputmode="numeric" placeholder="실제 잔고 보정" style="flex:1;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:inherit;background:var(--bg2);color:var(--text1);">
-        <button type="button" onclick="rwCalibrate()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">보정</button>
+  <!-- 💰 예비탄 -->
+  <div class="card" id="dd-res-card">
+    <div class="card-label">💰 예비탄 (웅덩이 TQQQ용 실탄)</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <div>
+        <div style="font-size:11px;color:var(--text3);font-weight:700;">오늘 매수 후 잔액</div>
+        <div id="dd-res-after" style="font-size:22px;font-weight:900;color:#0f766e;line-height:1.15;margin-top:2px;">—</div>
       </div>
+      <div style="text-align:right;font-size:11px;color:var(--text3);line-height:1.6;">현재 <b id="dd-res-now" style="color:var(--text2);">—</b><br>상한 <b id="dd-res-cap" style="color:var(--text2);">—</b></div>
     </div>
-
-    <div id="rw-list" style="margin-top:12px;"></div>
-
-    <div style="display:flex;gap:4px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);">
-      <input id="rw-new-amt" type="number" inputmode="numeric" placeholder="목표액(₩)" style="flex:1;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:inherit;background:var(--bg2);color:var(--text1);">
-      <input id="rw-new-name" type="text" placeholder="보상 (예: 여행)" style="flex:1.2;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:inherit;background:var(--bg2);color:var(--text1);">
-      <button type="button" onclick="rwAddMilestone()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">+</button>
-    </div>
-    <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;">상단 <b>새로고침</b> 때마다 그날까지 쌓인 평일수만큼 <b>실시세로 주수를 적립</b>해 평가액(수익 포함)을 계산합니다. 자주 안 열면 그 사이 매수가 한 시점 가격으로 뭉뚱그려지니, 가끔 <b>실제 잔고로 보정</b>하세요. (주말 제외·미국 공휴일·TQQQ 부스트 미반영)</div>
-  </div>
-
-  <!-- 🏦 실제 토스 계좌 -->
-  <div class="card" id="toss-card">
-    <div class="card-label">🏦 실제 토스 계좌</div>
-    <div id="toss-setup" style="display:none;">
-      <div style="font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:8px;">토스 연동을 쓰려면 <b>조회키</b>를 한 번 입력하세요. (GAS Script Properties의 <code>TOSS_VIEW_KEY</code>와 같아야 합니다. 이 키는 이 기기에만 저장되고 공개 소스엔 안 남습니다.)</div>
-      <div style="display:flex;gap:4px;">
-        <input id="toss-vk" type="password" placeholder="조회키 입력" style="flex:1;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:inherit;background:var(--bg2);color:var(--text1);">
-        <button type="button" onclick="tossSaveVk()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">저장</button>
-      </div>
-    </div>
-    <div id="toss-loaded" style="display:none;">
-      <div style="font-size:11px;color:var(--text3);font-weight:700;">실제 평가액 (토스 계좌)</div>
-      <div id="toss-value" style="font-size:24px;font-weight:900;color:#2563eb;line-height:1.15;margin-top:2px;">—</div>
-      <div id="toss-basis" style="font-size:10px;color:var(--text3);margin-top:3px;line-height:1.5;"></div>
-      <div id="toss-items" style="margin-top:10px;"></div>
-      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-        <button type="button" onclick="tossFetch()" style="flex:1;min-width:110px;background:var(--bg3);color:var(--text2);border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">↻ 불러오기</button>
-        <button type="button" onclick="tossApplyToReward()" style="flex:1;min-width:110px;background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">보상 평가액에 적용</button>
-      </div>
-      <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;">토스 Open API로 <b>실제 보유주수·평가액</b>을 직접 가져옵니다(조회 전용, 주문 안 함). 원화 합계 = 국내 KRW + 해외 USD×환율. <span id="toss-reset" onclick="tossClearVk()" style="color:var(--blue);cursor:pointer;text-decoration:underline;">조회키 변경</span></div>
-    </div>
+    <div style="height:8px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-top:9px;"><div id="dd-res-bar" style="height:100%;width:0;background:linear-gradient(90deg,#5eead4,#0f766e);transition:width .35s;"></div></div>
+    <button type="button" id="dd-res-btn" onclick="dbApplyToday()" style="width:100%;margin-top:10px;background:#0f766e;color:#fff;border:none;border-radius:9px;padding:10px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;">✅ 오늘 매수 완료 — 예비탄 잔액 반영</button>
+    <div id="dd-res-note" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:7px;">매수를 마친 날 한 번 누르면 예비탄 잔액이 오늘 계산대로 갱신됩니다(하루 1회). 잔액은 설정 탭에서 직접 고칠 수도 있어요.</div>
   </div>
 
   <!-- 라이브 시세 -->
@@ -585,7 +553,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div style="flex:1;"><div class="mc-label" style="margin-bottom:3px;">갱신</div><div id="dd-upd" style="font-size:13px;font-weight:800;color:var(--text3);">—</div></div>
   </div>
 
-  <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6;">일일 매수액·TQQQ 배수는 <b>설정</b> 탭에서 조정합니다. 시세는 상단 새로고침 시 갱신됩니다.</div>
+  <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6;">일일 매수액·이격 가중 k·예비탄 잔액은 <b>설정</b> 탭에서 조정합니다. 시세는 상단 새로고침 시 갱신됩니다.</div>
 </div>
 
 <!-- ── 전략원칙 패널 ── -->
@@ -1036,20 +1004,21 @@ details.strat-acc > summary:active { opacity: 0.85; }
 
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
     <div style="background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--purple);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔔 웅덩이 TQQQ 추가 배수</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD가 120선 아래(웅덩이)일 때, 일일 QLD의 몇 배로 TQQQ를 추가 매수할지. 백테스트 권장 0.5~1.0배(1.0=표준).</div>
+      <div style="font-size:11px;color:var(--purple);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🎯 이격 가중 + 예비탄 → 웅덩이 TQQQ</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD 120선 이격도에 따라 매수량을 조절합니다(비쌀 때 덜, 쌀 때 더). 덜 사서 <b>아낀 돈은 예비탄</b>으로 쌓아 두고, <b>웅덩이(QLD &lt; 120선)</b>에서 꺼내 <b>TQQQ를 깊이에 비례해</b> 삽니다. 총 투입액은 그대로입니다.</div>
     </div>
-    <div id="tq-rec" style="background:var(--bg2);border:1.5px dashed rgba(124,58,237,0.35);border-radius:11px;padding:11px 13px;margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:10px;color:var(--text3);font-weight:700;">내 상황 기반 추천 배수 <span style="font-weight:500;">(현금 여유↑ → 배수↑)</span></div>
-          <div id="tq-rec-val" style="font-size:20px;font-weight:900;color:var(--purple);line-height:1.15;">—</div>
-        </div>
-        <button type="button" id="tq-rec-apply" onclick="applyTqRec()" style="background:var(--purple);color:#fff;border:none;border-radius:9px;padding:9px 15px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">적용</button>
-      </div>
-      <div id="tq-rec-why" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:6px;"></div>
+    <div class="setting-label" style="margin-bottom:6px;">가중 강도 k</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <button type="button" id="dk-1.0" onclick="setDevK(1.0)" class="dk-btn" style="flex:1;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:9px;padding:8px 4px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;line-height:1.3;">1.0<br><span style="font-size:9.5px;font-weight:600;">견고 · TQQQ 14%대</span></button>
+      <button type="button" id="dk-1.5" onclick="setDevK(1.5)" class="dk-btn" style="flex:1;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:9px;padding:8px 4px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;line-height:1.3;">1.5 ⭐<br><span style="font-size:9.5px;font-weight:600;">균형 · 권장</span></button>
+      <button type="button" id="dk-2.0" onclick="setDevK(2.0)" class="dk-btn" style="flex:1;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:9px;padding:8px 4px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;line-height:1.3;">2.0<br><span style="font-size:9.5px;font-weight:600;">공격 · TQQQ 25%+</span></button>
     </div>
-    <div class="setting-group"><div class="setting-label">TQQQ 배수 (0.5 ~ 1.0)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="2" id="s-tqqqmult" placeholder="1.0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">2~3배는 MDD -72~-74%로 강세장 도박 — 권장 안 함.</div></div>
+    <div id="dk-ladder" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:10px;">
+      <div class="setting-group" style="flex:1.4;"><div class="setting-label">예비탄 현재 잔액 (₩)</div><input class="setting-input" type="number" inputmode="numeric" min="0" id="s-reserve" placeholder="0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">SGOV 등 현금성으로 보관(이자 ~4%)</div></div>
+      <div class="setting-group" style="flex:1;"><div class="setting-label">예비탄 상한 (개월)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="24" id="s-rescap" placeholder="6" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">넘치면 QLD로 바로 투입</div></div>
+    </div>
+    <div id="dk-note" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:4px;"></div>
   </div>
 
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
@@ -1280,19 +1249,21 @@ function getRULES() {
   return [
     { title:"📌 매일 매수 — 핵심", color:"#1e3a8a", bg:"#eff4ff",
       items:[
-        ["한 줄 요약","QLD를 매일 '정액'으로 기계적으로 매수한다. 시장 예측·타이밍·대기 없음. 이게 전부. 백테스트상 매일 매수(12.74배)가 웅덩이 대기(11.49배·꼴찌)를 이겼다."],
+        ["한 줄 요약","매일 같은 예산을 기계적으로 투입한다. 시장 예측·대기 없음. 백테스트상 매일 매수(12.74배)가 웅덩이 대기(11.49배·꼴찌)를 이겼다. 그 예산 안에서 QLD/예비탄 배분은 아래 '완성형 로직'이 120선 이격으로 자동 결정한다."],
         ["왜 매일인가","돈을 쥐고 웅덩이를 기다리면, 상승장에선 그 웅덩이가 와도 몇 달 전 즉시 매수한 가격보다 비싸다(대기 기회비용 > 싸게 사는 이득). 매일 DCA는 폭락도 싸게 담아 나쁜 타이밍 시작에 강하다(2007 위기 직전 시작도 강건)."],
         ["동일 '금액'으로","동일 '주수' 고정은 함정 — 비쌀 때 더 많이 사게 된다. 하루 매수 = 연 투자 페이스 ÷ 252거래일의 '정액'. 설정 탭 '일일 매수액 산정'에서 자동 계산된다."],
         ["종목은 QLD","나스닥100 2배. 백테스트상 지수 중 최강(14.93배). S&P(SSO)·다우·러셀보다 압도적. 단 '나스닥이 계속 이긴다'에 베팅하는 것임을 항상 기억."],
       ]
     },
-    { title:"🔔 웅덩이 TQQQ 추가", color:"#5b21b6", bg:"#ede9fe",
+    { title:"🎯 완성형 로직 — 이격 가중 + 예비탄 → 웅덩이 TQQQ", color:"#5b21b6", bg:"#ede9fe",
       items:[
-        ["웅덩이 정의","QLD 종가 < 자기 120일선 = '웅덩이'. 대시보드가 매일 자동 판정. 웅덩이인 날에만 TQQQ 추가 매수 시그널이 켜진다."],
-        ["얼마 추가?","웅덩이날 TQQQ를 일일 QLD 금액의 0.5~1.0배 추가(설정값, 1.0=표준). 매수법은 '주수'가 아니라 '금액' 기준."],
-        ["전체 웅덩이 · 깊이 안 가림","120선 아래면 전부 추가. 깊은 딥만 골라 넣으면 오히려 배수 하락(비효율). 깊이 비례·특정 깊이 필터는 백테스트상 손해였다."],
-        ["배수 상한","2~3배는 배수는 오르지만 MDD -72~-74%로 강세장 도박. 0.5~1.0배 권장. TQQQ(3x)는 장기 횡보 시 -99%까지 가능 → 반드시 상한을 둔다."],
-        ["기준선 = 공격성 다이얼","웅덩이 기준을 120선(보수) 대신 20·60선(공격)으로 바꾸면 TQQQ를 더 자주 넣어 배수·MDD 동반 상승. 현재는 120선 표준."],
+        ["한 줄 요약","매일 같은 예산을 쓰되, QLD는 120선 이격도에 따라 비쌀 때 덜·쌀 때 더 산다. 덜 사서 아낀 돈은 예비탄으로 쌓았다가 웅덩이(QLD < 120선)에서 꺼내 TQQQ를 깊이에 비례해 산다. 총 투입액은 그대로, 3배 레버리지를 '싼 구간에만' 싣는 구조."],
+        ["QLD 매수 공식","오늘 QLD = 엔진 예산 × 50% × w, w = clip(1 − k·이격, 0.4~2.0). k=1.5면 +20%↑ 35% · +10% 43% · 0% 50% · −5% 54% · −10% 57% · −15% 61% · −25% 68% · 더 깊으면 최대 80~100%. 설정 탭 사다리 표에서 확인."],
+        ["예비탄 → TQQQ","웅덩이에서 매일 예비탄 × min(90%, 3%×(1+25×깊이))만큼 TQQQ 매수. 막 빠졌을 땐 3%대, −10%면 약 11%, −20%면 18%로 깊을수록 빨리 쓴다. 인출 속도는 결과에 거의 영향이 없다 — 2배 빠르게~완만하게 바꿔도 배수 차이 2% 미만(상승장 13.22~13.49·폭락 35.43~35.77). 상한으로 규모가 제한되고, 웅덩이가 길어지면 매일 들어오는 예산이 예비탄을 재충전해 TQQQ 매수가 이어지기 때문. 웅덩이 판정은 QLD 단독 120선(SSO 확인보다 +10% 우위였던 백테 결과)."],
+        ["예비탄 상한","엔진 월예산 × 6개월치가 기본 상한. 무한정 쌓으면 상승장에서 현금 기회비용이 커져 손해 → 상한을 넘는 몫은 그날 QLD로 바로 넣는다. 예비탄은 SGOV 같은 현금성(이자 ~4%)에 보관."],
+        ["백테스트 근거","총투입 동일 비교. 평탄 매일 QLD 대비 → 이격가중만(QLD 증량)은 거의 중립, 이격가중+웅덩이 TQQQ는 k=1.5 상승장 14년 13.49배(+7.5%)·폭락 포함 20년 35.77배(+14%), TQQQ 비중 19~23%, MDD −67~69%. k=2.0은 13.84/37.17배·TQQQ 25~29%·MDD −70%."],
+        ["핵심 깨달음","이격 가중의 진짜 의미는 'QLD를 싸게 더 사는 것'이 아니라 'TQQQ 살 총알을 비축하는 것'. 아낀 돈을 3배로 꺼내 써야 배수가 오른다. 상승장이면 거의 본전, 대폭락이 오면 크게 이득인 비대칭 '공짜 보험'에 가깝다."],
+        ["대가와 한계","TQQQ를 더 담는 만큼 MDD가 4~6%p 깊어진다(−69% 감내 필요). 과거 한 경로의 결과라 미래 보장 아님. 닷컴형 장기 횡보에선 TQQQ 감가가 커질 수 있어 k는 1.0~1.5 권장, 2.0은 공격형."],
       ]
     },
     { title:"🛡️ 리스크 관리", color:"#b45309", bg:"#fffbeb",
@@ -1620,8 +1591,6 @@ async function fetchAll() {
     else { S.standbyDate = ""; }
     localStorage.setItem("qld_s11", JSON.stringify(S));
     renderDaily(MD);
-    if(typeof renderRewards === "function") renderRewards();
-    if(typeof tossFetch === "function" && tossVk()) tossFetch();
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
   } catch(e) {
     console.error(e);
@@ -2028,11 +1997,15 @@ function dailyLoad(){
   if(S.wdYears == null)     S.wdYears     = 30;
   if(S.retScenario == null) S.retScenario = "backtest";
   if(S.midAsset == null)    S.midAsset    = "schd";
+  if(S.devK == null)        S.devK        = 1.5;
+  if(S.reserve == null)     S.reserve     = 0;
+  if(S.reserveCapMonths == null) S.reserveCapMonths = 6;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   const g = (id,v) => { const e = document.getElementById(id); if(e) e.value = v; };
   g("s-annual", S.annualInvest); g("s-tdays", S.tradingDays); g("s-tdays2", S.tradingDays);
   g("s-income", S.monthlyIncome || ""); g("s-rate", S.investRate);
-  g("s-growth", S.incomeGrowth); g("s-tqqqmult", S.tqqqMult);
+  g("s-growth", S.incomeGrowth);
+  g("s-reserve", S.reserve || ""); g("s-rescap", S.reserveCapMonths);
   g("s-qldweight", S.qldWeight); g("s-gldweight", S.gldWeight);
   g("s-projyears", S.projYears); g("s-accyears", S.accYears);
   g("s-inflrate", S.inflRate);
@@ -2057,280 +2030,30 @@ function setScenario(name){
 }
 // ⭐ 백테 권장 구성 적용 — 공격 82% + 금 7% + 방어(SCHD) 11%(=SCHD 6 + STIP 5 통합) + TQQQ 1.0 + 연1회 리밸
 function applyRecMix(){
-  if(!confirm("백테 권장 구성으로 설정할까요?\n\n· QLD 82% + 금(GLD) 7% + SCHD 11%\n· 중간자산 SCHD, 웅덩이 TQQQ 1.0배\n· 연 1회 리밸런싱 권장\n\n(백테 11.07배 / MDD −57%. SCHD 11%는 원 권장의 SCHD 6% + STIP 5%를 합친 근사 — 앱은 STIP·DBMF 슬라이더가 아직 없습니다.)")) return;
+  if(!confirm("백테 권장 구성으로 설정할까요?\n\n· QLD 82% + 금(GLD) 7% + SCHD 11%\n· 중간자산 SCHD, 이격 가중 k=1.5(웅덩이 TQQQ는 예비탄에서)\n· 연 1회 리밸런싱 권장\n\n(백테 11.07배 / MDD −57%. SCHD 11%는 원 권장의 SCHD 6% + STIP 5%를 합친 근사 — 앱은 STIP·DBMF 슬라이더가 아직 없습니다.)")) return;
   S.qldWeight = 82; S.gldWeight = 7;          // 중간(SCHD) 자동 = 11
   S.midAsset = "schd";
-  S.tqqqMult = 1.0;
+  S.devK = 1.5;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   const q=document.getElementById("s-qldweight"); if(q) q.value = 82;
   const g=document.getElementById("s-gldweight"); if(g) g.value = 7;
-  const t=document.getElementById("s-tqqqmult"); if(t) t.value = 1.0;
   dailyCompute();
   if(typeof renderDaily==="function" && typeof MD!=="undefined") renderDaily(MD);
-  if(typeof renderRewards==="function") renderRewards();
   alert("권장 구성 적용 완료. 방어자산을 넣었으니 연 1회 리밸런싱을 함께 하시는 게 핵심입니다(리밸런싱이 분산의 진짜 수익원).");
 }
-function setMidAsset(name){  const prev = S.midAsset || "schd";
-  if(name !== prev && typeof RW !== "undefined" && RW && RW.cost && RW.cost.sso > 0){
-    if(!confirm("중간 자산을 " + (name==="sso"?"SSO":"SCHD") + "로 바꿀까요?\n\n보상 트래커에 이미 쌓인 중간자산(" + (prev==="sso"?"SSO":"SCHD") + ") 적립분은 새 자산 시세로 평가돼 값이 어긋날 수 있어요. 바꾼 뒤 '실제 잔고 보정'을 한 번 눌러 맞추면 됩니다.")) return;
-  }
+function setDevK(k){
+  S.devK = k;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  dailyCompute();
+  if(typeof MD !== "undefined") renderDaily(MD);
+}
+function setMidAsset(name){
   S.midAsset = name;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   dailyCompute();
   if(typeof renderDaily === "function" && typeof MD !== "undefined") renderDaily(MD);
-  if(typeof renderRewards === "function") renderRewards();
 }
 
-// ── 🎯 목표 달성 보상 시스템 (자산별 주수 적립 → 실시세 평가) ──
-let RW = null;
-function rwLoad(){
-  try { RW = JSON.parse(localStorage.getItem("qld_reward") || "{}"); } catch(e){ RW = {}; }
-  if(!RW.milestones) RW.milestones = [];
-  if(!RW.shares) RW.shares = { qld:0, sso:0, gld:0 };
-  if(!RW.cost)   RW.cost   = { qld:0, sso:0, gld:0 };   // 원금(KRW)
-  return RW;
-}
-function rwSave(){ localStorage.setItem("qld_reward", JSON.stringify(RW)); }
-function rwWeekdaysBetween(fromMs, toMs){
-  // fromMs~toMs 사이의 평일(월~금) 수. 주말 제외(미국 공휴일 무시)
-  if(toMs <= fromMs) return 0;
-  const DAY = 86400000;
-  const start = new Date(fromMs); start.setHours(0,0,0,0);
-  const end = new Date(toMs); end.setHours(0,0,0,0);
-  const totalDays = Math.round((end - start) / DAY);
-  const fullWeeks = Math.floor(totalDays / 7);
-  let weekdays = fullWeeks * 5;
-  const remainder = totalDays - fullWeeks * 7;
-  let dow = start.getDay();
-  for(let i = 0; i < remainder; i++){ dow = (dow + 1) % 7; if(dow !== 0 && dow !== 6) weekdays++; }
-  return weekdays;
-}
-function rwPrices(){
-  const md = (typeof MD !== "undefined" && MD) ? MD : {};
-  const midAsset = (S && S.midAsset === "sso") ? "sso" : "schd";
-  const mid = midAsset === "sso" ? (md.sso || null) : (md.schd || null);
-  return { qld: md.qld || null, mid: mid, midAsset: midAsset, gld: md.gld || null, fx: md.usdkrw || 1380 };
-}
-// 지난 적립 이후 쌓인 평일수만큼 자산별 주수를 현재가로 적립
-function rwAccrue(){
-  rwLoad();
-  const anchor = RW.lastAccrualMs || RW.startDate;
-  if(!anchor) return;                       // 시작 안 함
-  const dailyBuy = d2num((S && S.dailyBuy) || 0);
-  if(dailyBuy <= 0) return;
-  const P = rwPrices();
-  if(!P.qld) return;                        // 시세 없으면 적립 보류(다음 갱신 때)
-  const now = Date.now();
-  const wd = rwWeekdaysBetween(anchor, now);
-  if(wd <= 0) return;
-  const qldW = (S.qldWeight!=null&&S.qldWeight!=="")?Math.max(0,Math.min(100,d2num(S.qldWeight))):100;
-  const gldW = (S.gldWeight!=null&&S.gldWeight!=="")?Math.max(0,Math.min(100,d2num(S.gldWeight))):0;
-  const ssoW = Math.max(0, 100 - qldW - gldW);
-  const fx = P.fx;
-  const add = (krwPerDay, price) => (price ? (krwPerDay * wd / fx) / price : 0);
-  // QLD
-  const qKRW = dailyBuy*qldW/100*wd; RW.shares.qld += add(dailyBuy*qldW/100, P.qld); RW.cost.qld += qKRW;
-  // SSO
-  if(ssoW>0){ const sKRW = dailyBuy*ssoW/100*wd; if(P.mid){ RW.shares.sso += add(dailyBuy*ssoW/100, P.mid); } RW.cost.sso += sKRW; }
-  // GLD (시세 있으면 주수, 없으면 원금만)
-  if(gldW>0){ const gKRW = dailyBuy*gldW/100*wd; if(P.gld){ RW.shares.gld += add(dailyBuy*gldW/100, P.gld); } RW.cost.gld += gKRW; }
-  RW.lastAccrualMs = now;
-  rwSave();
-}
-function rwValue(){
-  rwLoad();
-  const P = rwPrices();
-  const fx = P.fx;
-  // 평가액: 시세 있는 자산은 주수×현재가×환율, GLD 시세 없으면 원금으로 대체
-  const vQ = P.qld ? RW.shares.qld * P.qld * fx : 0;
-  const vS = P.mid ? RW.shares.sso * P.mid * fx : RW.cost.sso;   // 중간자산 시세 없으면 원금
-  const vG = P.gld ? RW.shares.gld * P.gld * fx : RW.cost.gld;   // gld 시세 없으면 원금
-  const value = vQ + vS + vG;
-  const cost = (RW.cost.qld||0) + (RW.cost.sso||0) + (RW.cost.gld||0);
-  return { value, cost, gldNoPrice: (RW.cost.gld>0 && !P.gld), midNoPrice: (RW.cost.sso>0 && !P.mid), midName: (P.midAsset==="sso"?"SSO":"SCHD") };
-}
-function rwSetStartToday(){
-  rwLoad();
-  if(RW.startDate && !confirm("매수 시작일을 오늘로 다시 설정할까요?\n(기존에 쌓인 적립 주수·원금이 초기화됩니다)")) return;
-  RW.startDate = Date.now(); RW.lastAccrualMs = Date.now();
-  RW.shares = { qld:0, sso:0, gld:0 }; RW.cost = { qld:0, sso:0, gld:0 };
-  RW.calibValue = null; RW.calibDate = null;
-  rwSave(); renderRewards();
-  // 시세가 아직 없으면 바로 불러와 적립 시작
-  if((typeof MD === "undefined" || !MD || !MD.qld) && typeof fetchAll === "function"){
-    fetchAll();
-  }
-  alert("오늘부터 매수 시작으로 설정했어요. 상단 새로고침 때마다 실시세로 적립됩니다.");
-}
-function rwCalibrate(){
-  rwLoad(); rwAccrue();
-  const v = d2num((document.getElementById("rw-calib")||{}).value);
-  if(v > 0){
-    const cur = rwValue().value;
-    if(cur > 0){
-      const f = v / cur;                    // 실제 잔고에 맞춰 주수 스케일(자산 비율 유지)
-      RW.shares.qld *= f; RW.shares.sso *= f; RW.shares.gld *= f;
-    } else {
-      // 아직 주수 0이면 현재 비중으로 시드
-      const P = rwPrices(); const fx = P.fx;
-      const qldW=(S.qldWeight!=null?d2num(S.qldWeight):100), gldW=(S.gldWeight!=null?d2num(S.gldWeight):0), ssoW=Math.max(0,100-qldW-gldW);
-      if(P.qld) RW.shares.qld = (v*qldW/100)/fx/P.qld;
-      if(P.mid) RW.shares.sso = (v*ssoW/100)/fx/P.mid;
-      if(P.gld) RW.shares.gld = (v*gldW/100)/fx/P.gld;
-    }
-    if(!RW.startDate) RW.startDate = Date.now();
-    RW.lastAccrualMs = Date.now();
-    rwSave();
-    const e = document.getElementById("rw-calib"); if(e) e.value = "";
-    renderRewards();
-  }
-}
-function rwAddMilestone(){
-  rwLoad();
-  const amt = d2num((document.getElementById("rw-new-amt")||{}).value);
-  const name = ((document.getElementById("rw-new-name")||{}).value || "").trim();
-  if(amt > 0 && name){
-    RW.milestones.push({ id: Date.now(), amount: amt, name: name });
-    RW.milestones.sort((a,b) => a.amount - b.amount);
-    rwSave();
-    const a = document.getElementById("rw-new-amt"); if(a) a.value = "";
-    const n = document.getElementById("rw-new-name"); if(n) n.value = "";
-    renderRewards();
-  }
-}
-function rwDelMilestone(id){
-  rwLoad(); RW.milestones = RW.milestones.filter(m => m.id !== id); rwSave(); renderRewards();
-}
-function renderRewards(){
-  rwLoad(); rwAccrue();
-  const { value, cost, gldNoPrice, midNoPrice, midName } = rwValue();
-  const cur = value;
-  setText("rw-current", cur > 0 ? d2fmt(cur) : (RW.startDate ? "새로고침 대기" : "시작일 설정 필요"));
-  const basis = document.getElementById("rw-basis");
-  if(basis){
-    if(cur > 0 && cost > 0){
-      const pnl = cur - cost, pct = pnl / cost * 100;
-      const col = pnl >= 0 ? "#16a34a" : "#dc2626";
-      basis.innerHTML = `원금 ${d2fmt(cost)} · <span style="color:${col};font-weight:800;">평가손익 ${pnl>=0?"+":""}${d2fmt(pnl)} (${pnl>=0?"+":""}${pct.toFixed(1)}%)</span>`
-        + (gldNoPrice ? `<br><span style="color:var(--amber);">※ GLD 시세가 피드에 없어 원금으로만 반영(시트에 gld 추가 시 수익 반영)</span>` : "")
-        + (midNoPrice ? `<br><span style="color:var(--amber);">※ ${midName} 시세가 피드에 없어 원금으로만 반영(시트에 ${midName.toLowerCase()} 추가 시 수익 반영)</span>` : "")
-        + (RW.startDate ? `<br><span style="color:var(--text3);">${new Date(RW.startDate).toLocaleDateString("ko-KR")} 시작 · 상단 새로고침 때마다 실시세로 적립</span>` : "");
-    } else if(RW.startDate){
-      basis.innerHTML = `<span style="color:var(--blue);font-weight:700;">${new Date(RW.startDate).toLocaleDateString("ko-KR")} 매수 시작됨 ✓</span><br><span style="color:var(--text3);">상단 새로고침으로 시세를 불러오면 실시세로 주수가 적립됩니다.</span>`;
-    } else {
-      basis.textContent = "'오늘부터 매수 시작'을 누른 뒤, 상단 새로고침으로 시세를 불러오면 실시세로 적립됩니다.";
-    }
-  }
-  const list = document.getElementById("rw-list");
-  if(!list) return;
-  if(!RW.milestones.length){
-    list.innerHTML = `<div style="font-size:11px;color:var(--text3);text-align:center;padding:10px 0;">아래에서 목표와 보상을 등록해 보세요 (예: 1억 → 좋은 커피머신)</div>`;
-    return;
-  }
-  const nextIdx = RW.milestones.findIndex(m => cur < m.amount);
-  list.innerHTML = RW.milestones.map((m, i) => {
-    const done = cur >= m.amount;
-    const pct = Math.max(0, Math.min(100, m.amount>0 ? cur / m.amount * 100 : 0));
-    const isNext = (i === nextIdx);
-    const remain = m.amount - cur;
-    return `<div style="padding:9px 11px;border-radius:10px;margin-bottom:7px;background:${done?'var(--blue-lt)':'var(--bg2)'};border:1px solid ${done?'rgba(37,99,235,0.25)':isNext?'rgba(37,99,235,0.35)':'var(--border)'};">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;font-weight:800;color:${done?'var(--blue)':'var(--text1)'};">${done?'🎉':'🔒'} ${m.name}</span>
-        <span style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:12px;font-weight:800;color:var(--text2);">${d2fmt(m.amount)}</span>
-          <span onclick="rwDelMilestone(${m.id})" style="font-size:14px;color:var(--text3);cursor:pointer;line-height:1;">×</span>
-        </span>
-      </div>
-      <div style="height:7px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:${pct}%;background:${done?'linear-gradient(90deg,#60a5fa,#2563eb)':'var(--text3)'};transition:width .4s;"></div></div>
-      <div style="font-size:10px;color:var(--text3);margin-top:4px;">${done? '달성 완료! 🎁' : `${pct.toFixed(0)}% · ${d2fmt(remain)} 남음`}</div>
-    </div>`;
-  }).join("");
-}
-
-// ── 🏦 실제 토스 계좌 연동 (조회 전용) ──
-function tossVk(){ try { return localStorage.getItem("qld_toss_vk") || ""; } catch(e){ return ""; } }
-function tossRenderGate(){
-  const has = !!tossVk();
-  const setup = document.getElementById("toss-setup");
-  const loaded = document.getElementById("toss-loaded");
-  if(setup)  setup.style.display  = has ? "none" : "block";
-  if(loaded) loaded.style.display = has ? "block" : "none";
-}
-function tossSaveVk(){
-  const el = document.getElementById("toss-vk");
-  const v = (el && el.value || "").trim();
-  if(!v){ alert("조회키를 입력하세요."); return; }
-  try { localStorage.setItem("qld_toss_vk", v); } catch(e){}
-  if(el) el.value = "";
-  tossRenderGate();
-  tossFetch();
-}
-function tossClearVk(){
-  if(!confirm("저장된 조회키를 지울까요? (이 기기에서 토스 연동 해제)")) return;
-  try { localStorage.removeItem("qld_toss_vk"); } catch(e){}
-  window._tossData = null;
-  tossRenderGate();
-}
-window._tossData = null;
-async function tossFetch(){
-  const vk = tossVk();
-  if(!vk){ tossRenderGate(); return; }
-  const valEl = document.getElementById("toss-value");
-  const basisEl = document.getElementById("toss-basis");
-  if(valEl) valEl.textContent = "불러오는 중…";
-  if(basisEl) basisEl.textContent = "";
-  try {
-    const params = new URLSearchParams({ action: "toss", vk: vk });
-    const res = await fetch(GAS_URL + "?" + params.toString(), { method:"GET", mode:"cors", redirect:"follow" });
-    const d = await res.json();
-    if(!d.ok) throw new Error(d.error || "조회 실패");
-    window._tossData = d;
-    const fx = (typeof MD!=="undefined" && MD && MD.usdkrw) ? MD.usdkrw : 1380;
-    const totalKRW = (d.valueKRW||0) + (d.valueUSD||0) * fx;
-    const costKRW  = (d.purchaseKRW||0) + (d.purchaseUSD||0) * fx;
-    if(valEl) valEl.textContent = d2fmt(totalKRW);
-    if(basisEl){
-      const pnl = totalKRW - costKRW;
-      const col = pnl>=0 ? "#16a34a" : "#dc2626";
-      basisEl.innerHTML = `원금 ${d2fmt(costKRW)} · <span style="color:${col};font-weight:800;">평가손익 ${pnl>=0?"+":""}${d2fmt(pnl)}${d.plRate!=null?` (${(d.plRate*100).toFixed(1)}%)`:""}</span>`
-        + `<br><span style="color:var(--text3);">USD $${(d.valueUSD||0).toLocaleString()} + KRW ${d2fmt(d.valueKRW||0)} · 환율 ${Math.round(fx)} · ${d.fetched_at||""}</span>`;
-    }
-    const itemsEl = document.getElementById("toss-items");
-    if(itemsEl){
-      const rows = (d.items||[]).map(it => {
-        const cur = it.currency==="USD" ? "$" : "₩";
-        const plcol = (it.plRate!=null && it.plRate<0) ? "#dc2626" : "#16a34a";
-        const valKRW = it.currency==="USD" ? (it.value||0)*fx : (it.value||0);
-        return `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-top:1px solid var(--border);font-size:11.5px;">
-          <span><b style="color:var(--text1);">${it.symbol}</b> <span style="color:var(--text3);">${it.quantity!=null?it.quantity+"주":""}</span></span>
-          <span style="text-align:right;">${d2fmt(valKRW)} <span style="color:${plcol};font-weight:700;">${it.plRate!=null?(it.plRate>=0?"+":"")+(it.plRate*100).toFixed(1)+"%":""}</span></span>
-        </div>`;
-      }).join("");
-      itemsEl.innerHTML = rows || `<div style="font-size:11px;color:var(--text3);">보유 종목 없음</div>`;
-    }
-  } catch(err){
-    if(valEl) valEl.textContent = "조회 실패";
-    if(basisEl) basisEl.innerHTML = `<span style="color:#dc2626;">${err.message}</span><br><span style="color:var(--text3);">조회키·GAS 배포(action=toss)·Script Properties(TOSS_CLIENT_ID/SECRET/VIEW_KEY)를 확인하세요.</span>`;
-  }
-}
-function tossApplyToReward(){
-  const d = window._tossData;
-  if(!d || !d.ok){ alert("먼저 토스 계좌를 불러오세요."); return; }
-  const fx = (typeof MD!=="undefined" && MD && MD.usdkrw) ? MD.usdkrw : 1380;
-  const totalKRW = Math.round((d.valueKRW||0) + (d.valueUSD||0) * fx);
-  const calib = document.getElementById("rw-calib");
-  if(calib){ calib.value = totalKRW; }
-  if(typeof rwCalibrate === "function"){ rwCalibrate(); alert("실제 토스 평가액 " + d2fmt(totalKRW) + "으로 보상 트래커를 보정했습니다."); }
-}
-
-function applyTqRec(){
-  if(window._tqRec == null) return;
-  S.tqqqMult = window._tqRec;
-  const e = document.getElementById("s-tqqqmult"); if(e) e.value = S.tqqqMult;
-  dailyCompute();
-  localStorage.setItem("qld_s11", JSON.stringify(S));
-  renderDaily(MD);
-}
 function dailySave(){
   const gv = id => { const e = document.getElementById(id); return e ? e.value : ""; };
   S.annualInvest = d2num(gv("s-annual"));
@@ -2338,7 +2061,8 @@ function dailySave(){
   S.monthlyIncome= d2num(gv("s-income"));
   S.investRate   = d2num(gv("s-rate"));
   S.incomeGrowth = d2num(gv("s-growth"));
-  S.tqqqMult     = gv("s-tqqqmult") !== "" ? d2num(gv("s-tqqqmult")) : 1.0;
+  S.reserve      = Math.max(0, d2num(gv("s-reserve")) || 0);
+  S.reserveCapMonths = gv("s-rescap") !== "" ? Math.max(1, Math.min(24, d2num(gv("s-rescap")))) : 6;
   S.qldWeight    = gv("s-qldweight") !== "" ? Math.max(0, Math.min(100, d2num(gv("s-qldweight")))) : 100;
   S.gldWeight    = gv("s-gldweight") !== "" ? Math.max(0, Math.min(100, d2num(gv("s-gldweight")))) : 0;
   if(S.qldWeight + S.gldWeight > 100){ S.gldWeight = 100 - S.qldWeight; const ge = document.getElementById("s-gldweight"); if(ge) ge.value = S.gldWeight; }
@@ -2464,9 +2188,12 @@ function dailyCompute(){
   const fvQLD = fvOf(cQ, 1);            // 순수 QLD 100% 비교
   const principalP = annualBuy * accYears;   // 원금은 적립 기간만
   const blendedCagr = wQ*cQ + wS*cS + wG*cG;
-  // 웅덩이 TQQQ 부스트: 실측상 1.0배가 최종배수 12.74→14.93(+17.2%). QLD 레그에만·비중 비례
-  const tmultP = (S.tqqqMult != null && S.tqqqMult !== "") ? d2num(S.tqqqMult) : 1.0;
-  const boostFactor = 1 + 0.172 * tmultP * (qldW / 100);
+  // 완성형 로직 부스트(총투입 동일): 이격가중 + 예비탄→웅덩이 TQQQ. 백테 상승장 14년 기준
+  //   k=1.5 +7.5%(13.49 vs 12.55) · k=2.0 +10.3%(13.84) · k=1.0 ≈+5%(추정). 폭락 포함 20년은 k=1.5 +14%. QLD 비중만큼만.
+  const devKP = [1.0,1.5,2.0].includes(+S.devK) ? +S.devK : 1.5;
+  const DB_GAIN = {1:0.05, 1.5:0.075, 2:0.103};
+  const tmultP = devKP;   // (호환용 이름) 표시에만 사용
+  const boostFactor = 1 + (DB_GAIN[devKP] || 0.075) * (qldW / 100);
   const fvBoost = fvMix * boostFactor;
   const multP = principalP > 0 ? fvBoost / principalP : 0;   // 원금대비는 부스트 포함 기준
   setT("proj-value", annualBuy > 0 ? d2fmt(fvMix) : "일일 매수액 필요");
@@ -2523,7 +2250,7 @@ function dailyCompute(){
     if(annualBuy > 0 && tmultP > 0 && qldW > 0){
       boostRow.style.display = "block";
       setT("proj-boost", d2fmt(fvBoost));
-      setT("proj-boost-sub", `TQQQ ${tmultP}배 적용 · 기본 대비 +${((boostFactor-1)*100).toFixed(0)}% (웅덩이날 QLD분에만 추가, 실측 근사)`);
+      setT("proj-boost-sub", `이격가중+예비탄→웅덩이 TQQQ (k=${devKP}) · 기본 대비 +${((boostFactor-1)*100).toFixed(1)}% · 총투입 동일 · 상승장 백테 기준(폭락 포함 20년이면 더 큼)${devKP===1?' · k=1.0은 추정치':''}`);
     } else {
       boostRow.style.display = "none";
     }
@@ -2583,28 +2310,32 @@ function dailyCompute(){
       wdBox.style.display = "none";
     }
   }
-  // ── TQQQ 배수 추천 (현금 여유 = 낮은 투자율일수록 배수↑) + GLD비중 + 투자기간 ──
-  const rateForRec = (S.buyMode === "advanced") ? (S.investRate || 0) : null;
-  let base, baseWhy;
-  if(rateForRec == null){
-    base = 0.6; baseWhy = "심플 모드(투자율 없음) — 기간·GLD만 반영";       // 투자율 미상 → 중립 기준
-  } else if(rateForRec <= 15){ base = 1.0; baseWhy = `투자율 ${rateForRec}%(현금 여유 큼)`; }
-  else if(rateForRec <= 30){ base = 0.8; baseWhy = `투자율 ${rateForRec}%(현금 여유 있음)`; }
-  else if(rateForRec <= 50){ base = 0.6; baseWhy = `투자율 ${rateForRec}%(여유 보통)`; }
-  else { base = 0.4; baseWhy = `투자율 ${rateForRec}%(월급 대부분 투입·현금 빠듯)`; }
-  let rec = base; const adj = [];
-  // ★백테 검증: 방어자산이 있으면 TQQQ 하향은 비효율(1.0→0.6 낮춰도 MDD −57→−56%로 거의 동일, 수익만 −6%).
-  //   → GLD 등 방어자산 보유 시 TQQQ를 낮추지 않고 1.0 유지가 효율적. (예전의 'GLD 있으면 −0.1' 로직 제거)
-  if(gldW > 0 || (ssoW > 0)){ adj.push("방어자산 보유 → TQQQ 유지가 효율(하향 불필요)"); }
-  if(projYears >= 20){ rec += 0.1; adj.push("장기 20년+ +0.1"); }
-  else if(projYears <= 7){ rec -= 0.1; adj.push("단기 ≤7년 −0.1"); }
-  rec = Math.max(0.3, Math.min(1.0, Math.round(rec*10)/10));   // 상한 1.0(2~3배 도박 비권장)
-  window._tqRec = rec;
-  setT("tq-rec-val", rec.toFixed(1) + "배");
-  const why = document.getElementById("tq-rec-why");
-  if(why) why.textContent = `${baseWhy}${adj.length ? " · " + adj.join(" · ") : ""} → 권장 ${rec.toFixed(1)}배 (상한 1.0, 참고용)`;
-  const applyBtn = document.getElementById("tq-rec-apply");
-  if(applyBtn) applyBtn.textContent = (Math.abs((tmultP||0) - rec) < 0.001) ? "적용됨" : "적용";
+  // ── 이격 가중 k 버튼 표시 + 매수 비율 사다리 ──
+  [1.0,1.5,2.0].forEach(kk => {
+    const b = document.getElementById("dk-" + kk.toFixed(1));
+    if(b){ const on = (devKP === kk);
+      b.style.background = on ? "var(--purple)" : "var(--bg2)";
+      b.style.borderColor = on ? "var(--purple)" : "var(--border)";
+      b.style.color = on ? "#fff" : "var(--text2)";
+    }
+  });
+  const lad = document.getElementById("dk-ladder");
+  if(lad){
+    const engB = (S.dailyBuy || 0) * qldW / 100;
+    const bands = [["+20% 이상",0.20],["+10~+20%",0.10],["0~+10%",0],["−5~0%",-0.05],["−5~−10%",-0.10],["−10~−15%",-0.15],["−15~−25%",-0.25],["−25% 이하",-0.40]];
+    const rows = bands.map(([lbl,dv]) => {
+      const pct = DB_BASE * dbWeight(dv, devKP) * 100;
+      const dip = dv < 0;
+      return `<tr style="${dip?'color:var(--purple);':''}"><td style="padding:3px 4px;">${lbl}</td><td style="padding:3px 4px;text-align:right;font-weight:800;">${pct.toFixed(0)}%</td><td style="padding:3px 4px;text-align:right;color:var(--text3);">${engB>0?d2fmt(engB*pct/100):""}</td><td style="padding:3px 4px;text-align:right;color:var(--text3);">${dip?'TQQQ '+(dbDrawRate(dv)*100).toFixed(0)+'%/일':'적립'}</td></tr>`;
+    }).join("");
+    lad.innerHTML = `<div style="font-size:10.5px;color:var(--text3);font-weight:700;margin-bottom:4px;">QLD 120선 이격별 오늘 QLD 매수 비율 (k=${devKP})</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;color:var(--text2);">
+        <thead><tr style="color:var(--text3);font-size:10px;"><th style="text-align:left;padding:3px 4px;">이격</th><th style="text-align:right;padding:3px 4px;">QLD</th><th style="text-align:right;padding:3px 4px;">금액</th><th style="text-align:right;padding:3px 4px;">예비탄</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+      <div style="font-size:9.5px;color:var(--text3);margin-top:5px;line-height:1.5;">QLD 비율 = 엔진 예산(일일 매수액 × QLD 비중) 대비. 남는 돈은 예비탄 적립. 보라색(웅덩이)에선 예비탄의 표시 비율만큼 TQQQ를 매일 삽니다.</div>`;
+  }
+  const dkNote = document.getElementById("dk-note");
+  if(dkNote) dkNote.innerHTML = `백테스트(총투입 동일): k=1.5 상승장 14년 <b>+7.5%</b> · 폭락 포함 20년 <b>+14%</b> · MDD −67~69%. k=2.0은 +10%/+18% 대신 TQQQ 비중 25~29%·MDD −70%. 예비탄은 상한(기본 6개월치)을 넘기면 현금 기회비용이 커져 초과분을 QLD로 넣습니다. ※ 과거 한 경로의 결과이며 미래 보장 아님.`;
 
   if(S.buyMode === "advanced"){
     const note = document.getElementById("adv-note");
@@ -2617,19 +2348,70 @@ function dailyCompute(){
         + `적립 ${yrs}년 총 투입원금 ≈ <b>${d2fmt(principal)}</b> (연 ${S.incomeGrowth||0}% 증액 가정)`;
     }
   }
-  if(typeof renderRewards === "function") renderRewards();
 }
 
 // ══ 매일매수 대시보드 렌더 ══
-function renderDaily(d){
+// ── 🎯 완성형 매수 엔진 (이격 가중 QLD + 예비탄 → 웅덩이 TQQQ) ──
+//   백테스트(2026-10, 총투입 동일): k=1.5 상승장 14년 +7.5% / 폭락포함 20년 +14%, MDD -67~69%
+//   QLD 매수 = 엔진예산 × 50% × w,  w = clip(1 − k·dev, 0.4, 2.0)   (dev = QLD/120선 − 1)
+//   → 평시(dev 0) 50%, 최대 100%(w=2). 나머지(아낀 돈)는 예비탄 적립.
+//   웅덩이(dev<0): 예비탄 × min(0.9, 0.03·(1+25·깊이)) 만큼 TQQQ 매수 (깊을수록 많이)
+//   평시: 예비탄이 상한(엔진 월예산 × N개월)을 넘으면 초과분을 QLD로 즉시 투입
+var DB_BASE = 0.5, DB_WMIN = 0.4, DB_WMAX = 2.0;
+function dbWeight(dev, k){ return Math.max(DB_WMIN, Math.min(DB_WMAX, 1 - k * dev)); }
+function dbDrawRate(dev){ const depth = Math.max(0, -dev); return Math.min(0.9, 0.03 * (1 + depth * 25)); }
+function dbEngine(p){
+  // p: {budget(엔진 일예산 KRW), dev, k, reserve, capMonths, tdPerMonth}
+  const B = Math.max(0, p.budget || 0);
+  const w = dbWeight(p.dev, p.k);
+  let qld = B * DB_BASE * w;
+  const save = B - qld;
+  let res = Math.max(0, p.reserve || 0) + save;
+  const cap = B * (p.tdPerMonth || 21) * (p.capMonths || 6);
+  const inDip = p.dev < 0;
+  let tqqq = 0, overflow = 0, rate = 0;
+  if(inDip){
+    rate = dbDrawRate(p.dev);
+    tqqq = res * rate; res -= tqqq;
+  } else if(res > cap){
+    overflow = res - cap; qld += overflow; res = cap;
+  }
+  return { w, qld, save, tqqq, overflow, rate, reserveAfter: res, reserveBefore: Math.max(0, p.reserve||0), cap, inDip,
+           flow: save - tqqq - overflow };   // 예비탄 순변화(+적립/−인출)
+}
+function dbParams(d){
   const daily = d2num(S.dailyBuy) || 0;
-  const tmult = (S.tqqqMult != null && S.tqqqMult !== "") ? d2num(S.tqqqMult) : 1.0;
   const qldW  = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;
+  const k = [1.0,1.5,2.0].includes(+S.devK) ? +S.devK : 1.5;
+  const capM = (S.reserveCapMonths != null && S.reserveCapMonths !== "") ? Math.max(1, Math.min(24, d2num(S.reserveCapMonths))) : 6;
+  const td = S.tradingDays || 252;
+  const dev = (d && d.qld != null && d.ma120) ? (d.qld - d.ma120) / d.ma120 : 0;
+  return { budget: daily * qldW / 100, dev, k, reserve: d2num(S.reserve) || 0, capMonths: capM, tdPerMonth: td / 12, daily, qldW };
+}
+function todayKST(){ const n = new Date(Date.now() + 9*3600*1000); return n.toISOString().slice(0,10); }
+function dbApplyToday(){
+  if(typeof MD === "undefined" || !MD || MD.qld == null){ alert("먼저 상단 새로고침으로 시세를 불러오세요."); return; }
+  const p = dbParams(MD);
+  if(p.budget <= 0){ alert("설정 탭에서 일일 매수액과 QLD 비중을 먼저 정하세요."); return; }
+  const today = todayKST();
+  if(S.reserveDate === today && !confirm("오늘은 이미 반영했어요. 한 번 더 반영할까요? (중복 적립 주의)")) return;
+  const r = dbEngine(p);
+  S.reserve = Math.round(r.reserveAfter);
+  S.reserveDate = today;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  const el = document.getElementById("s-reserve"); if(el) el.value = S.reserve;
+  renderDaily(MD);
+  alert("예비탄 잔액을 " + d2fmt(S.reserve) + "으로 갱신했습니다.");
+}
+
+function renderDaily(d){
+  const p = dbParams(d);
+  const daily = p.daily, qldW = p.qldW;
   const gldW  = (S.gldWeight != null && S.gldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.gldWeight))) : 0;
   const ssoW  = Math.max(0, 100 - qldW - gldW);
-  const qldAmt = daily * qldW / 100;
   const ssoAmt = daily * ssoW / 100;
   const gldAmt = daily * gldW / 100;
+  const midName = (S.midAsset === "sso") ? "SSO" : "SCHD";
   const badge = document.getElementById("dd-badge");
   const setBadge = (txt, bg, col) => { if(badge){ badge.textContent = txt; badge.style.background = bg; badge.style.color = col; } };
   const ssoRow = document.getElementById("dd-sso-row");
@@ -2638,53 +2420,58 @@ function renderDaily(d){
   if(midLbl) midLbl.textContent = (S.midAsset === "sso") ? "SSO (S&P 안정)" : "SCHD (배당 방어)";
   if(ssoRow) ssoRow.style.display = ssoW > 0 ? "flex" : "none";
   if(gldRow) gldRow.style.display = gldW > 0 ? "flex" : "none";
+  const resNowEl = document.getElementById("dd-res-now");
+  if(resNowEl) resNowEl.textContent = d2fmt(p.reserve);
 
-  if(!d || d.qld == null){
+  if(!d || d.qld == null || !d.ma120){
     setBadge("시세 대기", "var(--bg3)", "var(--text3)");
     setText("dd-total", daily > 0 ? d2fmt(daily) : "설정 필요");
     setText("dd-explain", daily > 0
-      ? "상단 새로고침하면 웅덩이 여부(QLD 120선)가 자동 반영됩니다."
+      ? "상단 새로고침하면 120선 이격도와 웅덩이 여부가 반영돼 오늘 매수액이 계산됩니다."
       : "설정 탭에서 '일일 매수액'을 먼저 정하세요.");
-    setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
+    ["dd-qld-amt","dd-tqqq-amt","dd-total2","dd-res-flow","dd-res-after","dd-res-cap"].forEach(id => setText(id, "—"));
     setText("dd-sso-amt", ssoW > 0 ? d2fmt(ssoAmt) : "—");
     setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) : "—");
-    setText("dd-tqqq-amt", "—");
-    setText("dd-total2", daily > 0 ? d2fmt(daily) : "—");
     return;
   }
 
-  const qld = d.qld, ma120 = d.ma120;
-  const inDip = (ma120 != null && qld < ma120);
-  const tqqqAdd = inDip ? qldAmt * tmult : 0;
-  const total = daily + tqqqAdd;
-  const gap = ma120 ? (qld - ma120) / ma120 * 100 : null;
-  const parts = [];
-  if(qldW > 0) parts.push(`QLD ${qldW}`);
-  if(ssoW > 0) parts.push(`SSO ${ssoW}`);
-  if(gldW > 0) parts.push(`GLD ${gldW}`);
-  const mixTxt = parts.length > 1 ? `${parts.join("·")} 비율로 ` : "";
+  const r = dbEngine(p);
+  const devPct = p.dev * 100;
+  const qldPctOfBudget = p.budget > 0 ? (r.qld / p.budget * 100) : 0;
+  const total = r.qld + r.tqqq + ssoAmt + gldAmt;
 
-  if(inDip){
-    setBadge("🔔 웅덩이 — TQQQ 추가", "var(--purple-lt)", "var(--purple)");
+  if(r.inDip){
+    setBadge("🔔 웅덩이 — 예비탄으로 TQQQ", "var(--purple-lt)", "var(--purple)");
     setText("dd-explain", daily > 0
-      ? `지금은 웅덩이예요 (QLD 120선 대비 ${gap.toFixed(1)}%). 매일 매수액 ${d2fmt(daily)}을 ${mixTxt}넣고, TQQQ를 QLD분의 ${tmult}배(${d2fmt(tqqqAdd)}) 추가로 넣습니다.`
-      : "웅덩이 상태입니다. 설정 탭에서 '일일 매수액'을 정하면 TQQQ 추가액이 계산됩니다.");
+      ? `QLD가 120선보다 ${Math.abs(devPct).toFixed(1)}% 아래인 웅덩이예요. 싸니까 QLD를 평소보다 많이(엔진 예산의 ${qldPctOfBudget.toFixed(0)}%) 사고, 예비탄의 ${(r.rate*100).toFixed(1)}%(${d2fmt(r.tqqq)})를 꺼내 TQQQ를 삽니다. 깊어질수록 꺼내는 비율이 커집니다.`
+      : "웅덩이 상태입니다. 설정 탭에서 '일일 매수액'을 정하면 금액이 계산됩니다.");
   } else {
-    setBadge("평상시 — 매일 매수", "var(--blue-lt)", "var(--blue)");
+    const hot = devPct >= 10;
+    setBadge(hot ? "평상시 — 비싸서 덜 사기" : "평상시 — 매일 매수", "var(--blue-lt)", "var(--blue)");
     setText("dd-explain", daily > 0
-      ? `지금은 평상시예요 (QLD 120선 위 +${gap.toFixed(1)}%). 매일 매수액 ${d2fmt(daily)}을 ${mixTxt}넣습니다. QLD가 120선 아래로 내려가면 TQQQ 추가 시그널이 켜집니다.`
+      ? `QLD가 120선보다 +${devPct.toFixed(1)}% 위예요. 이격에 맞춰 QLD는 엔진 예산의 ${qldPctOfBudget.toFixed(0)}%만 사고, 나머지 ${d2fmt(r.save)}는 예비탄으로 쌓아 웅덩이 때 TQQQ 실탄으로 씁니다.`
+        + (r.overflow > 0 ? ` 예비탄이 상한을 넘은 ${d2fmt(r.overflow)}는 QLD로 바로 넣었어요.` : "")
       : "평상시입니다. 설정 탭에서 '일일 매수액'을 먼저 정하세요.");
   }
   setText("dd-total", daily > 0 ? d2fmt(total) : "설정 필요");
-  setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
+  setText("dd-qld-w", `(이격 가중 ${qldPctOfBudget.toFixed(0)}%${r.overflow>0?" · 상한초과분 포함":""})`);
+  setText("dd-qld-amt", daily > 0 ? d2fmt(r.qld) : "—");
   setText("dd-sso-amt", ssoW > 0 ? d2fmt(ssoAmt) : "—");
   setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) : "—");
-  setText("dd-tqqq-amt", inDip ? (daily > 0 ? "+" + d2fmt(tqqqAdd) : "웅덩이 (금액 미설정)") : "– (웅덩이 아님)");
+  setText("dd-tqqq-amt", r.inDip ? (r.tqqq > 0 ? d2fmt(r.tqqq) : "예비탄 없음") : "– (웅덩이 아님)");
   setText("dd-total2", daily > 0 ? d2fmt(total) : "—");
+  setText("dd-res-flow", daily > 0 ? (r.flow >= 0 ? "+" + d2fmt(r.flow) + " 적립" : "−" + d2fmt(-r.flow) + " 인출") : "—", r.flow >= 0 ? "#0f766e" : "var(--purple)");
+  setText("dd-res-after", d2fmt(r.reserveAfter));
+  setText("dd-res-cap", d2fmt(r.cap) + ` (${p.capMonths}개월)`);
+  const bar = document.getElementById("dd-res-bar");
+  if(bar) bar.style.width = (r.cap > 0 ? Math.min(100, r.reserveAfter / r.cap * 100) : 0) + "%";
+  const btn = document.getElementById("dd-res-btn");
+  if(btn) btn.textContent = (S.reserveDate === todayKST()) ? "✔ 오늘 반영 완료 (다시 누르면 재반영)" : "✅ 오늘 매수 완료 — 예비탄 잔액 반영";
 
+  const qld = d.qld, ma120 = d.ma120, gap = devPct;
   setText("dd-qld", `$${f(qld,2)}`);
   setText("dd-ma120", `120선 ${ma120 ? "$"+f(ma120,2) : "—"}`);
-  setText("dd-gap", gap != null ? `${gap>=0?"+":""}${gap.toFixed(1)}%` : "—", gap==null?"var(--text3)":gap<0?"#7c3aed":"#16a34a");
+  setText("dd-gap", `${gap>=0?"+":""}${gap.toFixed(1)}%`, gap<0?"#7c3aed":"#16a34a");
   setText("dd-tqqq", `TQQQ ${d.tqqq ? "$"+f(d.tqqq,2) : "—"}`);
   if(d.fg != null){ setText("dd-fg", ""+d.fg, fgClr(d.fg)); setText("dd-fglabel", fgLbl(d.fg)); }
   else setText("dd-fg", "—");
@@ -3255,7 +3042,7 @@ async function ladderScanAll(){
   btn.disabled = false; icon.textContent = "↻";
 }
 
-loadSettings(); renderStatic(null); renderRules(); ladderRender(); dailyLoad(); renderDaily(null); renderRewards(); if(typeof tossRenderGate==="function") tossRenderGate();
+loadSettings(); renderStatic(null); renderRules(); ladderRender(); dailyLoad(); renderDaily(null);
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";

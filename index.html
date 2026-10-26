@@ -522,6 +522,25 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;border-top:2px solid var(--text1);"><span style="font-weight:800;">합계</span><b id="dd-total2">—</b></div>
   </div>
 
+  <!-- 💱 환전·입금 계산 -->
+  <div class="card" id="fx-card" style="padding:12px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="card-label" style="margin:0;">💱 환전 · 입금</div>
+      <div style="display:flex;background:var(--bg3);border-radius:8px;padding:2px;">
+        <button type="button" id="fx-week" onclick="setFxPeriod('week')" style="border:none;border-radius:6px;padding:4px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">1주</button>
+        <button type="button" id="fx-month" onclick="setFxPeriod('month')" style="border:none;border-radius:6px;padding:4px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">1달</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <div>
+        <div id="fx-krw" style="font-size:20px;font-weight:900;color:var(--text1);line-height:1.15;">—</div>
+        <div id="fx-usd" style="font-size:12px;font-weight:800;color:var(--blue);margin-top:2px;">—</div>
+      </div>
+      <div id="fx-days" style="text-align:right;font-size:10.5px;color:var(--text3);line-height:1.5;"></div>
+    </div>
+    <div id="fx-dip" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;color:var(--purple);line-height:1.5;"></div>
+  </div>
+
   <!-- 라이브 시세 -->
   <div class="grid2">
     <div class="mc"><div class="mc-label">QLD</div><div class="mc-value" id="dd-qld" style="color:var(--text3);">—</div><div class="mc-sub" id="dd-ma120">120선 —</div></div>
@@ -2323,6 +2342,36 @@ function dailyCompute(){
 }
 
 // ══ 매일매수 대시보드 렌더 ══
+function setFxPeriod(p){
+  S.fxPeriod = p;
+  localStorage.setItem("qld_s11", JSON.stringify(S));
+  if(typeof MD !== "undefined") renderDaily(MD);
+}
+// 💱 환전·입금 계산: 기본 매수(QLD+중간자산+GLD) × 거래일수, 웅덩이면 TQQQ 포함액도 표시
+function renderFx(daily, tqqqDaily, fx){
+  const per = S.fxPeriod === "week" ? "week" : "month";
+  const td = S.tradingDays || 252;
+  const n = per === "week" ? 5 : Math.round(td / 12);
+  ["week","month"].forEach(k => {
+    const b = document.getElementById("fx-" + k);
+    if(b){ const on = (k === per); b.style.background = on ? "var(--blue)" : "transparent"; b.style.color = on ? "#fff" : "var(--text3)"; }
+  });
+  const base = daily * n;
+  const rate = fx || null;
+  setText("fx-krw", daily > 0 ? d2fmt(base) : "설정 필요");
+  setText("fx-usd", daily > 0 && rate ? `≈ $${Math.round(base / rate).toLocaleString()}` : (daily > 0 ? "환율 대기" : "—"));
+  const days = document.getElementById("fx-days");
+  if(days) days.innerHTML = `${per === "week" ? "1주" : "1달"} · 거래일 ${n}일<br>${rate ? "환율 " + Math.round(rate).toLocaleString() + "원" : ""}`;
+  const dip = document.getElementById("fx-dip");
+  if(dip){
+    if(daily > 0 && tqqqDaily > 0){
+      const withT = (daily + tqqqDaily) * n;
+      dip.style.display = "block";
+      dip.innerHTML = `🔔 웅덩이 지속 시 TQQQ 포함 <b>${d2fmt(withT)}</b>${rate ? ` (≈ $${Math.round(withT / rate).toLocaleString()})` : ""}`;
+    } else dip.style.display = "none";
+  }
+}
+
 function renderDaily(d){
   const daily = d2num(S.dailyBuy) || 0;
   const tmult = (S.tqqqMult != null && S.tqqqMult !== "") ? d2num(S.tqqqMult) : 1.0;
@@ -2352,6 +2401,7 @@ function renderDaily(d){
     setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) : "—");
     setText("dd-tqqq-amt", "—");
     setText("dd-total2", daily > 0 ? d2fmt(daily) : "—");
+    renderFx(daily, 0, null);
     return;
   }
 
@@ -2383,6 +2433,7 @@ function renderDaily(d){
   setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) : "—");
   setText("dd-tqqq-amt", inDip ? (daily > 0 ? "+" + d2fmt(tqqqAdd) : "웅덩이 (금액 미설정)") : "– (웅덩이 아님)");
   setText("dd-total2", daily > 0 ? d2fmt(total) : "—");
+  renderFx(daily, tqqqAdd, d.usdkrw);
 
   setText("dd-qld", `$${f(qld,2)}`);
   setText("dd-ma120", `120선 ${ma120 ? "$"+f(ma120,2) : "—"}`);

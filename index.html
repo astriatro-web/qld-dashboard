@@ -509,13 +509,14 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div id="dd-badge" style="display:inline-block;font-size:12px;font-weight:900;padding:4px 13px;border-radius:20px;margin-bottom:10px;background:var(--bg3);color:var(--text3);">—</div>
     <div style="font-size:11px;color:var(--text3);font-weight:700;">오늘 매수 (하루치)</div>
     <div id="dd-total" style="font-size:30px;font-weight:900;line-height:1;color:var(--text1);margin-top:2px;">—</div>
+    <div id="dd-invest-pct" style="font-size:11.5px;font-weight:800;color:var(--blue);margin-top:6px;"></div>
     <div id="dd-explain" style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:10px;">시세를 불러오는 중…</div>
   </div>
 
   <!-- 오늘의 매수 구성 -->
   <div class="card">
     <div class="card-label">🧾 오늘의 매수 구성</div>
-    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD <span id="dd-qld-w" style="font-size:11px;">(이격 가중)</span></span><b id="dd-qld-amt">—</b></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD <span id="dd-qld-w" style="font-size:11px;">(비중)</span></span><b id="dd-qld-amt">—</b></div>
     <div id="dd-sso-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span id="dd-sso-label" style="color:var(--text3);">SCHD (배당 방어)</span><b id="dd-sso-amt" style="color:var(--teal);">—</b></div>
     <div id="dd-gld-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">GLD (금 · 보험)</span><b id="dd-gld-amt" style="color:var(--amber);">—</b></div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span style="color:var(--text3);">TQQQ (예비탄에서 · 웅덩이만)</span><b id="dd-tqqq-amt" style="color:var(--purple);">—</b></div>
@@ -946,22 +947,21 @@ details.strat-acc > summary:active { opacity: 0.85; }
   </div>
 
   <div id="buy-simple">
-    <div class="setting-group"><div class="setting-label">연 투자 가능액 (₩/년)</div><input class="setting-input" type="number" inputmode="numeric" id="s-annual" placeholder="예: 100000000" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">1년 동안 이 종목에 넣을 총액. 생활비·비상금 제외한 여유자금만.</div></div>
+    <div class="setting-group"><div class="setting-label">연 투자 자금 (₩/년)</div><input class="setting-input" type="number" inputmode="numeric" id="s-annual" placeholder="예: 100000000" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">이 전략에 쓸 1년 총액(생활비·비상금 제외). 그날 몇 %를 주식에 넣고 몇 %를 예비탄에 둘지는 이격 사다리가 매일 정합니다.</div></div>
     <div class="setting-group"><div class="setting-label">연 거래일수</div><input class="setting-input" type="number" inputmode="numeric" id="s-tdays" placeholder="252" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">미국장 연 거래일 ≈ 252</div></div>
   </div>
 
   <div id="buy-adv" style="display:none;">
-    <div class="setting-group"><div class="setting-label">월 소득 (₩/월)</div><input class="setting-input" type="number" inputmode="numeric" id="s-income" placeholder="예: 8000000" oninput="dailySave()"></div>
+    <div class="setting-group"><div class="setting-label">월 투자 자금 (₩/월)</div><input class="setting-input" type="number" inputmode="numeric" id="s-income" placeholder="예: 10000000" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">월급 중 생활비 등을 빼고 이 전략에 쓸 돈 <b>전부</b>. 투자율은 따로 정하지 않습니다 — 매일 몇 %를 주식에 넣을지는 이격 사다리가 정하고, 나머지는 예비탄이 됩니다.</div></div>
     <div style="display:flex;gap:10px;">
-      <div class="setting-group" style="flex:1;"><div class="setting-label">투자율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="1" id="s-rate" placeholder="30" oninput="dailySave()"></div>
       <div class="setting-group" style="flex:1;"><div class="setting-label">연 거래일수</div><input class="setting-input" type="number" inputmode="numeric" id="s-tdays2" placeholder="252" oninput="dailySave()"></div>
     </div>
-    <div class="setting-group"><div class="setting-label">연 소득증가율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="0.5" id="s-growth" placeholder="3" oninput="dailySave()"></div>
+    <div class="setting-group"><div class="setting-label">월 투자 자금 연 증가율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="0.5" id="s-growth" placeholder="3" oninput="dailySave()"></div>
     <div id="adv-note" style="font-size:11px;color:var(--text2);line-height:1.7;background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:12px;"></div>
   </div>
 
   <div class="card" style="background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.22);">
-    <div style="font-size:11px;color:var(--blue);font-weight:800;">하루 매수액 (총액)</div>
+    <div style="font-size:11px;color:var(--blue);font-weight:800;">하루 투자 자금 (주식 + 예비탄)</div>
     <div id="s-daily-result" style="font-size:26px;font-weight:900;color:var(--blue);line-height:1.2;margin-top:2px;">—</div>
     <div id="s-daily-sub" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
   </div>
@@ -1005,7 +1005,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
     <div style="background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
       <div style="font-size:11px;color:var(--purple);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🎯 이격 가중 + 예비탄 → 웅덩이 TQQQ</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD 120선 이격도에 따라 매수량을 조절합니다(비쌀 때 덜, 쌀 때 더). 덜 사서 <b>아낀 돈은 예비탄</b>으로 쌓아 두고, <b>웅덩이(QLD &lt; 120선)</b>에서 꺼내 <b>TQQQ를 깊이에 비례해</b> 삽니다. 총 투입액은 그대로입니다.</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.7;">투자 자금 중 <b>오늘 주식에 넣을 %</b>를 QLD 120선 이격도로 매일 정합니다(평시 50% · 비쌀 때 덜 · 쌀 때 더). 정해진 금액은 포트 비중대로 나눠 사고, 덜 사서 <b>남은 돈은 예비탄</b>으로 쌓아 두고, <b>웅덩이(QLD &lt; 120선)</b>에서 꺼내 <b>TQQQ를 깊이에 비례해</b> 삽니다. 총 투입액은 그대로입니다.</div>
     </div>
     <div class="setting-label" style="margin-bottom:6px;">가중 강도 k</div>
     <div style="display:flex;gap:6px;margin-bottom:10px;">
@@ -1016,7 +1016,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div id="dk-ladder" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px;"></div>
     <div style="display:flex;gap:10px;">
       <div class="setting-group" style="flex:1.4;"><div class="setting-label">예비탄 현재 잔액 (₩)</div><input class="setting-input" type="number" inputmode="numeric" min="0" id="s-reserve" placeholder="0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">SGOV 등 현금성으로 보관(이자 ~4%)</div></div>
-      <div class="setting-group" style="flex:1;"><div class="setting-label">예비탄 상한 (개월)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="24" id="s-rescap" placeholder="6" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">넘치면 QLD로 바로 투입</div></div>
+      <div class="setting-group" style="flex:1;"><div class="setting-label">예비탄 상한 (개월)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="24" id="s-rescap" placeholder="6" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">넘치면 주식에 바로 투입</div></div>
     </div>
     <div id="dk-note" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:4px;"></div>
   </div>
@@ -1258,9 +1258,9 @@ function getRULES() {
     { title:"🎯 완성형 로직 — 이격 가중 + 예비탄 → 웅덩이 TQQQ", color:"#5b21b6", bg:"#ede9fe",
       items:[
         ["한 줄 요약","매일 같은 예산을 쓰되, QLD는 120선 이격도에 따라 비쌀 때 덜·쌀 때 더 산다. 덜 사서 아낀 돈은 예비탄으로 쌓았다가 웅덩이(QLD < 120선)에서 꺼내 TQQQ를 깊이에 비례해 산다. 총 투입액은 그대로, 3배 레버리지를 '싼 구간에만' 싣는 구조."],
-        ["QLD 매수 공식","오늘 QLD = 엔진 예산 × 50% × w, w = clip(1 − k·이격, 0.4~2.0). k=1.5면 +20%↑ 35% · +10% 43% · 0% 50% · −5% 54% · −10% 57% · −15% 61% · −25% 68% · 더 깊으면 최대 80~100%. 설정 탭 사다리 표에서 확인."],
+        ["주식 투자 비율 공식","투자율을 따로 정하지 않는다. 오늘 주식 매수 = 하루 투자 자금 × 50% × w, w = clip(1 − k·이격, 0.4~2.0). k=1.5면 +20%↑ 35% · +10% 43% · 0% 50% · −5% 54% · −10% 57% · −15% 61% · −25% 68% · 더 깊으면 최대 80~100%. 이 금액을 QLD·SCHD·GLD 비중대로 나누고, 남은 돈은 예비탄. 설정 탭 사다리 표에서 확인."],
         ["예비탄 → TQQQ","웅덩이에서 매일 예비탄 × min(90%, 3%×(1+25×깊이))만큼 TQQQ 매수. 막 빠졌을 땐 3%대, −10%면 약 11%, −20%면 18%로 깊을수록 빨리 쓴다. 인출 속도는 결과에 거의 영향이 없다 — 2배 빠르게~완만하게 바꿔도 배수 차이 2% 미만(상승장 13.22~13.49·폭락 35.43~35.77). 상한으로 규모가 제한되고, 웅덩이가 길어지면 매일 들어오는 예산이 예비탄을 재충전해 TQQQ 매수가 이어지기 때문. 웅덩이 판정은 QLD 단독 120선(SSO 확인보다 +10% 우위였던 백테 결과)."],
-        ["예비탄 상한","엔진 월예산 × 6개월치가 기본 상한. 무한정 쌓으면 상승장에서 현금 기회비용이 커져 손해 → 상한을 넘는 몫은 그날 QLD로 바로 넣는다. 예비탄은 SGOV 같은 현금성(이자 ~4%)에 보관."],
+        ["예비탄 상한","월 투자 자금 × 6개월치가 기본 상한. 무한정 쌓으면 상승장에서 현금 기회비용이 커져 손해 → 상한을 넘는 몫은 그날 주식(비중대로)에 바로 넣는다. 그래서 예비탄이 차면 사실상 자금 전액이 투자된다. 예비탄은 SGOV 같은 현금성(이자 ~4%)에 보관."],
         ["백테스트 근거","총투입 동일 비교. 평탄 매일 QLD 대비 → 이격가중만(QLD 증량)은 거의 중립, 이격가중+웅덩이 TQQQ는 k=1.5 상승장 14년 13.49배(+7.5%)·폭락 포함 20년 35.77배(+14%), TQQQ 비중 19~23%, MDD −67~69%. k=2.0은 13.84/37.17배·TQQQ 25~29%·MDD −70%."],
         ["핵심 깨달음","이격 가중의 진짜 의미는 'QLD를 싸게 더 사는 것'이 아니라 'TQQQ 살 총알을 비축하는 것'. 아낀 돈을 3배로 꺼내 써야 배수가 오른다. 상승장이면 거의 본전, 대폭락이 오면 크게 이득인 비대칭 '공짜 보험'에 가깝다."],
         ["대가와 한계","TQQQ를 더 담는 만큼 MDD가 4~6%p 깊어진다(−69% 감내 필요). 과거 한 경로의 결과라 미래 보장 아님. 닷컴형 장기 횡보에선 TQQQ 감가가 커질 수 있어 k는 1.0~1.5 권장, 2.0은 공격형."],
@@ -2003,7 +2003,7 @@ function dailyLoad(){
   localStorage.setItem("qld_s11", JSON.stringify(S));
   const g = (id,v) => { const e = document.getElementById(id); if(e) e.value = v; };
   g("s-annual", S.annualInvest); g("s-tdays", S.tradingDays); g("s-tdays2", S.tradingDays);
-  g("s-income", S.monthlyIncome || ""); g("s-rate", S.investRate);
+  g("s-income", S.monthlyIncome || "");
   g("s-growth", S.incomeGrowth);
   g("s-reserve", S.reserve || ""); g("s-rescap", S.reserveCapMonths);
   g("s-qldweight", S.qldWeight); g("s-gldweight", S.gldWeight);
@@ -2059,7 +2059,6 @@ function dailySave(){
   S.annualInvest = d2num(gv("s-annual"));
   S.tradingDays  = d2num(gv("s-tdays")) || d2num(gv("s-tdays2")) || 252;
   S.monthlyIncome= d2num(gv("s-income"));
-  S.investRate   = d2num(gv("s-rate"));
   S.incomeGrowth = d2num(gv("s-growth"));
   S.reserve      = Math.max(0, d2num(gv("s-reserve")) || 0);
   S.reserveCapMonths = gv("s-rescap") !== "" ? Math.max(1, Math.min(24, d2num(gv("s-rescap")))) : 6;
@@ -2079,13 +2078,13 @@ function dailySave(){
 function dailyCompute(){
   const td = S.tradingDays || 252;
   const annual = (S.buyMode === "advanced")
-    ? (S.monthlyIncome || 0) * 12 * (S.investRate || 0) / 100
+    ? (S.monthlyIncome || 0) * 12
     : (S.annualInvest || 0);
   const daily = td ? annual / td : 0;
   S.dailyBuy = daily;
   const setT = (id,t) => { const e = document.getElementById(id); if(e) e.textContent = t; };
   setT("s-daily-result", daily > 0 ? d2fmt(daily) : "—");
-  setT("s-daily-sub", annual > 0 ? `연 ${d2fmt(annual)} ÷ ${td}거래일` : "값을 입력하세요");
+  setT("s-daily-sub", annual > 0 ? `연 ${d2fmt(annual)} ÷ ${td}거래일 · 이 중 오늘 주식 몇 %·예비탄 몇 %는 이격 사다리가 결정` : "값을 입력하세요");
   const qldW = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;
   const gldW = (S.gldWeight != null && S.gldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.gldWeight))) : 0;
   const ssoW = Math.max(0, 100 - qldW - gldW);
@@ -2321,18 +2320,18 @@ function dailyCompute(){
   });
   const lad = document.getElementById("dk-ladder");
   if(lad){
-    const engB = (S.dailyBuy || 0) * qldW / 100;
+    const engB = (S.dailyBuy || 0);
     const bands = [["+20% 이상",0.20],["+10~+20%",0.10],["0~+10%",0],["−5~0%",-0.05],["−5~−10%",-0.10],["−10~−15%",-0.15],["−15~−25%",-0.25],["−25% 이하",-0.40]];
     const rows = bands.map(([lbl,dv]) => {
       const pct = DB_BASE * dbWeight(dv, devKP) * 100;
       const dip = dv < 0;
       return `<tr style="${dip?'color:var(--purple);':''}"><td style="padding:3px 4px;">${lbl}</td><td style="padding:3px 4px;text-align:right;font-weight:800;">${pct.toFixed(0)}%</td><td style="padding:3px 4px;text-align:right;color:var(--text3);">${engB>0?d2fmt(engB*pct/100):""}</td><td style="padding:3px 4px;text-align:right;color:var(--text3);">${dip?'TQQQ '+(dbDrawRate(dv)*100).toFixed(0)+'%/일':'적립'}</td></tr>`;
     }).join("");
-    lad.innerHTML = `<div style="font-size:10.5px;color:var(--text3);font-weight:700;margin-bottom:4px;">QLD 120선 이격별 오늘 QLD 매수 비율 (k=${devKP})</div>
+    lad.innerHTML = `<div style="font-size:10.5px;color:var(--text3);font-weight:700;margin-bottom:4px;">QLD 120선 이격별 오늘 주식 투자 비율 (k=${devKP})</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px;color:var(--text2);">
-        <thead><tr style="color:var(--text3);font-size:10px;"><th style="text-align:left;padding:3px 4px;">이격</th><th style="text-align:right;padding:3px 4px;">QLD</th><th style="text-align:right;padding:3px 4px;">금액</th><th style="text-align:right;padding:3px 4px;">예비탄</th></tr></thead>
+        <thead><tr style="color:var(--text3);font-size:10px;"><th style="text-align:left;padding:3px 4px;">이격</th><th style="text-align:right;padding:3px 4px;">주식</th><th style="text-align:right;padding:3px 4px;">하루 금액</th><th style="text-align:right;padding:3px 4px;">예비탄</th></tr></thead>
         <tbody>${rows}</tbody></table>
-      <div style="font-size:9.5px;color:var(--text3);margin-top:5px;line-height:1.5;">QLD 비율 = 엔진 예산(일일 매수액 × QLD 비중) 대비. 남는 돈은 예비탄 적립. 보라색(웅덩이)에선 예비탄의 표시 비율만큼 TQQQ를 매일 삽니다.</div>`;
+      <div style="font-size:9.5px;color:var(--text3);margin-top:5px;line-height:1.5;">주식 비율 = 하루 투자 자금 대비. 이 금액을 QLD·SCHD·GLD 비중대로 나눠 사고, 남는 돈은 예비탄으로 적립합니다. 보라색(웅덩이)에선 예비탄의 표시 비율만큼 TQQQ를 매일 삽니다. 투자율은 따로 정하지 않습니다.</div>`;
   }
   const dkNote = document.getElementById("dk-note");
   if(dkNote) dkNote.innerHTML = `백테스트(총투입 동일): k=1.5 상승장 14년 <b>+7.5%</b> · 폭락 포함 20년 <b>+14%</b> · MDD −67~69%. k=2.0은 +10%/+18% 대신 TQQQ 비중 25~29%·MDD −70%. 예비탄은 상한(기본 6개월치)을 넘기면 현금 기회비용이 커져 초과분을 QLD로 넣습니다. ※ 과거 한 경로의 결과이며 미래 보장 아님.`;
@@ -2340,11 +2339,11 @@ function dailyCompute(){
   if(S.buyMode === "advanced"){
     const note = document.getElementById("adv-note");
     if(note){
-      const monthly = (S.monthlyIncome || 0) * (S.investRate || 0) / 100;
+      const monthly = (S.monthlyIncome || 0);
       const yrs = accYears, gr = (S.incomeGrowth || 0) / 100;
       let principal = 0, a = annual;
       for(let i = 0; i < yrs; i++){ principal += a; a *= (1 + gr); }
-      note.innerHTML = `월 투자액 <b>${d2fmt(monthly)}</b> (소득의 ${S.investRate||0}%) · 연 <b>${d2fmt(annual)}</b><br>`
+      note.innerHTML = `월 투자 자금 <b>${d2fmt(monthly)}</b> · 연 <b>${d2fmt(annual)}</b> (주식/예비탄 배분은 이격 사다리가 자동 결정)<br>`
         + `적립 ${yrs}년 총 투입원금 ≈ <b>${d2fmt(principal)}</b> (연 ${S.incomeGrowth||0}% 증액 가정)`;
     }
   }
@@ -2353,18 +2352,18 @@ function dailyCompute(){
 // ══ 매일매수 대시보드 렌더 ══
 // ── 🎯 완성형 매수 엔진 (이격 가중 QLD + 예비탄 → 웅덩이 TQQQ) ──
 //   백테스트(2026-10, 총투입 동일): k=1.5 상승장 14년 +7.5% / 폭락포함 20년 +14%, MDD -67~69%
-//   QLD 매수 = 엔진예산 × 50% × w,  w = clip(1 − k·dev, 0.4, 2.0)   (dev = QLD/120선 − 1)
-//   → 평시(dev 0) 50%, 최대 100%(w=2). 나머지(아낀 돈)는 예비탄 적립.
+//   오늘 주식 매수 = 하루 투자자금 × 50% × w,  w = clip(1 − k·dev, 0.4, 2.0)   (dev = QLD/120선 − 1)
+//   → 평시(dev 0) 50%, 최대 100%(w=2). 이 금액을 QLD·중간자산·GLD 비중대로 분배. 나머지는 예비탄 적립.
 //   웅덩이(dev<0): 예비탄 × min(0.9, 0.03·(1+25·깊이)) 만큼 TQQQ 매수 (깊을수록 많이)
-//   평시: 예비탄이 상한(엔진 월예산 × N개월)을 넘으면 초과분을 QLD로 즉시 투입
+//   평시: 예비탄이 상한(월 투자자금 × N개월)을 넘으면 초과분을 주식(비중대로)에 즉시 투입
 var DB_BASE = 0.5, DB_WMIN = 0.4, DB_WMAX = 2.0;
 function dbWeight(dev, k){ return Math.max(DB_WMIN, Math.min(DB_WMAX, 1 - k * dev)); }
 function dbDrawRate(dev){ const depth = Math.max(0, -dev); return Math.min(0.9, 0.03 * (1 + depth * 25)); }
 function dbEngine(p){
-  // p: {budget(엔진 일예산 KRW), dev, k, reserve, capMonths, tdPerMonth}
+  // p: {budget(하루 투자자금 KRW 전체), dev, k, reserve, capMonths, tdPerMonth}
   const B = Math.max(0, p.budget || 0);
   const w = dbWeight(p.dev, p.k);
-  let qld = B * DB_BASE * w;
+  let qld = B * DB_BASE * w;          // = 오늘 주식 매수 총액(비중 분배 전)
   const save = B - qld;
   let res = Math.max(0, p.reserve || 0) + save;
   const cap = B * (p.tdPerMonth || 21) * (p.capMonths || 6);
@@ -2374,7 +2373,7 @@ function dbEngine(p){
     rate = dbDrawRate(p.dev);
     tqqq = res * rate; res -= tqqq;
   } else if(res > cap){
-    overflow = res - cap; qld += overflow; res = cap;
+    overflow = res - cap; qld += overflow; res = cap;   // 초과분도 주식(비중대로)
   }
   return { w, qld, save, tqqq, overflow, rate, reserveAfter: res, reserveBefore: Math.max(0, p.reserve||0), cap, inDip,
            flow: save - tqqq - overflow };   // 예비탄 순변화(+적립/−인출)
@@ -2386,13 +2385,13 @@ function dbParams(d){
   const capM = (S.reserveCapMonths != null && S.reserveCapMonths !== "") ? Math.max(1, Math.min(24, d2num(S.reserveCapMonths))) : 6;
   const td = S.tradingDays || 252;
   const dev = (d && d.qld != null && d.ma120) ? (d.qld - d.ma120) / d.ma120 : 0;
-  return { budget: daily * qldW / 100, dev, k, reserve: d2num(S.reserve) || 0, capMonths: capM, tdPerMonth: td / 12, daily, qldW };
+  return { budget: daily, dev, k, reserve: d2num(S.reserve) || 0, capMonths: capM, tdPerMonth: td / 12, daily, qldW };
 }
 function todayKST(){ const n = new Date(Date.now() + 9*3600*1000); return n.toISOString().slice(0,10); }
 function dbApplyToday(){
   if(typeof MD === "undefined" || !MD || MD.qld == null){ alert("먼저 상단 새로고침으로 시세를 불러오세요."); return; }
   const p = dbParams(MD);
-  if(p.budget <= 0){ alert("설정 탭에서 일일 매수액과 QLD 비중을 먼저 정하세요."); return; }
+  if(p.budget <= 0){ alert("설정 탭에서 투자 자금을 먼저 정하세요."); return; }
   const today = todayKST();
   if(S.reserveDate === today && !confirm("오늘은 이미 반영했어요. 한 번 더 반영할까요? (중복 적립 주의)")) return;
   const r = dbEngine(p);
@@ -2409,8 +2408,8 @@ function renderDaily(d){
   const daily = p.daily, qldW = p.qldW;
   const gldW  = (S.gldWeight != null && S.gldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.gldWeight))) : 0;
   const ssoW  = Math.max(0, 100 - qldW - gldW);
-  const ssoAmt = daily * ssoW / 100;
-  const gldAmt = daily * gldW / 100;
+  let ssoAmt = daily * ssoW / 100;
+  let gldAmt = daily * gldW / 100;
   const midName = (S.midAsset === "sso") ? "SSO" : "SCHD";
   const badge = document.getElementById("dd-badge");
   const setBadge = (txt, bg, col) => { if(badge){ badge.textContent = txt; badge.style.background = bg; badge.style.color = col; } };
@@ -2437,25 +2436,30 @@ function renderDaily(d){
 
   const r = dbEngine(p);
   const devPct = p.dev * 100;
-  const qldPctOfBudget = p.budget > 0 ? (r.qld / p.budget * 100) : 0;
-  const total = r.qld + r.tqqq + ssoAmt + gldAmt;
+  const stock = r.qld;                                   // 오늘 주식 매수 총액
+  const qldPctOfBudget = p.budget > 0 ? (stock / p.budget * 100) : 0;   // 하루 자금 중 주식 비율
+  const qldAmt = stock * qldW / 100;
+  ssoAmt = stock * ssoW / 100;
+  gldAmt = stock * gldW / 100;
+  const total = stock + r.tqqq;
 
   if(r.inDip){
     setBadge("🔔 웅덩이 — 예비탄으로 TQQQ", "var(--purple-lt)", "var(--purple)");
     setText("dd-explain", daily > 0
-      ? `QLD가 120선보다 ${Math.abs(devPct).toFixed(1)}% 아래인 웅덩이예요. 싸니까 QLD를 평소보다 많이(엔진 예산의 ${qldPctOfBudget.toFixed(0)}%) 사고, 예비탄의 ${(r.rate*100).toFixed(1)}%(${d2fmt(r.tqqq)})를 꺼내 TQQQ를 삽니다. 깊어질수록 꺼내는 비율이 커집니다.`
+      ? `QLD가 120선보다 ${Math.abs(devPct).toFixed(1)}% 아래인 웅덩이예요. 싸니까 하루 자금 ${d2fmt(daily)}의 ${qldPctOfBudget.toFixed(0)}%를 주식에 넣고(평소 50%보다 많이), 예비탄의 ${(r.rate*100).toFixed(1)}%(${d2fmt(r.tqqq)})를 꺼내 TQQQ를 삽니다. 깊어질수록 꺼내는 비율이 커집니다.`
       : "웅덩이 상태입니다. 설정 탭에서 '일일 매수액'을 정하면 금액이 계산됩니다.");
   } else {
     const hot = devPct >= 10;
     setBadge(hot ? "평상시 — 비싸서 덜 사기" : "평상시 — 매일 매수", "var(--blue-lt)", "var(--blue)");
     setText("dd-explain", daily > 0
-      ? `QLD가 120선보다 +${devPct.toFixed(1)}% 위예요. 이격에 맞춰 QLD는 엔진 예산의 ${qldPctOfBudget.toFixed(0)}%만 사고, 나머지 ${d2fmt(r.save)}는 예비탄으로 쌓아 웅덩이 때 TQQQ 실탄으로 씁니다.`
-        + (r.overflow > 0 ? ` 예비탄이 상한을 넘은 ${d2fmt(r.overflow)}는 QLD로 바로 넣었어요.` : "")
+      ? `QLD가 120선보다 +${devPct.toFixed(1)}% 위예요. 이격 사다리에 따라 하루 자금 ${d2fmt(daily)}의 ${qldPctOfBudget.toFixed(0)}%를 주식에 넣고, 나머지 ${d2fmt(r.save)}는 예비탄으로 쌓아 웅덩이 때 TQQQ 실탄으로 씁니다.`
+        + (r.overflow > 0 ? ` 예비탄이 상한을 넘은 ${d2fmt(r.overflow)}는 주식에 바로 넣었어요.` : "")
       : "평상시입니다. 설정 탭에서 '일일 매수액'을 먼저 정하세요.");
   }
   setText("dd-total", daily > 0 ? d2fmt(total) : "설정 필요");
-  setText("dd-qld-w", `(이격 가중 ${qldPctOfBudget.toFixed(0)}%${r.overflow>0?" · 상한초과분 포함":""})`);
-  setText("dd-qld-amt", daily > 0 ? d2fmt(r.qld) : "—");
+  setText("dd-qld-w", `(비중 ${qldW}%)`);
+  setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
+  setText("dd-invest-pct", daily > 0 ? `오늘 주식 투자 비율: 하루 자금의 ${qldPctOfBudget.toFixed(0)}% (이격 ${devPct>=0?"+":""}${devPct.toFixed(1)}%, k=${p.k})${r.overflow>0?" · 예비탄 상한 초과분 포함":""}` : "");
   setText("dd-sso-amt", ssoW > 0 ? d2fmt(ssoAmt) : "—");
   setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) : "—");
   setText("dd-tqqq-amt", r.inDip ? (r.tqqq > 0 ? d2fmt(r.tqqq) : "예비탄 없음") : "– (웅덩이 아님)");

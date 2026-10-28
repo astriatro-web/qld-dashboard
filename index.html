@@ -96,6 +96,14 @@ body {
 .btn-refresh:hover { background: rgba(255,255,255,0.28); }
 .btn-refresh:disabled { opacity: 0.5; cursor: default; }
 .btn-refresh:active { transform: scale(0.96); }
+.hdr-status { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 8px; }
+.hdr-stat { cursor: pointer; text-align: left; min-width: 0; }
+.hdr-stat-lbl { font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 0.12em; font-weight: 600; margin-bottom: 2px; white-space: nowrap; }
+.hdr-stat-val { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.03em; display: flex; align-items: center; gap: 6px; white-space: nowrap; line-height: 1.2; }
+.hdr-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.45); flex-shrink: 0; box-shadow: 0 0 0 2px rgba(255,255,255,0.15); }
+.hdr-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.25); }
+@media (max-width: 400px) { .btn-refresh-txt { display: none; } .btn-refresh { padding: 9px 11px; } }
+@media (max-width: 380px) { .hdr-status { gap: 9px; padding: 0 4px; } .hdr-stat-val { font-size: 14px; gap: 5px; } .hdr-stat-lbl { letter-spacing: 0.06em; } .header-title { font-size: 16px; } }
 
 /* ── 탭 ── */
 .tabs {
@@ -486,8 +494,19 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div class="header-sub">QLD · SSO · TQQQ</div>
     <div class="header-title">QLD DipBoost</div>
   </div>
+  <div class="hdr-status">
+    <div class="hdr-stat" onclick="switchTab('dashboard')">
+      <div class="hdr-stat-lbl" id="hdr-dip-lbl">120선</div>
+      <div class="hdr-stat-val"><i class="hdr-dot" id="hdr-dip-dot"></i><span id="hdr-dip">—</span></div>
+    </div>
+    <div class="hdr-divider"></div>
+    <div class="hdr-stat" onclick="switchTab('heat')">
+      <div class="hdr-stat-lbl">과열</div>
+      <div class="hdr-stat-val"><i class="hdr-dot" id="hdr-heat-dot"></i><span id="hdr-heat">—</span></div>
+    </div>
+  </div>
   <button class="btn-refresh" id="btnRefresh" onclick="fetchAll()">
-    <span id="btnIcon">↻</span> 새로고침
+    <span id="btnIcon">↻</span><span class="btn-refresh-txt"> 새로고침</span>
   </button>
 </div>
 <div class="last-updated" id="lastUpdated">새로고침을 눌러 데이터를 불러오세요</div>
@@ -1615,6 +1634,7 @@ async function fetchAll() {
     else { S.standbyDate = ""; }
     localStorage.setItem("qld_s11", JSON.stringify(S));
     renderDaily(MD);
+    heatBackground();
     document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString("ko-KR") + " 업데이트";
   } catch(e) {
     console.error(e);
@@ -2433,7 +2453,38 @@ function heatGrade(key, x){
   }
   return null;
 }
+function heatScore(d){
+  let red = 0, yel = 0, grn = 0, n = 0;
+  ["buffett","cape","household","margin","conc","dev","hy"].forEach(k => {
+    const g = heatGrade(k, d && d[k]);
+    if(g != null){ n++; if(g === 2) red++; else if(g === 1) yel++; else grn++; }
+  });
+  const score = n ? (red * 2 + yel) / (n * 2) * 100 : 0;
+  const lv = !n ? null : score >= 67 ? 2 : score >= 34 ? 1 : 0;
+  return { red, yel, grn, n, score, lv };
+}
+function updateHeaderHeat(d){
+  const el = document.getElementById("hdr-heat"), dot = document.getElementById("hdr-heat-dot"); if(!el) return;
+  const s = d ? heatScore(d) : null;
+  if(!s || !s.n){ el.textContent = "—"; if(dot) dot.style.background = "rgba(255,255,255,0.45)"; return; }
+  el.textContent = String(Math.round(s.score));
+  if(dot) dot.style.background = ["#4ade80","#fbbf24","#f87171"][s.lv];
+}
+function updateHeaderDip(d){
+  const el = document.getElementById("hdr-dip"), dot = document.getElementById("hdr-dip-dot"), lbl = document.getElementById("hdr-dip-lbl"); if(!el) return;
+  if(!d || d.qld == null || !d.ma120){ el.textContent = "—"; if(lbl) lbl.textContent = "120선"; if(dot) dot.style.background = "rgba(255,255,255,0.45)"; return; }
+  const dev = (d.qld / d.ma120 - 1) * 100, dip = dev < 0;
+  el.textContent = (dip ? "−" : "+") + Math.abs(dev).toFixed(1) + "%";
+  if(lbl) lbl.textContent = dip ? "웅덩이" : "평시";
+  if(dot) dot.style.background = dip ? "#c4b5fd" : "#93c5fd";
+}
+function heatBackground(){
+  if(!HEAT){ try { const c = JSON.parse(localStorage.getItem(HEAT_KEY) || "null"); if(c && c.data) HEAT = c; } catch(e){} }
+  if(HEAT) updateHeaderHeat(HEAT.data);
+  if(!HEAT || Date.now() - HEAT.t > HEAT_TTL) heatFetch(false);
+}
 function heatRender(d){
+  updateHeaderHeat(d);
   setText("heat-time", (d.fetched_at || "") + " 기준 · 3시간마다 자동 갱신");
   const nf = (v, dg=1) => (v == null || isNaN(v)) ? "—" : Number(v).toLocaleString(undefined, { maximumFractionDigits: dg, minimumFractionDigits: dg });
   const q = s => { if(!s) return ""; const m = String(s).match(/^(\d{4})-(\d{2})/); return m ? `${m[1]} ${Math.floor((+m[2]-1)/3)+1}분기` : s; };
@@ -2494,6 +2545,7 @@ function heatRender(d){
 }
 
 function renderDaily(d){
+  updateHeaderDip(d);
   const daily = d2num(S.dailyBuy) || 0;
   const tmult = (S.tqqqMult != null && S.tqqqMult !== "") ? d2num(S.tqqqMult) : 1.0;
   const qldW  = (S.qldWeight != null && S.qldWeight !== "") ? Math.max(0, Math.min(100, d2num(S.qldWeight))) : 100;

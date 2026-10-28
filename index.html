@@ -2417,8 +2417,50 @@ function renderFx(daily, tqqqDaily, fx){
 }
 
 // ══ 🌡️ 과열지표 ══
-const HEAT_KEY = "qld_heat", HEAT_TTL = 3 * 3600 * 1000;
+const HEAT_KEY = "qld_heat2", HEAT_TTL = 3 * 3600 * 1000;
 let HEAT = null;
+const HEAT_OPEN = {}, HEAT_CHARTS = {};
+function heatToggle(key){
+  HEAT_OPEN[key] = !HEAT_OPEN[key];
+  const box = document.getElementById("heat-ch-" + key), car = document.getElementById("heat-car-" + key);
+  if(box) box.style.display = HEAT_OPEN[key] ? "block" : "none";
+  if(car) car.textContent = HEAT_OPEN[key] ? "그래프 닫기 ▴" : "그래프 ▾";
+  if(HEAT_OPEN[key] && HEAT) heatChart(key, HEAT.data[key]);
+}
+function heatChart(key, x){
+  const cv = document.getElementById("heat-cv-" + key); if(!cv || !x || !x.h || !x.h.length || typeof Chart === "undefined") return;
+  if(HEAT_CHARTS[key]){ HEAT_CHARTS[key].destroy(); delete HEAT_CHARTS[key]; }
+  const labels = x.h.map(p => p[0]), vals = x.h.map(p => p[1]);
+  const g = heatGrade(key, x), main = g === 2 ? "#dc2626" : g === 1 ? "#d97706" : g === 0 ? "#16a34a" : "#64748b";
+  const ds = [];
+  // 버핏: 공식 분기값 뒤에 오늘 근사치를 점선으로 이어 붙임
+  let approx = null;
+  if(key === "buffett" && x.approx != null){
+    const today = new Date().toISOString().slice(0,10);
+    labels.push(today); vals.push(null);
+    approx = labels.map((_, i) => i === labels.length - 2 ? x.h[x.h.length-1][1] : i === labels.length - 1 ? x.approx : null);
+  }
+  const last = approx ? labels.length - 1 : vals.length - 1;
+  ds.push({ label: "값", data: vals, borderColor: main, backgroundColor: main + "18", fill: true, borderWidth: 1.6, tension: 0.15, spanGaps: true,
+            pointRadius: vals.map((_, i) => (!approx && i === last) ? 4 : 0), pointBackgroundColor: main, order: 1 });
+  if(approx) ds.push({ label: "현재 근사", data: approx, borderColor: main, borderDash: [4,3], borderWidth: 1.6, spanGaps: true,
+            pointRadius: approx.map((_, i) => i === last ? 4 : 0), pointBackgroundColor: main, fill: false, order: 0 });
+  (x.lines || []).forEach(([v, lv]) => {
+    ds.push({ label: (lv === 2 ? "과열 " : "주의 ") + v, data: labels.map(() => v), borderColor: lv === 2 ? "#ef4444" : "#f59e0b",
+              borderDash: [5,4], borderWidth: 1.1, pointRadius: 0, fill: false, order: 2 });
+  });
+  const tc = getComputedStyle(document.documentElement).getPropertyValue("--text3").trim() || "#94a3b8";
+  HEAT_CHARTS[key] = new Chart(cv, {
+    type: "line", data: { labels, datasets: ds },
+    options: { responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { display: false },
+        tooltip: { filter: it => it.raw != null, callbacks: { title: it => it[0] ? it[0].label : "" } } },
+      scales: {
+        x: { ticks: { color: tc, font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6, callback: function(v){ return String(this.getLabelForValue(v)).slice(0,4); } }, grid: { display: false } },
+        y: { ticks: { color: tc, font: { size: 10 }, maxTicksLimit: 5 }, grid: { color: "rgba(148,163,184,0.15)" } } } }
+  });
+}
 function heatOpen(){
   if(!HEAT){ try { const c = JSON.parse(localStorage.getItem(HEAT_KEY) || "null"); if(c && c.data) HEAT = c; } catch(e){} }
   if(HEAT) heatRender(HEAT.data);
@@ -2492,11 +2534,11 @@ function heatRender(d){
     { grp:"비싼가", key:"buffett", name:"버핏지표", tag:"시총 ÷ GDP", freq:"분기 · FRED",
       val: x => nf(x.approx != null ? x.approx : x.value, 0) + "%",
       sub: x => `${x.approx != null ? `현재 근사 (공식 ${q(x.asOf)} ${nf(x.value,0)}%)` : q(x.asOf)} · ${x.since}년 이후 상위 ${nf(100-(x.approxPct!=null?x.approxPct:x.pct),1)}% · 평균 ${nf(x.avg,0)}%`,
-      desc:"미국 주식 시가총액이 경제 규모(GDP)의 몇 배인지. 높을수록 경제에 비해 주가가 비쌈." },
+      desc:"미국 주식 시가총액이 경제 규모(GDP)의 몇 배인지. 높을수록 경제에 비해 주가가 비쌈.", note:"끝의 점선 = 공식 발표 뒤 주가 변화로 추정한 오늘 값" },
     { grp:"비싼가", key:"cape", name:"실러 CAPE", tag:"10년 평균이익 PER", freq:"월 · multpl(실러 데이터)",
       val: x => nf(x.value, 1),
       sub: x => `${x.since}년 이후 상위 ${nf(100-x.pct,1)}% · 평균 ${nf(x.avg,1)} · 최고 ${nf(x.max,1)}`,
-      desc:"경기 순환을 지운 10년 평균 이익 기준 PER. 1999년 닷컴 정점 44, 2021년 38." },
+      desc:"경기 순환을 지운 10년 평균 이익 기준 PER. 1999년 닷컴 정점 44, 2021년 38.", note:"최근 50년 표시, 기준선은 전체 역사 기준" },
     { grp:"쏠림 · 빚", key:"household", name:"가계 주식 비중", tag:"금융자산 중 주식 %", freq:"분기 · FRED(연준 Z.1)",
       val: x => nf(x.value, 1) + "%",
       sub: x => `${q(x.asOf)} · ${x.since}년 이후 상위 ${nf(100-x.pct,1)}% · 역대 최고 ${nf(x.max,1)}% (${x.maxAt})`,
@@ -2504,11 +2546,11 @@ function heatRender(d){
     { grp:"쏠림 · 빚", key:"margin", name:"신용융자 증가율", tag:"브로커 마진대출 전년비", freq:"분기 · FRED(연준 Z.1)",
       val: x => (x.yoy >= 0 ? "+" : "") + nf(x.yoy, 1) + "%",
       sub: x => `${q(x.asOf)} 잔고 $${nf(x.value,0)}B · 역대 증가율 중 상위 ${nf(100-x.pct,1)}%${x.yoy <= -10 ? " · 빚 축소(디레버리징) 진행" : ""}`,
-      desc:"빚내서 산 주식이 얼마나 빨리 늘어나나. 급증은 과열, 고점 뒤 급감은 하락이 진행 중이라는 신호." },
+      desc:"빚내서 산 주식이 얼마나 빨리 늘어나나. 급증은 과열, 고점 뒤 급감은 하락이 진행 중이라는 신호.", note:"−10% 아래 = 빚 축소 진행" },
     { grp:"쏠림 · 빚", key:"conc", name:"시장 집중도", tag:"나스닥100 동일가중 ÷ 시총가중", freq:"주간 · 야후(QQEW/QQQ)",
       val: x => nf(x.value, 3),
       sub: x => `최근 ${x.years}년 중 하위 ${nf(x.pct,1)}% (낮을수록 집중) · 1년 ${x.chg1y>=0?"+":""}${nf(x.chg1y,1)}%`,
-      desc:"소수 대형주만 오르면 이 비율이 떨어짐. QLD·TQQQ는 시총가중이라 쏠림이 깊을수록 그 몇 종목에 운명이 걸림." },
+      desc:"소수 대형주만 오르면 이 비율이 떨어짐. QLD·TQQQ는 시총가중이라 쏠림이 깊을수록 그 몇 종목에 운명이 걸림.", note:"이 지표는 아래로 갈수록 위험" },
     { grp:"속도 · 균열", key:"dev", name:"QQQ 200일 이격", tag:"가격 과열", freq:"매일 · 야후",
       val: x => (x.dev >= 0 ? "+" : "") + nf(x.dev, 1) + "%",
       sub: x => `현재 $${nf(x.current,2)} · 200일선 $${nf(x.ma,2)} · +6% 주의 / +12% 과열`,
@@ -2516,7 +2558,7 @@ function heatRender(d){
     { grp:"속도 · 균열", key:"hy", name:"하이일드 스프레드", tag:"정크본드 − 국채 금리차", freq:"매일 · FRED",
       val: x => nf(x.value, 2) + "%p",
       sub: x => `3개월 ${x.chg3m>=0?"+":""}${nf(x.chg3m,2)}%p · 1년 범위 ${nf(x.min1y,2)}~${nf(x.max1y,2)}`,
-      desc:"위험한 회사채에 붙는 웃돈. 낮게 눌려 있으면 안심(방심), 3개월에 +1%p 이상 튀면 균열이 시작됐다는 신호." },
+      desc:"위험한 회사채에 붙는 웃돈. 낮게 눌려 있으면 안심(방심), 3개월에 +1%p 이상 튀면 균열이 시작됐다는 신호.", note:"최근 10년 · 3.0 아래 = 방심 구간, 선이 갑자기 솟으면 균열" },
   ];
   const chip = g => g === 2 ? ['🔴 과열','#dc2626','#fef2f2'] : g === 1 ? ['🟡 주의','#b45309','#fffbeb'] : g === 0 ? ['🟢 정상','#15803d','#f0fdf4'] : ['— 없음','var(--text3)','var(--bg3)'];
   let red = 0, yel = 0, grn = 0, n = 0, html = "", lastGrp = "";
@@ -2526,7 +2568,8 @@ function heatRender(d){
     if(df.grp !== lastGrp){ html += `<div style="font-size:11px;font-weight:900;color:var(--text3);letter-spacing:0.06em;margin:14px 2px 6px;">${df.grp}</div>`; lastGrp = df.grp; }
     const [cl, cc, cb] = chip(g);
     const ok = x && x.ok;
-    html += `<div class="card" style="padding:11px 13px;margin-bottom:8px;">
+    const hasH = ok && x.h && x.h.length > 1, op = !!HEAT_OPEN[df.key];
+    html += `<div class="card" style="padding:11px 13px;margin-bottom:8px;${hasH ? "cursor:pointer;" : ""}" ${hasH ? `onclick="heatToggle('${df.key}')"` : ""}>
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div><span style="font-size:13px;font-weight:800;color:var(--text1);">${df.name}</span> <span style="font-size:10px;color:var(--text3);">${df.tag}</span></div>
         <span style="font-size:10.5px;font-weight:800;color:${cc};background:${cb};border-radius:10px;padding:2px 8px;white-space:nowrap;">${cl}</span>
@@ -2534,9 +2577,16 @@ function heatRender(d){
       <div style="font-size:21px;font-weight:900;color:${ok?cc:"var(--text3)"};line-height:1.2;margin-top:4px;">${ok ? df.val(x) : "—"}</div>
       <div style="font-size:10.5px;color:var(--text2);margin-top:2px;line-height:1.5;">${ok ? df.sub(x) : "불러오기 실패: " + ((x && x.error) || "데이터 없음")}</div>
       <div style="font-size:10px;color:var(--text3);margin-top:5px;line-height:1.5;">${df.desc} <span style="white-space:nowrap;">· ${df.freq}</span></div>
+      ${hasH ? `<div style="text-align:right;margin-top:4px;"><span id="heat-car-${df.key}" style="font-size:10.5px;font-weight:800;color:var(--accent,#2563eb);">${op ? "그래프 닫기 ▴" : "그래프 ▾"}</span></div>
+      <div id="heat-ch-${df.key}" style="display:${op ? "block" : "none"};margin-top:6px;" onclick="event.stopPropagation()">
+        <div style="position:relative;height:170px;"><canvas id="heat-cv-${df.key}"></canvas></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.5;">${x.h[0][0].slice(0,4)}~현재 · <span style="color:#f59e0b;font-weight:800;">- - 주의</span> <span style="color:#ef4444;font-weight:800;">- - 과열</span> 기준선${df.note ? " · " + df.note : ""}</div>
+      </div>` : ""}
     </div>`;
   });
+  Object.keys(HEAT_CHARTS).forEach(k => { HEAT_CHARTS[k].destroy(); delete HEAT_CHARTS[k]; });
   const list = document.getElementById("heat-list"); if(list) list.innerHTML = html;
+  defs.forEach(df => { if(HEAT_OPEN[df.key]) heatChart(df.key, d[df.key]); });
   const score = n ? (red * 2 + yel) / (n * 2) * 100 : 0;
   const v = !n ? ["데이터 없음","var(--text3)"] : score >= 67 ? ["🔴 과열 구간","#dc2626"] : score >= 34 ? ["🟡 과열 주의","#b45309"] : ["🟢 정상 범위","#15803d"];
   setText("heat-verdict", v[0] + (n ? ` · ${Math.round(score)}점` : ""), v[1]);

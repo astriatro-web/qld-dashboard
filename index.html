@@ -495,7 +495,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
 <div class="tabs">
   <button class="tab active" onclick="switchTab('dashboard')">매일매수</button>
   <button class="tab" onclick="switchTab('rules')">전략원칙</button>
-  <button class="tab" onclick="switchTab('ladder')">래더매수</button>
+  <button class="tab" onclick="switchTab('heat')">과열지표</button>
   <button class="tab" onclick="switchTab('swing')">단기스캔</button>
   <button class="tab" onclick="switchTab('settings')">설정</button>
 </div>
@@ -810,7 +810,30 @@ details.strat-acc > summary:active { opacity: 0.85; }
   </div>
 </div>
 
-<!-- ── 래더매수 패널 ── -->
+<!-- ── 🌡️ 과열지표 패널 ── -->
+<div class="panel" id="panel-heat">
+  <div class="card" id="heat-head">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:15px;font-weight:800;color:var(--text1);">🌡️ 과열지표</div>
+        <div id="heat-time" style="font-size:10.5px;color:var(--text3);margin-top:2px;">—</div>
+      </div>
+      <button type="button" onclick="heatFetch(true)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;"><span id="heat-icon">↻</span> 새로 불러오기</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;">
+      <div id="heat-verdict" style="font-size:20px;font-weight:900;color:var(--text3);">불러오는 중…</div>
+      <div id="heat-counts" style="font-size:12px;font-weight:800;color:var(--text2);"></div>
+    </div>
+    <div style="height:9px;border-radius:6px;overflow:hidden;margin-top:8px;background:linear-gradient(90deg,#86efac 0%,#fde68a 50%,#fca5a5 100%);position:relative;">
+      <div id="heat-marker" style="position:absolute;top:-2px;width:4px;height:13px;border-radius:2px;background:var(--text1);left:0;transition:left .4s;display:none;"></div>
+    </div>
+    <div style="font-size:10.5px;color:var(--text3);line-height:1.6;margin-top:9px;">과열 신호는 <b>매도 신호가 아닙니다.</b> 매일매수는 규칙대로 유지하고, 여기서는 지금이 역사적으로 어느 위치인지 보면서 마음의 준비와 TQQQ 배수 점검에만 쓰세요(뇌동매매 금지).</div>
+  </div>
+  <div id="heat-list"></div>
+  <div id="heat-err" style="display:none;" class="err-box"></div>
+</div>
+
+<!-- ── 래더매수 패널 (탭 숨김 · 기능 보존) ── -->
 <div class="panel" id="panel-ladder">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
     <div>
@@ -1368,11 +1391,12 @@ function saveSettings() {
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","ladder","swing","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","rules","heat","swing","settings"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + id).classList.add("active");
   if (id === "ladder") ladderRender();
+  if (id === "heat") heatOpen();
   if (id === "settings") dailyCompute();
   if (id === "dashboard") { if (typeof renderDaily === "function") renderDaily(MD); }
 }
@@ -2370,6 +2394,103 @@ function renderFx(daily, tqqqDaily, fx){
       dip.innerHTML = `🔔 웅덩이 지속 시 TQQQ 포함 <b>${d2fmt(withT)}</b>${rate ? ` (≈ $${Math.round(withT / rate).toLocaleString()})` : ""}`;
     } else dip.style.display = "none";
   }
+}
+
+// ══ 🌡️ 과열지표 ══
+const HEAT_KEY = "qld_heat", HEAT_TTL = 3 * 3600 * 1000;
+let HEAT = null;
+function heatOpen(){
+  if(!HEAT){ try { const c = JSON.parse(localStorage.getItem(HEAT_KEY) || "null"); if(c && c.data) HEAT = c; } catch(e){} }
+  if(HEAT) heatRender(HEAT.data);
+  if(!HEAT || Date.now() - HEAT.t > HEAT_TTL) heatFetch(false);
+}
+async function heatFetch(force){
+  const ic = document.getElementById("heat-icon"); if(ic) ic.innerHTML = '<span class="spinner"></span>';
+  const er = document.getElementById("heat-err"); if(er) er.style.display = "none";
+  try {
+    const res = await fetch(GAS_URL + "?action=heat" + (force ? "&force=1" : ""), { method:"GET", mode:"cors", redirect:"follow" });
+    const d = await res.json();
+    if(!d || !d.ok) throw new Error((d && d.error) || "응답 오류");
+    HEAT = { t: Date.now(), data: d };
+    try { localStorage.setItem(HEAT_KEY, JSON.stringify(HEAT)); } catch(e){}
+    heatRender(d);
+  } catch(err){
+    if(er){ er.style.display = "block"; er.textContent = "과열지표 조회 실패: " + err.message + " — GAS에 action=heat가 배포됐는지 확인하세요."; }
+    if(!HEAT) setText("heat-verdict", "조회 실패");
+  } finally { if(ic) ic.textContent = "↻"; }
+}
+// 등급: 2=🔴 과열, 1=🟡 주의, 0=🟢 정상, null=데이터 없음
+function heatGrade(key, x){
+  if(!x || !x.ok) return null;
+  switch(key){
+    case "buffett":   { const p = x.approxPct != null ? x.approxPct : x.pct; return p >= 90 ? 2 : p >= 70 ? 1 : 0; }
+    case "cape":      return x.pct >= 90 ? 2 : x.pct >= 70 ? 1 : 0;
+    case "household": return x.pct >= 90 ? 2 : x.pct >= 70 ? 1 : 0;
+    case "margin":    return x.yoy == null ? null : x.yoy >= 30 ? 2 : (x.yoy >= 15 || x.yoy <= -10) ? 1 : 0;
+    case "hy":        return x.chg3m >= 1.0 ? 2 : (x.chg3m >= 0.5 || x.value < 3.0) ? 1 : 0;
+    case "conc":      return x.pct <= 10 ? 2 : x.pct <= 30 ? 1 : 0;
+    case "dev":       return x.dev >= 12 ? 2 : x.dev >= 6 ? 1 : 0;
+  }
+  return null;
+}
+function heatRender(d){
+  setText("heat-time", (d.fetched_at || "") + " 기준 · 3시간마다 자동 갱신");
+  const nf = (v, dg=1) => (v == null || isNaN(v)) ? "—" : Number(v).toLocaleString(undefined, { maximumFractionDigits: dg, minimumFractionDigits: dg });
+  const q = s => { if(!s) return ""; const m = String(s).match(/^(\d{4})-(\d{2})/); return m ? `${m[1]} ${Math.floor((+m[2]-1)/3)+1}분기` : s; };
+  const defs = [
+    { grp:"비싼가", key:"buffett", name:"버핏지표", tag:"시총 ÷ GDP", freq:"분기 · FRED",
+      val: x => nf(x.approx != null ? x.approx : x.value, 0) + "%",
+      sub: x => `${x.approx != null ? `현재 근사 (공식 ${q(x.asOf)} ${nf(x.value,0)}%)` : q(x.asOf)} · ${x.since}년 이후 상위 ${nf(100-(x.approxPct!=null?x.approxPct:x.pct),1)}% · 평균 ${nf(x.avg,0)}%`,
+      desc:"미국 주식 시가총액이 경제 규모(GDP)의 몇 배인지. 높을수록 경제에 비해 주가가 비쌈." },
+    { grp:"비싼가", key:"cape", name:"실러 CAPE", tag:"10년 평균이익 PER", freq:"월 · multpl(실러 데이터)",
+      val: x => nf(x.value, 1),
+      sub: x => `${x.since}년 이후 상위 ${nf(100-x.pct,1)}% · 평균 ${nf(x.avg,1)} · 최고 ${nf(x.max,1)}`,
+      desc:"경기 순환을 지운 10년 평균 이익 기준 PER. 1999년 닷컴 정점 44, 2021년 38." },
+    { grp:"쏠림 · 빚", key:"household", name:"가계 주식 비중", tag:"금융자산 중 주식 %", freq:"분기 · FRED(연준 Z.1)",
+      val: x => nf(x.value, 1) + "%",
+      sub: x => `${q(x.asOf)} · ${x.since}년 이후 상위 ${nf(100-x.pct,1)}% · 역대 최고 ${nf(x.max,1)}% (${x.maxAt})`,
+      desc:"가계가 이미 얼마나 주식에 들어가 있나. 높으면 새로 살 사람이 적어 장기 기대수익이 낮아지는 경향." },
+    { grp:"쏠림 · 빚", key:"margin", name:"신용융자 증가율", tag:"브로커 마진대출 전년비", freq:"분기 · FRED(연준 Z.1)",
+      val: x => (x.yoy >= 0 ? "+" : "") + nf(x.yoy, 1) + "%",
+      sub: x => `${q(x.asOf)} 잔고 $${nf(x.value,0)}B · 역대 증가율 중 상위 ${nf(100-x.pct,1)}%${x.yoy <= -10 ? " · 빚 축소(디레버리징) 진행" : ""}`,
+      desc:"빚내서 산 주식이 얼마나 빨리 늘어나나. 급증은 과열, 고점 뒤 급감은 하락이 진행 중이라는 신호." },
+    { grp:"쏠림 · 빚", key:"conc", name:"시장 집중도", tag:"나스닥100 동일가중 ÷ 시총가중", freq:"주간 · 야후(QQEW/QQQ)",
+      val: x => nf(x.value, 3),
+      sub: x => `최근 ${x.years}년 중 하위 ${nf(x.pct,1)}% (낮을수록 집중) · 1년 ${x.chg1y>=0?"+":""}${nf(x.chg1y,1)}%`,
+      desc:"소수 대형주만 오르면 이 비율이 떨어짐. QLD·TQQQ는 시총가중이라 쏠림이 깊을수록 그 몇 종목에 운명이 걸림." },
+    { grp:"속도 · 균열", key:"dev", name:"QQQ 200일 이격", tag:"가격 과열", freq:"매일 · 야후",
+      val: x => (x.dev >= 0 ? "+" : "") + nf(x.dev, 1) + "%",
+      sub: x => `현재 $${nf(x.current,2)} · 200일선 $${nf(x.ma,2)} · +6% 주의 / +12% 과열`,
+      desc:"나스닥100이 200일 평균에서 얼마나 떨어져 있나. 가장 빨리 반응하는 가격 과열 지표." },
+    { grp:"속도 · 균열", key:"hy", name:"하이일드 스프레드", tag:"정크본드 − 국채 금리차", freq:"매일 · FRED",
+      val: x => nf(x.value, 2) + "%p",
+      sub: x => `3개월 ${x.chg3m>=0?"+":""}${nf(x.chg3m,2)}%p · 1년 범위 ${nf(x.min1y,2)}~${nf(x.max1y,2)}`,
+      desc:"위험한 회사채에 붙는 웃돈. 낮게 눌려 있으면 안심(방심), 3개월에 +1%p 이상 튀면 균열이 시작됐다는 신호." },
+  ];
+  const chip = g => g === 2 ? ['🔴 과열','#dc2626','#fef2f2'] : g === 1 ? ['🟡 주의','#b45309','#fffbeb'] : g === 0 ? ['🟢 정상','#15803d','#f0fdf4'] : ['— 없음','var(--text3)','var(--bg3)'];
+  let red = 0, yel = 0, grn = 0, n = 0, html = "", lastGrp = "";
+  defs.forEach(df => {
+    const x = d[df.key], g = heatGrade(df.key, x);
+    if(g != null){ n++; if(g === 2) red++; else if(g === 1) yel++; else grn++; }
+    if(df.grp !== lastGrp){ html += `<div style="font-size:11px;font-weight:900;color:var(--text3);letter-spacing:0.06em;margin:14px 2px 6px;">${df.grp}</div>`; lastGrp = df.grp; }
+    const [cl, cc, cb] = chip(g);
+    const ok = x && x.ok;
+    html += `<div class="card" style="padding:11px 13px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><span style="font-size:13px;font-weight:800;color:var(--text1);">${df.name}</span> <span style="font-size:10px;color:var(--text3);">${df.tag}</span></div>
+        <span style="font-size:10.5px;font-weight:800;color:${cc};background:${cb};border-radius:10px;padding:2px 8px;white-space:nowrap;">${cl}</span>
+      </div>
+      <div style="font-size:21px;font-weight:900;color:${ok?cc:"var(--text3)"};line-height:1.2;margin-top:4px;">${ok ? df.val(x) : "—"}</div>
+      <div style="font-size:10.5px;color:var(--text2);margin-top:2px;line-height:1.5;">${ok ? df.sub(x) : "불러오기 실패: " + ((x && x.error) || "데이터 없음")}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;line-height:1.5;">${df.desc} <span style="white-space:nowrap;">· ${df.freq}</span></div>
+    </div>`;
+  });
+  const list = document.getElementById("heat-list"); if(list) list.innerHTML = html;
+  const score = n ? (red * 2 + yel) / (n * 2) * 100 : 0;
+  const v = !n ? ["데이터 없음","var(--text3)"] : score >= 67 ? ["🔴 과열 구간","#dc2626"] : score >= 34 ? ["🟡 과열 주의","#b45309"] : ["🟢 정상 범위","#15803d"];
+  setText("heat-verdict", v[0] + (n ? ` · ${Math.round(score)}점` : ""), v[1]);
+  setText("heat-counts", n ? `🔴 ${red}  🟡 ${yel}  🟢 ${grn}` : "");
+  const mk = document.getElementById("heat-marker"); if(mk && n){ mk.style.display = "block"; mk.style.left = `calc(${Math.min(100, Math.max(0, score))}% - 2px)`; }
 }
 
 function renderDaily(d){

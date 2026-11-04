@@ -2660,35 +2660,35 @@ function heatBackground(){
 }
 function heatRender(d){
   updateHeaderHeat(d);
-  setText("heat-time", (d.fetched_at || "") + " 기준 · 3시간마다 자동 갱신");
+  setText("heat-time", (d.fetched_at || "") + " 기준 · 3시간마다 새로 확인 (지표별 실제 발표 주기는 카드의 🕒)");
   const nf = (v, dg=1) => (v == null || isNaN(v)) ? "—" : Number(v).toLocaleString(undefined, { maximumFractionDigits: dg, minimumFractionDigits: dg });
   const q = s => { if(!s) return ""; const m = String(s).match(/^(\d{4})-(\d{2})/); return m ? `${m[1]} ${Math.floor((+m[2]-1)/3)+1}분기` : s; };
   const defs = [
-    { grp:"비싼가", key:"buffett", name:"버핏지표", tag:"시총 ÷ GDP", freq:"분기 · FRED",
+    { grp:"비싼가", key:"buffett", name:"버핏지표", tag:"시총 ÷ GDP", freq:"FRED", cyc:"분기", upd: x => `공식값은 분기마다(분기 끝나고 약 10주 뒤 발표) · 표시값은 매 거래일 주가로 추정 갱신 · 최근 공식 ${q(x.asOf)}`,
       val: x => nf(x.approx != null ? x.approx : x.value, 0) + "%",
       sub: x => `${x.approx != null ? `현재 근사 (공식 ${q(x.asOf)} ${nf(x.value,0)}%)` : q(x.asOf)} · ${x.since}년 이후 상위 ${nf(100-(x.approxPct!=null?x.approxPct:x.pct),1)}% · 평균 ${nf(x.avg,0)}%`,
       desc:"미국 주식 시가총액이 경제 규모(GDP)의 몇 배인지. 높을수록 경제에 비해 주가가 비쌈.", note:"끝의 점선 = 공식 발표 뒤 주가 변화로 추정한 오늘 값" },
-    { grp:"비싼가", key:"cape", name:"실러 CAPE", tag:"10년 평균이익 PER", freq:"월 · multpl(실러 데이터)",
+    { grp:"비싼가", key:"cape", name:"실러 CAPE", tag:"10년 평균이익 PER", freq:"multpl(실러 데이터)", cyc:"월", upd: x => `월 1회 확정 · 이번 달 값은 매일 추정치로 움직임 · 최근 ${x.asOf}`,
       val: x => nf(x.value, 1),
       sub: x => `${x.since}년 이후 상위 ${nf(100-x.pct,1)}% · 평균 ${nf(x.avg,1)} · 최고 ${nf(x.max,1)}`,
       desc:"경기 순환을 지운 10년 평균 이익 기준 PER. 1999년 닷컴 정점 44, 2021년 38.", note:"최근 50년 표시, 기준선은 전체 역사 기준" },
-    { grp:"쏠림 · 빚", key:"household", name:"가계 주식 비중", tag:"금융자산 중 주식 %", freq:"분기 · FRED(연준 Z.1)",
+    { grp:"쏠림 · 빚", key:"household", name:"가계 주식 비중", tag:"금융자산 중 주식 %", freq:"FRED(연준 Z.1)", cyc:"분기", upd: x => `분기마다 · 분기 끝나고 약 10주 뒤 발표(3·6·9·12월) · 최근 ${q(x.asOf)}`,
       val: x => nf(x.value, 1) + "%",
       sub: x => `${q(x.asOf)} · ${x.since}년 이후 상위 ${nf(100-x.pct,1)}% · 역대 최고 ${nf(x.max,1)}% (${x.maxAt})`,
       desc:"가계가 이미 얼마나 주식에 들어가 있나. 높으면 새로 살 사람이 적어 장기 기대수익이 낮아지는 경향." },
-    { grp:"쏠림 · 빚", key:"margin", name:"신용융자 증가율", tag:"브로커 마진대출 전년비", freq:"분기 · FRED(연준 Z.1)",
+    { grp:"쏠림 · 빚", key:"margin", name:"신용융자 증가율", tag:"브로커 마진대출 전년비", freq:"FRED(연준 Z.1)", cyc:"분기", upd: x => `분기마다 · 분기 끝나고 약 10주 뒤 발표(3·6·9·12월) · 최근 ${q(x.asOf)}`,
       val: x => (x.yoy >= 0 ? "+" : "") + nf(x.yoy, 1) + "%",
       sub: x => `${q(x.asOf)} 잔고 $${nf(x.value,0)}B · 역대 증가율 중 상위 ${nf(100-x.pct,1)}%${x.yoy <= -10 ? " · 빚 축소(디레버리징) 진행" : ""}`,
       desc:"빚내서 산 주식이 얼마나 빨리 늘어나나. 급증은 과열, 고점 뒤 급감은 하락이 진행 중이라는 신호.", note:"−10% 아래 = 빚 축소 진행" },
-    { grp:"쏠림 · 빚", key:"conc", name:"시장 집중도", tag:"나스닥100 동일가중 ÷ 시총가중", freq:"주간 · 야후(QQEW/QQQ)",
+    { grp:"쏠림 · 빚", key:"conc", name:"시장 집중도", tag:"나스닥100 동일가중 ÷ 시총가중", freq:"야후(QQEW/QQQ)", cyc:"주간", upd: x => `주봉 기준 · 매 거래일 이번 주 값이 갱신, 주말에 확정`,
       val: x => nf(x.value, 3),
       sub: x => `최근 ${x.years}년 중 하위 ${nf(x.pct,1)}% (낮을수록 집중) · 1년 ${x.chg1y>=0?"+":""}${nf(x.chg1y,1)}%`,
       desc:"소수 대형주만 오르면 이 비율이 떨어짐. QLD·TQQQ는 시총가중이라 쏠림이 깊을수록 그 몇 종목에 운명이 걸림.", note:"이 지표는 아래로 갈수록 위험" },
-    { grp:"속도 · 균열", key:"dev", name:"QQQ 200일 이격", tag:"가격 과열", freq:"매일 · 야후",
+    { grp:"속도 · 균열", key:"dev", name:"QQQ 200일 이격", tag:"가격 과열", freq:"야후", cyc:"매일", upd: x => `매 거래일 장 마감 후 갱신(한국시간 다음날 아침)`,
       val: x => (x.dev >= 0 ? "+" : "") + nf(x.dev, 1) + "%",
       sub: x => `현재 $${nf(x.current,2)} · 200일선 $${nf(x.ma,2)} · +6% 주의 / +12% 과열`,
       desc:"나스닥100이 200일 평균에서 얼마나 떨어져 있나. 가장 빨리 반응하는 가격 과열 지표." },
-    { grp:"속도 · 균열", key:"hy", name:"하이일드 스프레드", tag:"정크본드 − 국채 금리차", freq:"매일 · FRED",
+    { grp:"속도 · 균열", key:"hy", name:"하이일드 스프레드", tag:"정크본드 − 국채 금리차", freq:"FRED", cyc:"매일", upd: x => `매 거래일 · 하루 늦게 반영 · 최근 ${x.asOf}`,
       val: x => nf(x.value, 2) + "%p",
       sub: x => `3개월 ${x.chg3m>=0?"+":""}${nf(x.chg3m,2)}%p · 1년 범위 ${nf(x.min1y,2)}~${nf(x.max1y,2)}`,
       desc:"위험한 회사채에 붙는 웃돈. 낮게 눌려 있으면 안심(방심), 3개월에 +1%p 이상 튀면 균열이 시작됐다는 신호.", note:"최근 10년 · 3.0 아래 = 방심 구간, 선이 갑자기 솟으면 균열" },
@@ -2709,7 +2709,11 @@ function heatRender(d){
       </div>
       <div style="font-size:21px;font-weight:900;color:${ok?cc:"var(--text3)"};line-height:1.2;margin-top:4px;">${ok ? df.val(x) : "—"}</div>
       <div style="font-size:10.5px;color:var(--text2);margin-top:2px;line-height:1.5;">${ok ? df.sub(x) : "불러오기 실패: " + ((x && x.error) || "데이터 없음")}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:5px;line-height:1.5;">${df.desc} <span style="white-space:nowrap;">· ${df.freq}</span></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;line-height:1.5;">${df.desc} <span style="white-space:nowrap;">· 출처 ${df.freq}</span></div>
+      <div style="display:flex;gap:6px;align-items:flex-start;margin-top:6px;font-size:10px;color:var(--text2);line-height:1.5;">
+        <span style="flex-shrink:0;font-weight:800;font-size:9.5px;border-radius:6px;padding:1px 6px;${({"매일":"background:#ecfdf5;color:#15803d;","주간":"background:#eff6ff;color:#1d4ed8;","월":"background:#fffbeb;color:#b45309;","분기":"background:#f5f3ff;color:#6d28d9;"})[df.cyc] || ""}">🕒 ${df.cyc}</span>
+        <span>${ok ? df.upd(x) : df.cyc + " 갱신"}</span>
+      </div>
       ${hasH ? `<div style="text-align:right;margin-top:4px;"><span id="heat-car-${df.key}" style="font-size:10.5px;font-weight:800;color:var(--accent,#2563eb);">${op ? "그래프 닫기 ▴" : "그래프 ▾"}</span></div>
       <div id="heat-ch-${df.key}" style="display:${op ? "block" : "none"};margin-top:6px;" onclick="event.stopPropagation()">
         <div style="position:relative;height:170px;"><canvas id="heat-cv-${df.key}"></canvas></div>

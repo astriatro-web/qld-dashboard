@@ -2462,11 +2462,30 @@ function goldPrice(){
   if(GOLD && GOLD.data && GOLD.data.price) return { p: GOLD.data.price, src: GOLD.data.source, d: GOLD.data };
   return null;
 }
-function goldWeekdays(from, to){   // from~to(포함) 평일 수
+// KRX 휴장일(평일만 의미 있음): 공휴일·대체공휴일·선거일·근로자의날·연말휴장(12/31). 2028년부터는 목록 추가 필요
+const KRX_HOLIDAYS = new Set([
+  // 2026
+  "2026-01-01","2026-02-16","2026-02-17","2026-02-18","2026-03-02","2026-05-01","2026-05-05","2026-05-25",
+  "2026-06-03","2026-07-17","2026-08-17","2026-09-24","2026-09-25","2026-10-05","2026-10-09","2026-12-25","2026-12-31",
+  // 2027
+  "2027-01-01","2027-02-08","2027-02-09","2027-03-01","2027-05-03","2027-05-05","2027-05-13","2027-07-19",
+  "2027-08-16","2027-09-14","2027-09-15","2027-09-16","2027-10-04","2027-10-11","2027-12-27","2027-12-31"
+]);
+const KRX_HOL_LAST_YEAR = 2027;
+function goldExtraHolidays(){ return String(S.goldExtraHol || "").split(/[^0-9-]+/).filter(s => /^\d{4}-\d{2}-\d{2}$/.test(s)); }
+function goldYmd(x){ return x.getFullYear() + "-" + String(x.getMonth()+1).padStart(2,"0") + "-" + String(x.getDate()).padStart(2,"0"); }
+function goldWeekdays(from, to){   // from~to(포함) KRX 거래일 수 = 평일 − 휴장일
   let n = 0; const a = new Date(from + "T00:00:00"), b = new Date(to + "T00:00:00");
-  for(let x = new Date(a); x <= b; x.setDate(x.getDate() + 1)){ const w = x.getDay(); if(w > 0 && w < 6) n++; }
+  const extra = new Set(goldExtraHolidays());
+  for(let x = new Date(a); x <= b; x.setDate(x.getDate() + 1)){
+    const w = x.getDay(); if(w === 0 || w === 6) continue;
+    const k = goldYmd(x); if(KRX_HOLIDAYS.has(k) || extra.has(k)) continue;
+    n++;
+  }
   return n;
 }
+function goldIsHoliday(ymd){ const w = new Date(ymd + "T00:00:00").getDay(); return w === 0 || w === 6 || KRX_HOLIDAYS.has(ymd) || goldExtraHolidays().includes(ymd); }
+function goldExtraSet(v){ S.goldExtraHol = v; goldSave(); }
 function goldToday(){ const n = new Date(); return n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0"); }
 function goldSave(){ localStorage.setItem("qld_s11", JSON.stringify(S)); renderGold(GOLD_DAILY); }
 function goldStart(){
@@ -2500,7 +2519,10 @@ function renderGold(gldDaily){
   const box = "background:var(--bg3);border-radius:9px;padding:9px 11px;";
   const inp = "width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:8px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--bg2,#fff);color:var(--text1);";
   const manual = `<details style="margin-top:8px;"><summary style="font-size:10.5px;color:var(--text3);cursor:pointer;">시세 직접 입력 (증권사 앱 가격으로 덮어쓰기)</summary>
-      <input type="number" inputmode="numeric" placeholder="예: 190000 (비우면 자동)" value="${S.goldManual || ""}" onchange="goldManualSet(this.value)" style="${inp}margin-top:6px;"></details>`;
+      <input type="number" inputmode="numeric" placeholder="예: 190000 (비우면 자동)" value="${S.goldManual || ""}" onchange="goldManualSet(this.value)" style="${inp}margin-top:6px;"></details>
+    <details style="margin-top:6px;"><summary style="font-size:10.5px;color:var(--text3);cursor:pointer;">추가 휴장일 (임시공휴일 등)</summary>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;line-height:1.5;">${KRX_HOL_LAST_YEAR}년까지 공휴일·대체공휴일·선거일·근로자의날·연말(12/31)은 이미 빠집니다. 갑자기 생긴 임시공휴일만 넣으세요.</div>
+      <input type="text" placeholder="예: 2026-12-24, 2027-06-02" value="${S.goldExtraHol || ""}" onchange="goldExtraSet(this.value)" style="${inp}margin-top:6px;"></details>`;
   const every = gp ? Math.ceil(gp.p / GOLD_DAILY) : null;
   const perDay = `하루 금 몫 <b>${d2fmt(GOLD_DAILY)}</b>${every ? ` → 약 <b>${every}거래일마다 1g</b>` : ""}`;
   if(!S.goldStart){
@@ -2529,7 +2551,8 @@ function renderGold(gldDaily){
         : `<div style="height:6px;background:var(--border);border-radius:4px;margin-top:7px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:var(--amber);"></div></div>
            <div style="font-size:11px;color:var(--text3);margin-top:5px;">${gp ? `1g까지 ${d2fmt(Math.ceil(gp.p - Math.max(0, pending)))} · 약 ${left}거래일 남음` : "시세를 불러오면 계산됩니다"}</div>`}
     </div>
-    <div style="font-size:10.5px;color:var(--text3);margin-top:6px;line-height:1.6;">${perDay} · ${S.goldStart}부터 평일 ${days}일 적립</div>
+    <div style="font-size:10.5px;color:var(--text3);margin-top:6px;line-height:1.6;">${perDay} · ${S.goldStart}부터 거래일 ${days}일 적립 (주말·휴장일 제외)${goldIsHoliday(goldToday()) ? ` · <b style="color:var(--text2);">오늘은 휴장일 — 적립 없음</b>` : ""}</div>
+    ${new Date().getFullYear() > KRX_HOL_LAST_YEAR ? `<div style="font-size:10px;color:#b45309;margin-top:4px;">⚠️ ${KRX_HOL_LAST_YEAR + 1}년 휴장일 목록이 아직 없습니다 — 아래 '추가 휴장일'에 넣거나 업데이트를 요청하세요.</div>` : ""}
     ${ready ? `<div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
         <input id="gold-buy-g" type="number" inputmode="numeric" value="${canG}" min="1" style="${inp}flex:0 0 64px;" oninput="var k=document.getElementById('gold-buy-krw');if(k)k.value=Math.round(this.value*${gp.p})">
         <span style="font-size:11px;color:var(--text3);">g</span>

@@ -573,6 +573,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       </div>
       <div id="fx-days" style="text-align:right;font-size:10.5px;color:var(--text3);line-height:1.5;"></div>
     </div>
+    <div id="fx-gold" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;color:var(--amber);line-height:1.5;"></div>
     <div id="fx-dip" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;color:var(--purple);line-height:1.5;"></div>
   </div>
 
@@ -2408,7 +2409,7 @@ function setFxPeriod(p){
   localStorage.setItem("qld_s11", JSON.stringify(S));
   if(typeof MD !== "undefined") renderDaily(MD);
 }
-// 💱 환전·입금 계산: 기본 매수(QLD+중간자산+GLD) × 거래일수, 웅덩이면 TQQQ 포함액도 표시
+// 💱 환전·입금 계산: 달러 매수분(QLD+중간자산, 금 제외) × 거래일수, 웅덩이면 TQQQ 포함액도 표시
 function renderFx(daily, tqqqDaily, fx, goldDaily){
   goldDaily = goldDaily || 0;
   const per = S.fxPeriod === "week" ? "week" : "month";
@@ -2418,19 +2419,20 @@ function renderFx(daily, tqqqDaily, fx, goldDaily){
     const b = document.getElementById("fx-" + k);
     if(b){ const on = (k === per); b.style.background = on ? "var(--blue)" : "transparent"; b.style.color = on ? "#fff" : "var(--text3)"; }
   });
-  const base = daily * n;
+  const base = (daily - goldDaily) * n;   // 금(KRX)은 원화로 따로 사므로 환전·입금에서 제외
   const rate = fx || null;
   setText("fx-krw", daily > 0 ? d2fmt(base) : "설정 필요");
-  const usdBase = (daily - goldDaily) * n;
-  setText("fx-usd", daily > 0 && rate ? `≈ $${Math.round(usdBase / rate).toLocaleString()} 환전${goldDaily > 0 ? ` · 금 ${d2fmt(goldDaily * n)}은 원화` : ""}` : (daily > 0 ? "환율 대기" : "—"));
+  setText("fx-usd", daily > 0 && rate ? `≈ $${Math.round(base / rate).toLocaleString()}` : (daily > 0 ? "환율 대기" : "—"));
+  const gl = document.getElementById("fx-gold");
+  if(gl){ gl.style.display = daily > 0 && goldDaily > 0 ? "block" : "none"; gl.innerHTML = `🥇 금 몫 <b>${d2fmt(goldDaily * n)}</b>은 제외 — KRX 금 계좌에 원화로 따로 입금`; }
   const days = document.getElementById("fx-days");
   if(days) days.innerHTML = `${per === "week" ? "1주" : "1달"} · 거래일 ${n}일<br>${rate ? "환율 " + Math.round(rate).toLocaleString() + "원" : ""}`;
   const dip = document.getElementById("fx-dip");
   if(dip){
     if(daily > 0 && tqqqDaily > 0){
-      const withT = (daily + tqqqDaily) * n, withTusd = (daily - goldDaily + tqqqDaily) * n;
+      const withT = (daily - goldDaily + tqqqDaily) * n;
       dip.style.display = "block";
-      dip.innerHTML = `🔔 웅덩이 지속 시 TQQQ 포함 <b>${d2fmt(withT)}</b>${rate ? ` (환전 ≈ $${Math.round(withTusd / rate).toLocaleString()})` : ""}`;
+      dip.innerHTML = `🔔 웅덩이 지속 시 TQQQ 포함 <b>${d2fmt(withT)}</b>${rate ? ` (≈ $${Math.round(withT / rate).toLocaleString()})` : ""}`;
     } else dip.style.display = "none";
   }
 }

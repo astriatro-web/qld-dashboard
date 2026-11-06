@@ -525,7 +525,10 @@ details.strat-acc > summary:active { opacity: 0.85; }
 
   <!-- 오늘 매수 히어로 -->
   <div class="card" id="dd-hero">
-    <div id="dd-badge" style="display:inline-block;font-size:12px;font-weight:900;padding:4px 13px;border-radius:20px;margin-bottom:10px;background:var(--bg3);color:var(--text3);">—</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div id="dd-badge" style="display:inline-block;font-size:12px;font-weight:900;padding:4px 13px;border-radius:20px;background:var(--bg3);color:var(--text3);">—</div>
+      <span style="font-size:10.5px;color:var(--text3);font-weight:600;">갱신 <span id="dd-upd">—</span></span>
+    </div>
     <div style="font-size:11px;color:var(--text3);font-weight:700;">오늘 매수 (하루치)</div>
     <div id="dd-total" style="font-size:30px;font-weight:900;line-height:1;color:var(--text1);margin-top:2px;">—</div>
     <div id="dd-explain" style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:10px;">시세를 불러오는 중…</div>
@@ -593,14 +596,6 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div class="mc"><div class="mc-label">120선 이격</div><div class="mc-value" id="dd-gap" style="color:var(--text3);">—</div><div class="mc-sub" id="dd-tqqq">TQQQ —</div></div>
   </div>
 
-  <!-- 시장 컨텍스트 -->
-  <div class="mc" style="display:flex;justify-content:space-around;align-items:center;text-align:center;margin-top:8px;padding:10px 8px;">
-    <div style="flex:1;"><div class="mc-label" style="margin-bottom:3px;">F&amp;G</div><div><span id="dd-fg" style="font-size:15px;font-weight:800;color:var(--text3);">—</span> <span id="dd-fglabel" style="font-size:10px;color:var(--text3);"></span></div></div>
-    <div style="width:1px;height:28px;background:var(--border);"></div>
-    <div style="flex:1;"><div class="mc-label" style="margin-bottom:3px;">VIX</div><div id="dd-vix" style="font-size:15px;font-weight:800;color:var(--text3);">—</div></div>
-    <div style="width:1px;height:28px;background:var(--border);"></div>
-    <div style="flex:1;"><div class="mc-label" style="margin-bottom:3px;">갱신</div><div id="dd-upd" style="font-size:13px;font-weight:800;color:var(--text3);">—</div></div>
-  </div>
 
   <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6;">일일 매수액·TQQQ 배수는 <b>설정</b> 탭에서 조정합니다. 시세는 상단 새로고침 시 갱신됩니다.</div>
 </div>
@@ -3040,9 +3035,6 @@ function renderDaily(d){
   setText("dd-ma120", `120선 ${ma120 ? "$"+f(ma120,2) : "—"}`);
   setText("dd-gap", gap != null ? `${gap>=0?"+":""}${gap.toFixed(1)}%` : "—", gap==null?"var(--text3)":gap<0?"#7c3aed":"#16a34a");
   setText("dd-tqqq", `TQQQ ${d.tqqq ? "$"+f(d.tqqq,2) : "—"}`);
-  if(d.fg != null){ setText("dd-fg", ""+d.fg, fgClr(d.fg)); setText("dd-fglabel", fgLbl(d.fg)); }
-  else setText("dd-fg", "—");
-  setText("dd-vix", d.vix != null ? f(d.vix) : "—");
   const now = new Date();
   setText("dd-upd", String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0"));
 }

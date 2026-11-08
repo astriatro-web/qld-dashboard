@@ -607,7 +607,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div class="card-label">📌 전략 (2026-11 확정)</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.85;">
       <b style="color:var(--text1);">목표: 정해진 투자금(월급 × 투자비율)의 중앙값을 최대로, 나쁜 경로는 무너지지 않게.</b> 투자비율 밖의 현금은 본인이 판단합니다.<br>
-      <b style="color:var(--text1);">① 매일 QLD 정액 (90%)</b> · <b style="color:var(--purple);">② 웅덩이(QLD 120일선 아래)엔 TQQQ를 그날 QLD의 1.5배 추가</b> · <b style="color:var(--teal);">③ 금 5% · SCHD 5%</b> · <b style="color:#b91c1c;">④ 연 1회 고정 달 리밸런싱</b>.
+      <b style="color:var(--text1);">① 매일 QLD 정액 (75%)</b> · <b style="color:var(--purple);">② 웅덩이(QLD 120일선 아래)엔 TQQQ를 그날 QLD의 1.5배 추가</b> · <b style="color:var(--teal);">③ 금 15% · SCHD 10%</b> · <b style="color:#b91c1c;">④ 연 1회 고정 달 리밸런싱</b>.
     </div>
   </div>
 
@@ -639,24 +639,25 @@ details.strat-acc > summary:active { opacity: 0.85; }
       </table>
     </div>
     <div style="background:#fef2f2;border:1px solid rgba(220,38,38,0.25);border-radius:9px;padding:9px 11px;margin-top:10px;font-size:11px;color:var(--text2);line-height:1.65;">
-      <b style="color:#b91c1c;">⚠️ 부트스트랩 검증</b> — 위 표는 실제 역사 한 줄이라 운이 섞입니다. 40년 일간 수익률을 1년 단위로 섞어 만든 <b>가상 역사 300개</b>로 다시 보면(방어는 현금으로 계산):
+      <b style="color:#b91c1c;">⚠️ 부트스트랩 검증</b> — 위 표는 실제 역사 한 줄이라 운이 섞입니다. 40년 일간 수익률을 1년 단위로 섞어 만든 <b>가상 역사 300개</b>로 다시 보면. <b>단, 이 표의 '방어'는 현금(단기국채)</b>입니다 — 실제 확정 구성의 방어는 금15%+SCHD10%라 아래 숫자보다 유리할 가능성이 큽니다.
     </div>
     <div style="overflow-x:auto;margin-top:6px;">
       <table class="bt-table">
         <thead><tr><th>20년 적립 · 부트스트랩</th><th class="num">중앙</th><th class="num">하위25%</th><th class="num">하위10%</th></tr></thead>
         <tbody>
           <tr><td>엔진 100 · TQQQ 1</td><td class="num">9.23</td><td class="num">2.72</td><td class="num" style="color:#dc2626;">1.03</td></tr>
-          <tr class="highlight-blue"><td><b>엔진 90 · 방어 10 · TQQQ 1.5 (확정)</b></td><td class="num">9.09</td><td class="num">3.05</td><td class="num">1.25</td></tr>
+          <tr><td>엔진 90 · 방어 10 · TQQQ 1.5</td><td class="num">9.09</td><td class="num">3.05</td><td class="num">1.25</td></tr>
           <tr><td>엔진 90 · 방어 10 · TQQQ 2</td><td class="num">9.22</td><td class="num">3.09</td><td class="num">1.25</td></tr>
           <tr><td>엔진 80 · 방어 20 · TQQQ 1</td><td class="num">8.50</td><td class="num">3.24</td><td class="num">1.44</td></tr>
+          <tr class="highlight-blue"><td><b>★ 엔진 75 · 방어 25 · TQQQ 1.5 (확정)</b><br><span style="font-size:9.5px;color:var(--text3);">방어=금15+SCHD10 · 표 수치는 현금 기준 20%·30% 사이 보간</span></td><td class="num">8.22</td><td class="num">3.29</td><td class="num" style="color:#16a34a;font-weight:800;">1.53</td></tr>
           <tr><td>엔진 70 · 방어 30 · TQQQ 1</td><td class="num">7.50</td><td class="num">3.27</td><td class="num">1.60</td></tr>
         </tbody>
       </table>
     </div>
     <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.7;">
-      · <b>엔진 90 · 방어 10이 균형점</b>: 엔진 100%와 중앙값이 거의 같고(9.09~9.22 vs 9.23) 하위 경로는 확실히 좋아짐(하위 10% 1.03 → 1.25). 방어 20% 이상은 중앙값을 내주고 안정을 사는 구간.<br>
+      · <b>왜 확정이 90/10이 아니라 75/25인가</b>: 방어를 '현금'으로 계산하면 90/10이 중앙값을 거의 안 깎는 균형점이다(9.09 vs 9.23). 하지만 실제 방어는 <b>금</b> — 폭락기에 오르고 리밸런싱 실탄이 되는 자산이라 현금보다 중앙값을 덜 깎는다. 현금 기준으로도 75/25는 중앙 8.22배(−11%)를 내주고 <b>하위 10%를 1.03 → 1.53배로 가장 크게 개선</b>한다. 40년에 한 번 오는 −99%를 버티는 쪽을 택한 것.<br>
       · <b>10년만 적립하면</b> 방어를 넣어도 약 15%는 원금 아래 → 10년 차 결과가 나쁘면 적립 기간을 늘릴 여지를 두기.<br>
-      · <b>TQQQ 웅덩이 추가</b>는 나쁜 경로는 그대로 두고 중앙값만 올림. 방어 10%와 함께면 1.5~2배까지 같은 효과.<br>
+      · <b>TQQQ 웅덩이 추가</b>는 나쁜 경로는 그대로 두고 중앙값만 올림. 방어와 함께면 1.5~2배까지 같은 효과(확정은 1.5배).<br>
       · <b>리밸런싱</b>: 연 1회 고정 달이 정답. '비중이 ±5·10%p 벗어나면' 방식은 하락장 초반에 떨어지는 레버리지를 계속 사서 더 나빴음. 매도 리밸런싱 세금은 10년 중앙 1.8억(연 1억 적립 기준) → 신규 매수금으로 먼저 맞추기.<br>
       · <b>TQQQ 비중 상한</b>(엔진 내 30%)은 결과 차이 없음 → 불필요.<br>
       · <b>120일선은 과적합 아님</b>: 60·100·120·150·200일선 모두 중앙 4.1~4.3배로 비슷(200일선이 약간 안정).<br>
@@ -721,15 +722,25 @@ details.strat-acc > summary:active { opacity: 0.85; }
   <div id="rules-content"></div>
 
   <details class="strategy-block strat-acc">
-    <summary class="strategy-header" style="background:var(--amber-lt);color:var(--amber);"><span>⚠️ 대전제와 한계 (반드시 읽기)</span><span class="strat-chevron">▸</span></summary>
+    <summary class="strategy-header" style="background:var(--amber-lt);color:var(--amber);"><span>⚠️ 대전제 · 한계 · Plan B (반드시 읽기)</span><span class="strat-chevron">▸</span></summary>
     <div class="strat-rows">
-      <div class="strategy-row"><div class="s-label">경로 편향 (검증 완료)</div><div class="s-desc">2012~2026 실측 표들은 역대급 강세장 한 경로입니다. 그래서 1986~2026 가상 데이터로 닷컴·2008까지 다시 검증했고(위 🧪 카드), 그 결과 <b>방어 20% + 연 1회 리밸런싱</b>을 필수 규칙으로 올렸습니다. 그래도 미래는 이 40년과 다를 수 있습니다.</div></div>
-      <div class="strategy-row"><div class="s-label">레버리지 감가</div><div class="s-desc">장기 횡보·하락장에선 변동성 감가가 잔인. TQQQ가 '잃어버린 10년'에 있었다면 -99% 수준. 그래서 TQQQ(3x) 비중엔 상한을 둡니다.</div></div>
-      <div class="strategy-row"><div class="s-label">지수 선택 편향</div><div class="s-desc">나스닥은 '지난 40년의 승자'라서 고른 지수입니다. 검증 데이터 자체가 이긴 쪽만 본 것이라, 앞으로의 결과는 이보다 나쁠 수 있습니다. 데이터로 못 지우고 방어 비중으로만 완화됩니다.</div></div>
-      <div class="strategy-row"><div class="s-label">환율</div><div class="s-desc">은퇴 후 쓰는 돈은 원화입니다. 원화가 1,450원 → 1,100원으로 강해지면 달러 자산은 원화로 −24%. 모델에는 빠져 있습니다. KRX 금도 달러 금값을 원화로 표시한 것이라 같은 영향을 받습니다. 현금성 방어 일부를 원화(국내 단기채·파킹)로 두면 조금 완화됩니다.</div></div>
-      <div class="strategy-row"><div class="s-label">상품·제도 위험</div><div class="s-desc">레버리지 ETF 청산·규제 변경·스왑 상대방 위험. 나스닥 하루 −33%면 TQQQ는 0(1987 블랙먼데이 −15%). 세금 제도(양도세·금현물 비과세)는 바뀔 수 있습니다.</div></div>
-      <div class="strategy-row"><div class="s-label">나스닥 편중</div><div class="s-desc">최적해가 '나스닥이 계속 이긴다'에 강하게 의존. 지수 리더십이 비미국·가치·소형으로 바뀌면 전략 전체가 역작동.</div></div>
-      <div class="strategy-row"><div class="s-label">심리·자금 여력</div><div class="s-desc">-70~-80% 낙폭을 수년 들고 매수를 지속할 수 있느냐가 최대 실전 리스크. 생활자금과 철저히 분리한 여유자금만. 세금(해외 22%)·수수료 미반영.</div></div>
+      <div class="strategy-row"><div class="s-label" style="color:var(--text1);font-weight:800;">이 전략이 거는 7가지 전제</div><div class="s-desc">① 나스닥 성장주가 장기 우상향한다(핵심 베팅) · ② 폭락 뒤엔 회복한다(DCA·웅덩이의 근거) · ③ 레버리지 ETF가 존속한다 · ④ 매달 소득이 유입된다 · ⑤ −60~−99% 낙폭과 수년 횡보를 심리적으로 버틴다 · ⑥ 달러 자산 접근·보유가 유지된다 · ⑦ 20~30년 긴 시계열. <b>하나라도 깨지면 아래 한계가 현실이 된다.</b></div></div>
+
+      <div class="strategy-row"><div class="s-label">① 잃어버린 10년<br><span style="font-size:9.5px;color:var(--text3);">전제 1·2 붕괴</span></div><div class="s-desc">나스닥이 10년+ 횡보·쇠퇴하면 레버리지는 변동성 감가로 −99%에서 회복 불가(실제: 2000~2015 나스닥 15년 횡보, 가상 TQQQ −99.95%).<br><b>▶ Plan B</b> 금·SCHD 25% + 연 1회 리밸런싱이 바닥에서 엔진 되사는 실탄. 적립을 멈추지 말 것(멈추면 회복을 못 탐). '버티는 게 전략'.</div></div>
+
+      <div class="strategy-row"><div class="s-label">② 심리 붕괴<br><span style="font-size:9.5px;color:#b91c1c;">실질 1순위</span></div><div class="s-desc">백테스트는 감정이 없다. 실제 −60%에서 바닥에 던지면 게임 끝. 전제 5가 가장 약하다.<br><b>▶ Plan B</b> 자동매수(토스 모으기)로 판단 자체를 제거 · 비중/배수 상한 고정 · 시뮬레이션으로 출렁임 미리 겪어 면역 · 던지고 싶을 땐 '아무것도 안 하기'가 기본값.</div></div>
+
+      <div class="strategy-row"><div class="s-label">③ 소득 중단<br><span style="font-size:9.5px;color:var(--text3);">전제 4 붕괴</span></div><div class="s-desc">실직·개원 공백·건강 문제로 소득이 끊기면 적립 중단 + 생활비로 바닥 매도하는 최악. 가장 과소평가된 구멍.<br><b>▶ Plan B</b> 생활비 6~12개월치 비상금을 투자계좌와 <b>완전 분리</b>(이게 있으면 소득이 끊겨도 안 판다) · 적립은 여유자금으로만 · 공백이 보이면 적립액만 줄이고 보유분은 안 건드린다.</div></div>
+
+      <div class="strategy-row"><div class="s-label">④ 상품·제도 위험<br><span style="font-size:9.5px;color:var(--text3);">전제 3·6 붕괴</span></div><div class="s-desc">레버리지 ETF 청산(기초 하루 −33%)·운용사 폐쇄·규제, 양도세 인상·금투세.<br><b>▶ Plan B</b> 코어는 2배(QLD), 3배(TQQQ)는 웅덩이 보조로 제한 · 1월 리밸런싱 때 엔진 안 TQQQ 비중 확인(커지면 실효 배수↑) · 상품이 사라지면 동급 대체로 갈아타되 로직 유지 · 절세계좌(ISA·연금) 우선, 리밸런싱은 신규 매수금으로 맞춰 실현 최소화.</div></div>
+
+      <div class="strategy-row"><div class="s-label">⑤ 환율<br><span style="font-size:9.5px;color:var(--text3);">전제 6 붕괴</span></div><div class="s-desc">원화 1,450→1,100원이면 달러 자산 원화로 −24%. 은퇴 인출은 원화. 백테스트는 1,350 고정이라 이 위험이 안 보인다.<br><b>▶ Plan B</b> 방어 일부를 KRX 금·국내 파킹(원화)으로 · 인출기엔 환율 좋을 때 분할 환전 · 적립기엔 원화 강세 = 싸게 사는 기회로 활용.</div></div>
+
+      <div class="strategy-row"><div class="s-label">⑥ 지수 리더십 교체<br><span style="font-size:9.5px;color:var(--text3);">전제 1 붕괴</span></div><div class="s-desc">나스닥100은 거래소 제한으로 방어주(월마트 등) 자동 편입 불가. 성장주 스타일이 지면(가치·비미국 사이클) 속수무책.<br><b>▶ Plan B</b> 금(주식 리그 밖)이 1차 헤지 · 불안이 크면 엔진에 S&P(SSO) 일부 혼합 · '나는 미국을 믿나, 나스닥 영구우위를 믿나'를 주기적으로 자문.</div></div>
+
+      <div class="strategy-row"><div class="s-label">⑦ 백테스트 편향<br><span style="font-size:9.5px;color:var(--text3);">숫자 과신</span></div><div class="s-desc">재구성 데이터·환율 고정·세금 제외·단일 경로(역대급 강세장). 실제는 이보다 나쁠 수 있다.<br><b>▶ Plan B</b> 모든 수익률은 '낙관 상한'으로만 · 계획은 보수 시나리오(하위 25%)로 · 시나리오 토글(중앙/하위25/하위10)을 기본 참고치로.</div></div>
+
+      <div class="strategy-row" style="background:var(--amber-lt);border-radius:9px;"><div class="s-label" style="color:var(--amber);font-weight:800;">관통 원칙</div><div class="s-desc"><b>확신을 이기려 말고, 확신이 날뛰어도 안 망하게 시스템에 못을 박는다</b> — Plan B 대부분이 자동화·상한·분리·기록으로 수렴한다. 가장 큰 위험은 ①잃어버린10년(자산)·②심리붕괴·③소득중단(생활)이고, 백테스트는 ①만 보여준다. ②③은 비상금 분리 + 자동화 + 여유자금 원칙으로만 막힌다.</div></div>
     </div>
   </details>
 </div>
@@ -1111,7 +1122,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <span id="s-sso-pct" style="font-size:15px;color:var(--teal);font-weight:900;">—</span>
     </div>
     <div id="s-mix-sub" style="font-size:11px;color:var(--text2);font-weight:600;margin:-2px 0 10px;"></div>
-    <button type="button" onclick="applyRecMix()" style="width:100%;background:#ecfdf5;border:1.5px solid rgba(16,163,74,0.3);border-radius:9px;padding:9px;font-size:11.5px;font-weight:800;color:#15803d;cursor:pointer;font-family:inherit;margin-bottom:10px;">⭐ 확정 구성 (QLD 90 · 금 5 · SCHD 5 · TQQQ 1.5배)</button>
+    <button type="button" onclick="applyRecMix()" style="width:100%;background:#ecfdf5;border:1.5px solid rgba(16,163,74,0.3);border-radius:9px;padding:9px;font-size:11.5px;font-weight:800;color:#15803d;cursor:pointer;font-family:inherit;margin-bottom:10px;">⭐ 확정 구성 (QLD 75 · 금 15 · SCHD 10 · TQQQ 1.5배)</button>
 
     <div style="margin-top:6px;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
@@ -1375,7 +1386,7 @@ function getRULES() {
   return [
     { title:"📌 매일 매수 — 핵심", color:"#1e3a8a", bg:"#eff4ff",
       items:[
-        ["한 줄 요약","정해진 투자금으로 매일 QLD(90%) + 웅덩이 TQQQ 1.5배 + 금 5% · SCHD 5% + 연 1회 리밸런싱. 목표는 중앙값 최대화와 나쁜 경로 방지. 투자비율 밖 현금은 본인 판단."],
+        ["한 줄 요약","정해진 투자금으로 매일 QLD(75%) + 웅덩이 TQQQ 1.5배 + 금 15% · SCHD 10% + 연 1회 리밸런싱. 목표는 중앙값 최대화와 나쁜 경로 방지. 투자비율 밖 현금은 본인 판단."],
         ["왜 매일인가","돈을 쥐고 웅덩이를 기다리면, 상승장에선 그 웅덩이가 와도 몇 달 전 즉시 매수한 가격보다 비싸다(대기 기회비용 > 싸게 사는 이득). 매일 DCA는 폭락도 싸게 담아 나쁜 타이밍 시작에 강하다(2007 위기 직전 시작도 강건)."],
         ["동일 '금액'으로","동일 '주수' 고정은 함정 — 비쌀 때 더 많이 사게 된다. 하루 매수 = 연 투자 페이스 ÷ 252거래일의 '정액'. 설정 탭 '일일 매수액 산정'에서 자동 계산된다."],
         ["종목은 QLD","나스닥100 2배. 백테스트상 지수 중 최강(14.93배). S&P(SSO)·다우·러셀보다 압도적. 단 '나스닥이 계속 이긴다'에 베팅하는 것임을 항상 기억."],
@@ -1394,28 +1405,26 @@ function getRULES() {
       items:[
         ["계좌 MDD vs 원금","2012~2026 실측에선 평단 대비 손실이 얕았지만(QLD −22%·TQQQ −33%), 40년으로 보면 다르다: 방어 없이 10년 적립하면 30구간 중 7개가 원금 아래(최악 0.32배, 1999→2009). 방어 20%+리밸런싱이면 1개(0.49배)."],
         ["레버리지 감가","가상 QLD는 2000년 고점에서 −98.7%, 고점 회복에 21년(나스닥 1배는 15년). 가상 TQQQ는 −99.95%로 지금도 그 고점의 12%. '잃어버린 10년'은 가설이 아니라 실제로 있었던 일이다."],
-        ["나스닥 붕괴 시나리오","장기 고금리·AI 버블 재평가·빅테크 집중·미국 예외주의 종료 등으로 QQQ가 무너지면 레버리지가 원금을 갉는다. 대응은 아래 '포트 구성' 참고 — S&P(SSO) 분산은 변동성만 줄일 뿐, 장기 소멸 방어는 금(GLD)만 가능하다."],
+        ["나스닥 붕괴 시나리오","장기 고금리·AI 버블 재평가·빅테크 집중·미국 예외주의 종료 등으로 QQQ가 무너지면 레버리지가 원금을 갉는다. S&P 분산은 변동성만 줄일 뿐, 장기 소멸 방어는 금(GLD)만 가능 — 상황별 대응은 '⚠️ 대전제·한계·Plan B' 섹션에 정리."],
         ["뇌동매매 금지","규칙은 대시보드가 판단, 사람은 실행만. 무서워서 매수를 거르거나 미리 파는 행위 금지. 생활자금과 철저히 분리한 여유자금만."],
       ]
     },
     { title:"⚖️ 포트 구성 · 분산과 보험", color:"#0891b2", bg:"#e0f2fe",
       items:[
-        ["금·SCHD 10%의 역할","현금 방어가 아니라 리밸런싱 실탄. 1년에 한 번 오른 쪽을 팔아 폭락한 엔진을 사 준다. 부트스트랩 20년: 엔진 100%와 중앙값은 비슷(9.1~9.2배)한데 하위 10%가 1.03 → 1.25배로 개선. 20% 이상은 중앙값이 내려가기 시작(8.5배)."],
-        ["붕괴는 두 가지 방식","①급락형(2008·2020·2022): QLD −60~−84%, 이땐 SSO·SCHD도 대체로 같이 빠진다(특히 2022). ②장기 소멸형('잃어버린 10년'): 나스닥이 10년+ 횡보하면 레버리지는 변동성 감가로 −90%대에서 못 돌아온다 — 회복 자체가 수학적으로 불가."],
-        ["★리밸런싱이 분산의 진짜 수익원","분산 자체는 수익을 깎지만, 연 1회 리밸런싱을 넣으면 얘기가 달라진다. 엔진80/금20: 고정비중 7.76배(−64%) → <b>연1회 리밸 8.39배(−55%)</b>. 수익이 오르고 MDD가 −9%p 급감. 원리=오른 자산(금)을 팔아 폭락한 QLD를 싸게 담는 자동 저가매수. <b>방어자산을 넣을 거면 리밸런싱은 필수</b> — 이게 없으면 분산은 그냥 손해."],
-        ["위기 실전 데이터(총수익)","코로나2020: QLD −51%·DBMF −6·STIP −2. 약세장2022: QLD −62%·<b>DBMF +35%</b>·STIP −7·VXUS −27. 금은 '무상관(안 빠져서 방어)', DBMF(추세추종)는 '역상관(오히려 벌어서 방어)'. 2022처럼 주식·채권 동반폭락에 TLT는 −47%로 같이 죽었다."],
-        ["방어자산 성격표","금(GLD) 배수3.12·MDD−28%: ⭐무상관·잃어버린10년/통화위기 헤지. DBMF(추세추종) 1.40·−26%: ⭐위기알파(2022 +35%)·역상관·능동방어. SCHD(배당) 4.30·−33%: 배당현금흐름. STIP(물가채) 1.20·−9%: near-cash 실탄(거의 안 빠짐). VXUS(전세계) 1.97·−35%: 미국예외주의종료 전용(현재 부진). TLT(장기국채) 1.08·−47%: 디플레 전용·죽은 돈."],
-        ["방어 우선순위(개정)","금(GLD) ≥ DBMF ≥ STIP &gt; SCHD &gt; VXUS·TLT. 금=무상관 헤지 1순위, DBMF=위기알파(다만 7년 데이터뿐), STIP=안 빠지는 실탄, SCHD=배당 현금흐름, VXUS·TLT는 특수상황 전용이라 맨 끝."],
-        ["★확정 구성","QLD 90% + 금 5% + SCHD 5% + 웅덩이 TQQQ 1.5배 + 연 1회 리밸런싱. 80~90% 사이는 어느 쪽이든 중앙값 차이가 오차 범위(8.5~9.2배)라, '정해진 투자금 극대화' 원칙에 맞는 90%로 고정. 새 데이터(금·SCHD 장기 실데이터 등)가 결론을 바꿀 때만 재검토."],
-        ["그래도 남는 것","금·SCHD·리밸런싱을 다 해도 나스닥 단일 지수에 레버리지를 건 구조는 그대로다. 지난 40년 승자라서 고른 지수가 앞으로 40년도 승자라는 보장은 없다 — 이 위험은 데이터로 지울 수 없고 방어 비중으로만 완화된다."],
+        ["★확정 구성","<b>QLD 75% + 금(GLD) 15% + SCHD 10% + 웅덩이 TQQQ 1.5배 + 연 1회 리밸런싱.</b> 엔진(QLD+TQQQ) 75%가 수익, 금·배당 25%가 보험이자 리밸런싱 실탄."],
+        ["금·SCHD의 진짜 역할","현금 방어가 아니라 '리밸런싱 실탄'이다. 40년으로 보면 닷컴+잃어버린10년에 계좌가 −99%(1986 시작 3,060억→24억)까지 간다. 이 한 번을 버티고, 1년에 한 번 오른 금을 팔아 바닥 엔진을 되사 주는 것 — 그게 금·배당의 값어치다."],
+        ["왜 10%가 아니라 25%인가","부트스트랩은 방어자산을 '현금'으로 근사해 10%가 최적으로 나왔다. 하지만 실제 방어는 금이다. 금은 폭락장에 오히려 오르고(닷컴·탈달러) 실탄이 되므로, 현금과 달리 15~20%까지 넣어도 중앙값은 덜 깎이고 나쁜 경로·MDD는 더 좋아진다(실측: 엔진80/금20 리밸런싱 MDD −67%→−55%)."],
+        ["붕괴는 두 가지","①급락형(2008·2020·2022): QLD −60~−84%, 이땐 S&P·SCHD도 대체로 같이 빠진다. ②장기 소멸형(잃어버린 10년): 10년+ 횡보하면 레버리지는 −90%대에서 못 돌아온다. <b>금은 ②를 방어하는 거의 유일한 자산</b>(2000년대 나스닥 횡보기에 금 4~5배)."],
+        ["★리밸런싱이 분산의 진짜 수익원","분산만 하고 리밸런싱을 안 하면 효과가 대부분 사라진다. 엔진80/금20: 고정 7.76배(−64%) → <b>연1회 리밸 8.39배(−55%)</b>. 수익이 오르고 MDD가 −9%p 급감. 방어자산을 넣을 거면 리밸런싱은 필수."],
+        ["그래도 남는 위험","금·SCHD·리밸런싱을 다 해도 나스닥 단일 지수에 레버리지를 건 구조는 그대로다. 지난 40년 승자가 앞으로도 승자라는 보장은 없다 — 데이터로 못 지우고 방어 비중으로만 완화된다(상세는 '대전제·한계·Plan B')."],
       ]
     },
     { title:"🔄 연 1회 리밸런싱 (필수)", color:"#b91c1c", bg:"#fef2f2",
       items:[
         ["왜 필수인가","방어자산을 섞기만 하고 리밸런싱을 안 하면 효과가 대부분 사라진다(실제 역사 10년 원금 미만 23% → 리밸런싱 하면 3~7%). 원리=오른 쪽을 팔아 폭락한 레버리지를 바닥에서 사는 자동 저가매수."],
-        ["언제 · 어떤 방식","1년에 한 번, 달을 고정한다(기본 1월). 매일매수 탭 리밸런싱 카드가 그 달에 알려준다. '비중이 ±5·10%p 벗어날 때마다' 맞추는 밴드 방식은 검증상 더 나빴다(하락장 초반에 떨어지는 레버리지를 계속 사들임) — 쓰지 않는다."],
-        ["어떻게 (세금 아끼는 순서)","① 신규 매수금을 모자란 자산에 몰아서 맞춘다(매도 없음·세금 0). ② 그래도 차이가 크면 넘치는 쪽을 판다 — 해외주식 차익은 연 250만 원까지 공제. ③ 방어자산(배당 ETF)은 가능하면 연금저축·ISA의 국내상장 ETF로 둔다(계좌 안 매매는 비과세)."],
-        ["엔진 안에서는","QLD와 TQQQ는 하나의 '엔진'으로 본다. 엔진을 줄일 땐 둘을 같은 비율로 판다. TQQQ만 따로 비중 상한을 두지 않는다."],
+        ["언제 · 어떤 방식 (검증 완료)","<b>1년에 한 번, 달을 고정</b>(기본 1월). 세금 22%를 넣고 13가지 방식을 비교한 결과(가상 역사 300개 + 실제 40년 + 실제 금·SCHD 구간): 매년 1회 고정이 가장 단순하면서 1등 그룹 — 20년 하위10% 1.27배·원금 미만 7%, 실제 40년 10년 적립 원금 미만 3%(최저). 2년 주기는 몇 년도에 하느냐로 결과가 갈리는 운(20.35 vs 24.14배), 고점에서 팔기는 이득 없이 복잡, 고점매도+웅덩이에서 채우기는 하락 초반에 사서 더 나쁨, 6개월·분기·이탈폭(±10%p)은 자주 팔수록 세금·손해, 새 돈으로만 맞추기는 힘이 약하고(중앙 5.42배) 매일 QLD 습관이 깨진다. 안 하면 20년 하위10%가 0.91배로 원금 아래."],
+        ["어떻게 (세금 아끼는 순서)","매일매수 탭 🔄 카드에 증권사 앱의 <b>보유 수량·평균단가</b>만 넣으면 매매할 주·g 수와 세금이 계산된다. ① <b>12월(전 달)</b>: 배지가 알려 주면 카드를 열어 차익 250만 원어치를 먼저 판다 — 그해 공제를 써서 최대 55만 원 절약. ② <b>리밸런싱 달</b>: 수량을 다시 넣고, 한 달치 새 매수금을 모자란 쪽에 먼저 넣는다(매도 없음·세금 0). ③ 그래도 목표에서 2%p 넘게 벗어난 자산만 판다(엔진은 QLD·TQQQ 비율대로). ④ 방어자산(배당 ETF)은 가능하면 연금저축·ISA의 국내상장 ETF로 — 카드에서 'ISA·연금'을 체크하면 세금 계산에서 빠진다. ⑤ 끝나면 '완료 기록' — 무엇을 얼마나 했는지 다음 해에 확인할 수 있다."],
+        ["엔진 안에서는 — 비율대로","QLD와 TQQQ는 하나의 '엔진'(목표 75%)으로 계산하고, 줄이거나 채울 때 둘을 지금 비율대로 같이 움직인다. TQQQ부터 파는 방식도 검증했지만 40년 기준 수익만 줄고(중앙 3.44→3.26배) 나쁜 경로는 그대로였다(최악 0.48→0.50배) — 큰 폭락은 리밸런싱 사이에 터지고 손실 대부분이 QLD 몫이라서. TQQQ만 따로 상한도 두지 않는다. 다만 엔진 안 TQQQ가 30~40%까지 커지면 엔진 실효 배수가 2.3~2.4배가 되니 1월에 한 번씩 확인."],
       ]
     },
     { title:"💰 익절 / 현금화 (옵션 — 필수 아님)", color:"#92400e", bg:"#fef3c7",
@@ -2164,13 +2173,13 @@ function setScenario(name){
   localStorage.setItem("qld_s11", JSON.stringify(S));
   dailyCompute();
 }
-// ⭐ 확정 구성 — QLD 90 + 금 5 + SCHD 5 + 웅덩이 TQQQ 1.5배 + 연 1회 리밸런싱
+// ⭐ 확정 구성 — QLD 75 + 금 15 + SCHD 10 + 웅덩이 TQQQ 1.5배 + 연 1회 리밸런싱
 function applyRecMix(){
-  if(!confirm("확정 구성으로 설정할까요?\n\n· QLD 90% + 금 5% + SCHD 5%\n· 웅덩이 TQQQ 1.5배\n· 연 1회 리밸런싱")) return;
-  S.qldWeight = 90; S.gldWeight = 5; S.midAsset = "schd"; S.tqqqMult = 1.5;
+  if(!confirm("확정 구성으로 설정할까요?\n\n· QLD 75% + 금 15% + SCHD 10%\n· 웅덩이 TQQQ 1.5배\n· 연 1회 리밸런싱")) return;
+  S.qldWeight = 75; S.gldWeight = 15; S.midAsset = "schd"; S.tqqqMult = 1.5;
   localStorage.setItem("qld_s11", JSON.stringify(S));
   const set = (id, v) => { const e = document.getElementById(id); if(e) e.value = v; };
-  set("s-qldweight", 90); set("s-gldweight", 5); set("s-tqqqmult", 1.5);
+  set("s-qldweight", 75); set("s-gldweight", 15); set("s-tqqqmult", 1.5);
   dailyCompute();
   if(typeof renderDaily==="function" && typeof MD!=="undefined") renderDaily(MD);
   alert("적용 완료. 금·SCHD는 연 1회 리밸런싱을 실제로 할 때 효과가 납니다.");
@@ -2517,7 +2526,7 @@ function dailyCompute(){
   window._tqRec = rec;
   setT("tq-rec-val", rec.toFixed(1) + "배");
   const why = document.getElementById("tq-rec-why");
-  if(why) why.textContent = "부트스트랩 20년(엔진 90·방어 10): TQQQ 1배 중앙 9.02배 → 1.5배 9.09배 → 2배 9.22배, 하위 10%는 1.25~1.27배로 그대로. 1.5배를 기준으로, 예비금 여유가 크면 2배까지.";
+  if(why) why.textContent = "부트스트랩 20년(현금 방어 근사): TQQQ 1배 중앙 9.02배 → 1.5배 9.09배 → 2배 9.22배, 하위 10%는 1.25~1.27배로 그대로. 1.5배를 기준으로, 예비금 여유가 크면 2배까지. ※ 실제 방어는 금이라 비중은 15~20%로 상향.";
   const applyBtn = document.getElementById("tq-rec-apply");
   if(applyBtn) applyBtn.textContent = (Math.abs((tmultP||0) - rec) < 0.001) ? "적용됨" : "적용";
 
@@ -2704,76 +2713,183 @@ function renderGold(gldDaily){
     ${manual}`;
 }
 
-function rbTotal(){
-  let goldAuto = 0;
-  try { const grams = (S.goldLog || []).reduce((a, r) => a + r.g, 0); const gp = goldPrice(); if(grams > 0 && gp) goldAuto = Math.round(grams * gp.p); } catch(e){}
-  const vG = (S.rbGold != null && S.rbGold !== "") ? d2num(S.rbGold) : goldAuto;
-  return { vE: d2num(S.rbEng), vM: d2num(S.rbMid), vG, goldAuto, tot: d2num(S.rbEng) + d2num(S.rbMid) + vG };
+// SCHD 시세 — 기존 ticker_price 엔드포인트 재사용(GAS 수정 불필요) · 3시간 캐시 · 실패 시 5분 뒤 재시도
+const SCHD_KEY = "qld_schd_px", SCHD_TTL = 3 * 3600 * 1000;
+let SCHD_PX = null, SCHD_BUSY = false, SCHD_FAIL = 0;
+function schdPrice(){
+  if(!SCHD_PX){ try { SCHD_PX = JSON.parse(localStorage.getItem(SCHD_KEY) || "null"); } catch(e){} }
+  const stale = !SCHD_PX || Date.now() - SCHD_PX.t > SCHD_TTL;
+  if(stale && !SCHD_BUSY && Date.now() - SCHD_FAIL > 5 * 60 * 1000) fetchSchd();
+  return SCHD_PX ? SCHD_PX.p : 0;
 }
-// ══ 🔄 연 1회 리밸런싱 카드 ══
+async function fetchSchd(){
+  SCHD_BUSY = true;
+  try {
+    const res = await fetch(`${GAS_URL}?action=ticker_price&ticker=SCHD`, { method:"GET", mode:"cors", redirect:"follow" });
+    const d = await res.json();
+    if(d && d.ok && d.current != null && +d.current > 0){
+      SCHD_PX = { t: Date.now(), p: +d.current };
+      try { localStorage.setItem(SCHD_KEY, JSON.stringify(SCHD_PX)); } catch(e){}
+      SCHD_BUSY = false; if(typeof renderRebal === "function") renderRebal(); return;
+    }
+    SCHD_FAIL = Date.now();
+  } catch(e){ SCHD_FAIL = Date.now(); }
+  SCHD_BUSY = false;
+}
+function rbTotal(){ const P = rbPlan(); return { vE: P.E, vG: P.A.find(a => a.k === "gold").v, tot: P.V }; }
+// ══ 🔄 연 1회 리밸런싱 카드 (보유 수량 기반 · 새 매수금 먼저 · 세금 추정 · 기록) ══
 function rbSet(k, v){ S[k] = v; localStorage.setItem("qld_s11", JSON.stringify(S)); renderRebal(); }
+function rbToggle(k){ S[k] = !S[k]; localStorage.setItem("qld_s11", JSON.stringify(S)); renderRebal(); }
+function rbFillMonth(){ rbSet("rbNew", Math.round((d2num(S.dailyBuy) || 0) * 21)); }
+function rbPlan(){
+  const PW = portW(), md = (typeof MD !== "undefined" && MD) ? MD : {}, fx = md.usdkrw || 0;
+  const n = k => d2num(S[k]);
+  const gp = goldPrice(), logG = (S.goldLog || []).reduce((s, r) => s + r.g, 0);
+  const A = [
+    { k:"qld",  nm:"QLD",      sh:n("rbQldSh"),  avg:n("rbQldAvg"),  px:md.qld || 0,  usd:true,  tax:true,          unit:"주", col:"var(--blue)",   grp:"eng",  kSh:"rbQldSh",  kAvg:"rbQldAvg" },
+    { k:"tq",   nm:"TQQQ",     sh:n("rbTqSh"),   avg:n("rbTqAvg"),   px:md.tqqq || 0, usd:true,  tax:true,          unit:"주", col:"var(--purple)", grp:"eng",  kSh:"rbTqSh",   kAvg:"rbTqAvg" },
+    { k:"schd", nm:"SCHD",     sh:n("rbSchdSh"), avg:n("rbSchdAvg"), px:n("rbSchdPx") || schdPrice(), pxMan:n("rbSchdPx") > 0, usd:true, tax:!S.rbSchdIsa,  unit:"주", col:"var(--teal)",   grp:"schd", kSh:"rbSchdSh", kAvg:"rbSchdAvg" },
+    { k:"gold", nm:"금 (KRX)", sh:(S.rbGoldG != null && S.rbGoldG !== "") ? n("rbGoldG") : logG, avg:0, px:gp ? gp.p : 0, usd:false, tax:false, unit:"g", col:"var(--amber)", grp:"gold", kSh:"rbGoldG", logG },
+  ];
+  const W = { eng: PW.qld / 100, schd: PW.schd / 100, gold: PW.gld / 100, mid: PW.mid / 100 };
+  if(PW.mid > 0.5) A.push({ k:"mid", nm:MID_INFO[PW.mk].name, manual:true, val:n("rbMid"), tax:true, unit:"", col:"var(--teal)", grp:"mid" });
+  A.forEach(a => { a.uPx = a.manual ? 0 : a.px * (a.usd ? fx : 1); a.v = a.manual ? a.val : a.sh * a.uPx; });
+  const miss = A.filter(a => !a.manual && a.sh > 0 && !a.uPx).map(a => a.k === "schd" ? "SCHD 시세(자동 조회 실패 — 현재가 $ 직접 입력)" : a.k === "gold" ? "금 시세" : a.nm + " 시세");
+  const N = Math.max(0, n("rbNew")), V = A.reduce((s, a) => s + a.v, 0), T = V + N;
+  const E = A.filter(a => a.grp === "eng").reduce((s, a) => s + a.v, 0);
+  A.forEach(a => { a.t = a.grp === "eng" ? W.eng * T * (E > 0 ? a.v / E : (a.k === "qld" ? 1 : 0)) : (W[a.grp] || 0) * T; });
+  // ① 새 매수금: 모자란 만큼 비례 배분, 남으면 목표 비중대로
+  const gaps = A.map(a => Math.max(0, a.t - a.v)), gs = gaps.reduce((s, x) => s + x, 0);
+  A.forEach((a, i) => { a.alloc = gs > 0 ? gaps[i] / gs * Math.min(N, gs) : 0; });
+  const rest = N - A.reduce((s, a) => s + a.alloc, 0);
+  if(rest > 0.5 && T > 0) A.forEach(a => { a.alloc += rest * a.t / T; });
+  // ② 남은 차이 → 넘치는 쪽 매도, 모자란 쪽 매수 (엔진은 QLD·TQQQ 비율대로)
+  A.forEach(a => { a.d = a.t - (a.v + a.alloc); });
+  const maxDev = T > 0 ? Math.max(...A.map(a => Math.abs(a.d) / T)) : 0, needSell = maxDev >= 0.02;
+  if(!needSell) A.forEach(a => { a.d = 0; });
+  let gainSum = 0, noAvg = [];
+  A.forEach(a => {
+    a.q = a.uPx > 0 ? a.d / a.uPx : null; a.qNew = a.uPx > 0 ? a.alloc / a.uPx : null; a.gain = 0;
+    if(a.d < 0 && a.tax){
+      if(a.avg > 0 && a.px > 0){ a.gain = -a.d * (1 - a.avg / a.px); gainSum += a.gain; }
+      else if(!a.manual) noAvg.push(a.nm);
+    }
+  });
+  const DED = 2500000, prior = n("rbRealized"), taxOf = g => 0.22 * Math.max(0, g - DED);
+  const tax = taxOf(prior + gainSum) - taxOf(prior);
+  const sellTaxable = A.filter(a => a.d < 0 && a.tax).reduce((s, a) => s - a.d, 0);
+  const gRatio = sellTaxable > 0 ? gainSum / sellTaxable : 0;
+  const splitSave = (prior <= 0 && gainSum > DED) ? 0.22 * Math.min(DED, gainSum - DED) : 0;
+  return { PW, A, N, V, T, E, engNow: V > 0 ? E / V : 0, tqShare: E > 0 ? A[1].v / E : 0, needSell, maxDev, gainSum, tax, prior, noAvg, miss, fx, gp, gRatio, splitSave, DED };
+}
 function rbDone(){
-  if(!confirm(new Date().getFullYear() + "년 리밸런싱을 완료로 기록할까요?")) return;
-  S.rbLastYear = new Date().getFullYear(); localStorage.setItem("qld_s11", JSON.stringify(S)); renderRebal();
+  const y = new Date().getFullYear();
+  if(!confirm(y + "년 리밸런싱을 완료로 기록할까요?\n\n지금 화면의 매매 계획이 '지난 기록'에 저장됩니다. 실제로 한 매매와 다르면 기록 전에 수량을 고쳐 주세요.")) return;
+  const P = rbPlan();
+  const rec = { d: new Date().toISOString().slice(0, 10), T: Math.round(P.T), N: Math.round(P.N), eng: +(P.engNow * 100).toFixed(1), tq: +(P.tqShare * 100).toFixed(0), tax: Math.round(P.tax),
+    tr: P.A.filter(a => a.alloc > 1 || Math.abs(a.d) > 1).map(a => ({ nm:a.nm, nw:Math.round(a.alloc), d:Math.round(a.d), q:a.q != null ? +a.q.toFixed(a.unit === "g" ? 0 : 2) : null, qn:a.qNew != null ? +a.qNew.toFixed(a.unit === "g" ? 0 : 2) : null, u:a.unit })) };
+  S.rbHist = (S.rbHist || []).concat([rec]).slice(-10);
+  S.rbLastYear = y; localStorage.setItem("qld_s11", JSON.stringify(S)); renderRebal();
 }
 function renderRebal(){
   const body = document.getElementById("rb-body"), due = document.getElementById("rb-due"); if(!body) return;
   const PW = portW();
   const qldW = Math.round(PW.qld), gldW = Math.round(PW.gld), schdW = Math.round(PW.schd), midW = Math.max(0, 100 - qldW - gldW - schdW);
-  const midName = PW.out ? "현금(계좌 밖)" : MID_INFO[PW.mk].name;
+  const midName = MID_INFO[PW.mk] ? MID_INFO[PW.mk].name : "중간자산";
   const now = new Date(), y = now.getFullYear(), mon = S.rbMonth || 1;
   const cm = now.getMonth() + 1, doneThisYear = S.rbLastYear === y;
-  const isDue = !doneThisYear && cm === mon;                                  // 지정한 달이면 할 차례
-  const overdue = !doneThisYear && !!S.rbLastYear && S.rbLastYear < y && cm > mon;  // 한 번 이상 해 본 뒤 그 달을 놓친 경우
+  const isDue = !doneThisYear && cm === mon;
+  const overdue = !doneThisYear && !!S.rbLastYear && S.rbLastYear < y && cm > mon;
   const nextY = (doneThisYear || cm > mon) ? y + 1 : y;
   const dDays = Math.ceil((new Date(nextY, mon-1, 1) - now) / 86400000);
   if(due){
-    due.textContent = isDue ? "🔔 이번 달이 리밸런싱 달" : overdue ? `⚠️ ${mon}월을 놓쳤어요 — 지금 하세요` : doneThisYear ? `✅ ${y}년 완료 · 다음 ${nextY}년 ${mon}월` : `다음 ${nextY}년 ${mon}월 · D-${dDays}`;
+    const preMonth = !isDue && !overdue && (cm % 12) + 1 === mon;   // 리밸런싱 바로 전 달
+    due.textContent = isDue ? "🔔 이번 달이 리밸런싱 달" : overdue ? `⚠️ ${mon}월을 놓쳤어요 — 지금 하세요` : preMonth ? `📅 다음 달 리밸런싱 · 미리 점검` : doneThisYear ? `✅ ${y}년 완료 · 다음 ${nextY}년 ${mon}월` : `다음 ${nextY}년 ${mon}월 · D-${dDays}`;
     const hot = isDue || overdue;
-    due.style.background = hot ? "#fef2f2" : "var(--bg3)"; due.style.color = hot ? "#b91c1c" : "var(--text3)";
+    due.style.background = hot ? "#fef2f2" : preMonth ? "#eff4ff" : "var(--bg3)"; due.style.color = hot ? "#b91c1c" : preMonth ? "#1e3a8a" : "var(--text3)";
   }
   const hotCard = isDue || overdue;
   const card = document.getElementById("rb-card"); if(card) card.style.border = hotCard ? "1.5px solid rgba(220,38,38,0.4)" : "";
-  const inp = "width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:8px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--bg2,#fff);color:var(--text1);";
+  const inp = "width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:8px;padding:6px 7px;font-size:12.5px;font-family:inherit;background:var(--bg2,#fff);color:var(--text1);";
   const monthSel = `<select onchange="rbSet('rbMonth', +this.value)" style="border:1px solid var(--border);border-radius:6px;padding:2px 4px;font-size:10.5px;font-family:inherit;background:var(--bg2,#fff);color:var(--text2);">${[...Array(12)].map((_,i)=>`<option value="${i+1}" ${i+1===mon?"selected":""}>${i+1}월</option>`).join("")}</select>`;
   if(qldW >= 100 || (PW.mk === "sso" && gldW === 0 && schdW === 0)){
-    body.innerHTML = `<div style="font-size:11.5px;color:#b91c1c;line-height:1.6;font-weight:700;">방어자산 0% — 리밸런싱할 대상이 없습니다.</div>
-      <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px;">40년 검증: 방어 없이 10년 적립하면 4번 중 1번은 원금 아래로 끝났습니다(방어 20% + 연 1회 리밸런싱이면 3%). 설정 탭 '⭐ 40년 검증 권장 구성'을 확인해 보세요.</div>`;
+    body.innerHTML = `<div style="font-size:11.5px;color:#b91c1c;line-height:1.6;font-weight:700;">방어자산 0% — 리밸런싱할 대상이 없습니다.</div>`;
     return;
   }
-  // 금 평가액은 금 적립 기록으로 자동 계산(수정 가능)
-  const RT = rbTotal(), goldAuto = RT.goldAuto || null, vE = RT.vE, vM = PW.out ? d2num(S.rbOut) : RT.vM, vG = RT.vG, tot = vE + vM + vG + d2num(S.rbSchd);
-  const vS = d2num(S.rbSchd);
-  const rows = [["엔진 (QLD+TQQQ)", vE, qldW, "rbEng", "var(--blue)"], ["SCHD", vS, schdW, "rbSchd", "var(--teal)"], [PW.out ? "현금 (계좌 밖)" : midName, vM, midW, PW.out ? "rbOut" : "rbMid", "var(--teal)"], ["금 (KRX)", vG, gldW, "rbGold", "var(--amber)"]].filter(r => r[2] > 0 || r[1] > 0);
-  let html = `<div style="font-size:10.5px;color:var(--text3);line-height:1.6;margin-bottom:8px;">매년 ${monthSel}에 현재 평가액${PW.out ? "과 계좌 밖 투자용 현금" : ""}을 넣으면 목표 비중으로 맞출 금액을 계산합니다. <span style="color:var(--text2);">목표: 엔진 ${qldW}${schdW ? ` · SCHD ${schdW}` : ""}${midW ? ` · ${midName} ${midW}` : ""}${gldW ? ` · 금 ${gldW}` : ""}${PW.glide.phase !== "acc" ? " <b style='color:#c2410c;'>(글라이드 반영)</b>" : ""}</span> · 비중이 벗어날 때마다 맞추는 방식은 쓰지 않습니다(검증상 더 나쁨).</div>`;
-  html += rows.map(([nm, v, w, key, col]) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <span style="flex:0 0 96px;font-size:11.5px;font-weight:800;color:${col};">${nm}</span>
-      <input type="number" inputmode="numeric" placeholder="${key === "rbGold" && goldAuto ? goldAuto + " (자동)" : key === "rbOut" ? "투자용 현금 ₩ (비상금 제외)" : "평가액 ₩"}" value="${S[key] != null && S[key] !== "" ? S[key] : ""}" onchange="rbSet('${key}', this.value)" style="${inp}flex:1;">
-    </div>`).join("");
-  if(tot > 0){
-    let buyNeed = 0;
-    html += `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);">`;
-    rows.forEach(([nm, v, w, key, col]) => {
-      const cur = v / tot * 100, tgt = tot * w / 100, diff = tgt - v;
-      if(diff > 0) buyNeed += diff;
-      const ok = Math.abs(cur - w) < 2;
-      html += `<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px;padding:3px 0;">
-        <span style="color:var(--text2);">${nm} <span style="color:var(--text3);font-size:10.5px;">${cur.toFixed(1)}% → ${w}%</span></span>
-        <b style="color:${ok ? "var(--text3)" : diff > 0 ? "#16a34a" : "#dc2626"};">${ok ? "그대로" : (diff > 0 ? "+" : "−") + d2fmt(Math.round(Math.abs(diff))) + (key === "rbOut" ? (diff > 0 ? " 현금으로 확보" : " 현금에서 투입") : (diff > 0 ? " 매수" : " 매도"))}</b>
-      </div>`;
-    });
-    const daily = d2num(S.dailyBuy) || 0;
-    if(PW.out){
-      buyNeed = 0;
-      rows.forEach(([nm, v, w, key]) => { if(key !== "rbOut"){ const d = tot * w / 100 - v; if(d > 0) buyNeed += d; } });
-      html += `<div style="font-size:10.5px;color:var(--text2);line-height:1.6;margin-top:6px;background:var(--bg3);border-radius:8px;padding:7px 9px;">💵 <b>계좌 밖 현금 포함 가계 리밸런싱</b> — 현금이 목표보다 많으면 그 차액을 모자란 자산(QLD·SCHD·금)에 넣고, 적으면 엔진을 팔아 현금으로 옮깁니다. <b>양쪽 모두</b> 해야 효과가 납니다(강세장에서 이익을 현금으로 옮겨야 계좌가 커질 때 방어도 같이 커짐). 생활비 6개월치 비상금과 웅덩이 TQQQ 추가 자금은 이 현금에서 빼고 적으세요.</div>`;
-    } else if(buyNeed > 0 && daily > 0){
-      const days = Math.ceil(buyNeed / daily);
-      html += `<div style="font-size:10.5px;color:var(--text2);line-height:1.6;margin-top:6px;background:var(--bg3);border-radius:8px;padding:7px 9px;">💡 <b>팔지 않고</b> 신규 매수금(하루 ${d2fmt(Math.round(daily))})을 모자란 쪽에만 넣으면 약 <b>${days}거래일</b>이면 맞춰집니다 — 세금 0원. 차이가 커서 바로 맞추려면 넘치는 쪽을 팔되, 해외주식 차익은 연 250만 원까지 공제.</div>`;
+  const P = rbPlan(), F = x => d2fmt(Math.round(Math.abs(x)));
+  const val = k => (S[k] != null && S[k] !== "") ? S[k] : "";
+  const qtxt = (q, u) => q == null ? "" : u === "g" ? ` ≈ ${Math.round(Math.abs(q))}g` : ` ≈ ${Math.abs(q).toFixed(2)}주`;
+  const sec = (t, sub) => `<div style="font-size:11.5px;font-weight:800;color:var(--text1);margin:10px 0 5px;">${t}${sub ? ` <span style="font-weight:600;color:var(--text3);font-size:10px;">${sub}</span>` : ""}</div>`;
+  let html = `<div style="font-size:10.5px;color:var(--text3);line-height:1.6;">매년 ${monthSel} · 목표 <b style="color:var(--text2);">엔진 ${qldW}${schdW ? ` · SCHD ${schdW}` : ""}${gldW ? ` · 금 ${gldW}` : ""}${midW ? ` · ${midName} ${midW}` : ""}</b>${PW.glide.phase !== "acc" ? " <b style='color:#c2410c;'>(글라이드 반영)</b>" : ""} · 엔진=QLD+TQQQ, 비율대로 매매</div>`;
+  // ① 보유 현황
+  html += sec("① 보유 현황", "증권사 앱의 보유 수량·평균단가를 그대로");
+  P.A.forEach(a => {
+    if(a.manual){
+      html += `<div style="margin-bottom:6px;"><div style="display:flex;align-items:center;gap:6px;"><span style="flex:0 0 64px;font-size:11.5px;font-weight:800;color:${a.col};">${a.nm}</span>
+        <input type="number" inputmode="numeric" placeholder="평가액 ₩" value="${val("rbMid")}" onchange="rbSet('rbMid', this.value)" style="${inp}flex:1;"></div></div>`;
+      return;
     }
-    html += `</div>`;
+    const cur = P.V > 0 ? a.v / P.V * 100 : 0, tgt = P.T > 0 ? a.t / P.T * 100 : 0;
+    const pxTxt = a.k === "gold" ? (a.px ? `${d2fmt(Math.round(a.px))}/g` : "시세 없음") : a.px ? `$${a.px.toFixed(2)}${a.k === "schd" ? (a.pxMan ? " (직접 입력)" : " (자동)") : ""}` : (a.k === "schd" && SCHD_BUSY ? "시세 조회 중…" : "시세 없음");
+    html += `<div style="margin-bottom:7px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="flex:0 0 64px;font-size:11.5px;font-weight:800;color:${a.col};">${a.nm}</span>
+        <input type="number" inputmode="decimal" placeholder="${a.k === "gold" ? (a.logG ? a.logG + "g (금 기록 자동)" : "보유 g") : "보유 주"}" value="${val(a.kSh)}" onchange="rbSet('${a.kSh}', this.value)" style="${inp}flex:1;">
+        ${a.kAvg ? `<input type="number" inputmode="decimal" placeholder="평단 $" value="${val(a.kAvg)}" onchange="rbSet('${a.kAvg}', this.value)" style="${inp}flex:1;">` : `<span style="flex:1;font-size:10px;color:var(--text3);">비과세 · 평단 불필요</span>`}
+        ${a.k === "schd" ? `<input type="number" inputmode="decimal" placeholder="${SCHD_PX && SCHD_PX.p ? "자동 $" + SCHD_PX.p.toFixed(2) : "현재가 $"}" title="비워두면 자동 시세 사용, 넣으면 그 값 우선" value="${val("rbSchdPx")}" onchange="rbSet('rbSchdPx', this.value)" style="${inp}flex:1;">` : ""}
+      </div>
+      <div style="font-size:10px;color:var(--text3);padding:2px 0 0 70px;">${a.v > 0 ? `평가 ${F(a.v)} · 지금 ${cur.toFixed(1)}%` : "—"}${pxTxt ? ` · ${pxTxt}` : ""}${a.k === "schd" ? ` · <label style="cursor:pointer;"><input type="checkbox" ${S.rbSchdIsa ? "checked" : ""} onchange="rbToggle('rbSchdIsa')" style="vertical-align:-2px;"> ISA·연금(세금 제외)</label>` : ""}</div>
+    </div>`;
+  });
+  if(P.V > 0) html += `<div style="font-size:10.5px;color:var(--text2);padding:2px 0 0;">합계 <b>${F(P.V)}</b> · 엔진 <b>${(P.engNow * 100).toFixed(1)}%</b> (목표 ${qldW}%) · 엔진 안 TQQQ <b style="color:${P.tqShare > 0.3 ? "#dc2626" : "var(--text2)"};">${(P.tqShare * 100).toFixed(0)}%</b>${P.tqShare > 0.3 ? " — 엔진 실효 배수 ↑" : ""} · 환율 ${P.fx ? Math.round(P.fx).toLocaleString() : "—"}</div>`;
+  if(P.miss.length) html += `<div style="font-size:10.5px;color:#b91c1c;margin-top:4px;">⚠️ ${P.miss.join(" · ")} 없음 — 새로고침하거나 입력해 주세요. 해당 자산은 0원으로 계산됩니다.</div>`;
+  // ② 새 매수금
+  html += sec("② 이번에 같이 넣을 새 매수금", "먼저 모자란 쪽에 넣어 매도·세금을 줄임");
+  html += `<div style="display:flex;gap:6px;align-items:center;"><input type="number" inputmode="numeric" placeholder="₩ (없으면 비워두기)" value="${val("rbNew")}" onchange="rbSet('rbNew', this.value)" style="${inp}flex:1;">
+    <button type="button" onclick="rbFillMonth()" style="flex:0 0 auto;border:1px solid var(--border);background:var(--bg3);color:var(--text2);border-radius:8px;padding:6px 9px;font-size:10.5px;font-weight:800;cursor:pointer;font-family:inherit;">한 달치</button></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:3px;">'한 달치' = 하루 매수액 ${F(d2num(S.dailyBuy) || 0)} × 21거래일. 이 돈은 그 기간 매일매수 대신 쓰는 돈입니다.</div>`;
+  // ③ 할 일
+  html += sec("③ 할 일", "위에서부터 순서대로");
+  if(P.T <= 0){
+    html += `<div style="font-size:11px;color:var(--text3);">보유 수량을 넣으면 계산합니다.</div>`;
+  } else {
+    const line = (a, krw, q, sign, note) => `<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px;padding:3px 0;">
+        <span style="color:var(--text2);"><b style="color:${a.col};">${a.nm}</b>${note ? ` <span style="font-size:10px;color:var(--text3);">${note}</span>` : ""}</span>
+        <b style="color:${sign > 0 ? "#16a34a" : "#dc2626"};">${sign > 0 ? "+" : "−"}${F(krw)} ${sign > 0 ? "매수" : "매도"}<span style="font-weight:600;color:var(--text3);font-size:10.5px;">${a.manual ? "" : qtxt(q, a.unit)}</span></b></div>`;
+    let step = 0;
+    const buysNew = P.A.filter(a => a.alloc > 1);
+    if(buysNew.length){ step++; html += `<div style="font-size:10.5px;font-weight:800;color:var(--text3);margin-top:2px;">${step}. 새 매수금 ${F(P.N)} 나눠 사기</div>` + buysNew.map(a => line(a, a.alloc, a.qNew, 1)).join(""); }
+    if(!P.needSell){
+      html += `<div style="font-size:11px;color:#15803d;background:#ecfdf5;border-radius:8px;padding:7px 9px;margin-top:6px;line-height:1.6;">✅ ${buysNew.length ? "새 매수금만으로" : "지금도"} 모든 자산이 목표 ±2%p 안 — <b>팔 필요 없음</b>(세금 0).</div>`;
+    } else {
+      const sells = P.A.filter(a => a.d < -1), buys = P.A.filter(a => a.d > 1);
+      step++; html += `<div style="font-size:10.5px;font-weight:800;color:var(--text3);margin-top:6px;">${step}. 넘치는 쪽 팔기</div>` + sells.map(a => line(a, -a.d, a.q, -1, a.grp === "eng" ? "엔진 비율대로" : "")).join("");
+      step++; html += `<div style="font-size:10.5px;font-weight:800;color:var(--text3);margin-top:6px;">${step}. 판 돈 ${F(sells.reduce((s, a) => s - a.d, 0))}으로 사기</div>` + buys.map(a => line(a, a.d, a.q, 1)).join("");
+    }
+    html += `<div style="font-size:10px;color:var(--text3);margin-top:4px;">결과: ${P.A.map(a => `${a.nm} ${(a.t / P.T * 100).toFixed(0)}%`).join(" · ")} · 주식은 소수점 매매가 안 되면 반올림, 금은 1g 단위.</div>`;
+    // 세금
+    if(P.needSell && P.A.some(a => a.d < -1 && a.tax)){
+      html += `<div style="background:var(--bg3);border-radius:9px;padding:8px 10px;margin-top:8px;font-size:11px;color:var(--text2);line-height:1.65;">
+        🧾 <b>양도세 추정</b> (해외주식 22% · 연 250만 원 공제)<br>
+        이번 매도 ${P.gainSum >= 0 ? "차익" : "차손(세금 줄여줌)"} ≈ <b>${d2fmt(Math.abs(Math.round(P.gainSum)))}</b> → 추가 세금 ≈ <b style="color:${P.tax > 0 ? "#dc2626" : "#15803d"};">${d2fmt(Math.round(P.tax))}</b>
+        ${P.noAvg.length ? `<br><span style="color:#b91c1c;">⚠️ ${P.noAvg.join("·")} 평단 미입력 — 그만큼 차익이 빠져 있어요.</span>` : ""}
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;"><span style="flex:0 0 auto;font-size:10.5px;color:var(--text3);">올해 이미 실현한 해외주식 손익</span><input type="number" inputmode="numeric" placeholder="₩ 0" value="${val("rbRealized")}" onchange="rbSet('rbRealized', this.value)" style="${inp}flex:1;"></div>
+        ${P.splitSave > 0 ? `<div style="margin-top:5px;color:#1e3a8a;">💡 <b>해를 나눠 팔기</b> — 차익 250만 원어치(매도액 약 ${F(P.DED / Math.max(P.gRatio, 0.01))})를 리밸런싱 전 해 <b>12월</b>에 먼저 팔면 그해 공제까지 써서 약 <b>${d2fmt(Math.round(P.splitSave))}</b> 아낍니다. ${new Date().getMonth() === 11 ? "<b>지금이 12월이니 그만큼 먼저 팔고</b>, 나머지는 리밸런싱 달에 하세요(그때 수량을 다시 넣으면 재계산)." : "이번엔 지난 일이니, 다음부턴 12월에 이 카드를 미리 열어 보세요(전 달에 배지로 알려 드립니다)."}</div>` : ""}
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;">평단과 현재 환율로 근사한 값입니다. 실제 세액은 증권사 양도세 계산(취득 시점 환율·선입선출 등)을 따르니 5월 신고 전에 증권사 계산서로 확인하세요. 금(KRX 금현물)은 비과세.</div>
+      </div>`;
+    }
   }
-  html += `<button type="button" onclick="rbDone()" style="width:100%;margin-top:9px;border:none;background:${hotCard ? "#dc2626" : "var(--bg3)"};color:${hotCard ? "#fff" : "var(--text3)"};border-radius:9px;padding:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;">${doneThisYear ? `✅ ${y}년 리밸런싱 완료됨` : `${y}년 리밸런싱 완료 기록`}</button>`;
+  // 지난 기록
+  const H = S.rbHist || [];
+  if(H.length){
+    const r = H[H.length - 1];
+    html += `<details style="margin-top:9px;"><summary style="font-size:11px;font-weight:800;color:var(--text2);cursor:pointer;">📜 지난 기록 (${H.length}회) · 최근 ${r.d}</summary>
+      ${H.slice().reverse().map(h => `<div style="font-size:10.5px;color:var(--text2);line-height:1.6;border-top:1px dashed var(--border);padding-top:5px;margin-top:5px;">
+        <b>${h.d}</b> · 합계 ${d2fmt(h.T)} · 엔진 ${h.eng}% (TQQQ ${h.tq}%)${h.N ? ` · 새 돈 ${d2fmt(h.N)}` : ""}${h.tax ? ` · 세금≈${d2fmt(h.tax)}` : ""}<br>
+        ${h.tr.map(t => `${t.nm} ${t.nw > 0 ? `+${d2fmt(t.nw)}` : ""}${t.d ? ` ${t.d > 0 ? "+" : "−"}${d2fmt(Math.abs(t.d))}` : ""}${t.q != null && t.d ? ` (${t.d > 0 ? "+" : "−"}${Math.abs(t.q)}${t.u})` : ""}`).join(" · ")}
+      </div>`).join("")}</details>`;
+  }
+  html += `<button type="button" onclick="rbDone()" style="width:100%;margin-top:9px;border:none;background:${hotCard ? "#dc2626" : "var(--bg3)"};color:${hotCard ? "#fff" : "var(--text3)"};border-radius:9px;padding:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;">${doneThisYear ? `✅ ${y}년 리밸런싱 완료됨 (다시 기록하려면 누르기)` : `${y}년 리밸런싱 완료 기록`}</button>`;
   body.innerHTML = html;
 }
 

@@ -1164,7 +1164,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <span id="s-sso-pct" style="font-size:15px;color:var(--teal);font-weight:900;">—</span>
     </div>
     <div id="s-mix-sub" style="font-size:11px;color:var(--text2);font-weight:600;margin:-2px 0 10px;"></div>
-    <button type="button" onclick="applyRecMix()" style="width:100%;background:#ecfdf5;border:1.5px solid rgba(16,163,74,0.3);border-radius:9px;padding:9px;font-size:11.5px;font-weight:800;color:#15803d;cursor:pointer;font-family:inherit;margin-bottom:10px;">⭐ 확정 구성 (QLD 75 · 금 15 · SCHD 10 · TQQQ 1.5배)</button>
+    <button type="button" onclick="applyRecMix()" style="width:100%;background:#ecfdf5;border:1.5px solid rgba(16,163,74,0.3);border-radius:9px;padding:9px;font-size:11.5px;font-weight:800;color:#15803d;cursor:pointer;font-family:inherit;margin-bottom:10px;">⭐ 확정 구성 (QLD 75 · 금 15 · SCHD 10 · TQQQ 1.0배)</button>
 
     <div style="margin-top:6px;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
@@ -1197,7 +1197,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
       </div>
       <div id="tq-rec-why" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:6px;"></div>
     </div>
-    <div class="setting-group"><div class="setting-label">TQQQ 배수 (권장 1.5 · 1.0~2.0)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="2" id="s-tqqqmult" placeholder="1.0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">금·SCHD + 연 1회 리밸런싱이 있으면 1.5~2배에서 나쁜 경로(하위 10%)는 그대로, 중앙값만 오릅니다. 2배 초과는 미검증.</div></div>
+    <div class="setting-group"><div class="setting-label">TQQQ 배수 (확정 1.0 · 남는 예비금 현금 보유)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="2" id="s-tqqqmult" placeholder="1.0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">금·SCHD + 연 1회 리밸런싱이 있으면 1.5~2배에서 나쁜 경로(하위 10%)는 그대로, 중앙값만 오릅니다. 2배 초과는 미검증.</div></div>
   </div>
 
   <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
@@ -2175,6 +2175,7 @@ function dailyLoad(){
   if(S.investYears == null) S.investYears = 20;
   if(S.incomeGrowth == null)S.incomeGrowth= 3;
   if(S.tqqqMult == null)    S.tqqqMult    = 1.0;
+  if(!S._migTq10){ if(Number(S.tqqqMult) === 1.5) S.tqqqMult = 1.0; S._migTq10 = true; }  // 2026-11 확정 1.5→1.0 1회 이전
   if(S.qldWeight == null)   S.qldWeight   = 100;
   if(S.gldWeight == null)   S.gldWeight   = 0;
   if(S.projYears == null)   S.projYears   = 10;

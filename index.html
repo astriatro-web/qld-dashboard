@@ -523,6 +523,28 @@ details.strat-acc > summary:active { opacity: 0.85; }
 <div class="panel active" id="panel-dashboard">
   <div id="errBox" class="err-box" style="display:none;"></div>
 
+  <!-- QLD 공식 차트 (TradingView 위젯 · 펼칠 때만 로드) -->
+  <div class="card" id="tv-card" style="padding:0;overflow:hidden;">
+    <button type="button" onclick="tvToggle()" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:none;padding:13px 16px;cursor:pointer;font-family:inherit;">
+      <span style="font-size:12.5px;font-weight:800;color:var(--text1);">📈 QLD 차트 <span style="font-size:10.5px;font-weight:600;color:var(--text3);">· 120일선 · TradingView</span></span>
+      <span id="tv-arrow" style="font-size:12px;color:var(--text3);">펼치기 ▾</span>
+    </button>
+    <div id="tv-body" style="display:none;border-top:1px solid var(--border);">
+      <div style="display:flex;gap:6px;padding:8px 12px 0;">
+        <button type="button" class="tv-sym" data-sym="AMEX:QLD" onclick="tvSymbol(this)">QLD</button>
+        <button type="button" class="tv-sym" data-sym="AMEX:SSO" onclick="tvSymbol(this)">SSO</button>
+        <button type="button" class="tv-sym" data-sym="NASDAQ:TQQQ" onclick="tvSymbol(this)">TQQQ</button>
+        <button type="button" class="tv-sym" data-sym="NASDAQ:QQQ" onclick="tvSymbol(this)">QQQ</button>
+      </div>
+      <div id="tv-wrap" style="height:420px;padding:8px 6px 6px;"></div>
+      <div style="font-size:10px;color:var(--text3);padding:0 14px 10px;line-height:1.5;">파란 선 = 120일 이동평균. 종가가 선 아래면 웅덩이. 차트·시세 제공: TradingView</div>
+    </div>
+  </div>
+  <style>
+    .tv-sym{font-family:inherit;font-size:11px;font-weight:800;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;}
+    .tv-sym.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+  </style>
+
   <!-- 오늘 매수 히어로 -->
   <div class="card" id="dd-hero">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -3459,6 +3481,46 @@ function calcGoal() {
   set("goal-real-rate", (realRate >= 0 ? "" : "") + realRate.toFixed(1) + "%");
 }
 
+
+// ── QLD 공식 차트 (TradingView Advanced Chart 위젯) ──
+let TV_SYM = "AMEX:QLD", TV_LOADED = false;
+try { TV_SYM = localStorage.getItem("qld_tv_sym") || "AMEX:QLD"; } catch(e){}
+function tvRender(){
+  const wrap = document.getElementById("tv-wrap"); if(!wrap) return;
+  const dark = document.documentElement.getAttribute("data-theme") === "dark"
+    || (document.documentElement.getAttribute("data-theme") !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  wrap.innerHTML = '<div class="tradingview-widget-container" style="height:100%;width:100%;"><div class="tradingview-widget-container__widget" style="height:100%;width:100%;"></div></div>';
+  const sc = document.createElement("script");
+  sc.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+  sc.async = true;
+  sc.innerHTML = JSON.stringify({
+    autosize: true, symbol: TV_SYM, interval: "D", range: "12M", timezone: "Asia/Seoul",
+    theme: dark ? "dark" : "light", style: "1", locale: "kr",
+    allow_symbol_change: true, hide_side_toolbar: true, hide_volume: true, save_image: false,
+    calendar: false, support_host: "https://www.tradingview.com",
+    studies: [{ id: "MASimple@tv-basicstudies", inputs: { length: 120 } }]
+  });
+  wrap.firstChild.appendChild(sc);
+  document.querySelectorAll(".tv-sym").forEach(b => b.classList.toggle("on", b.dataset.sym === TV_SYM));
+  TV_LOADED = true;
+}
+window.tvToggle = function(){
+  const body = document.getElementById("tv-body"), ar = document.getElementById("tv-arrow");
+  const open = body.style.display === "none";
+  body.style.display = open ? "block" : "none";
+  ar.textContent = open ? "접기 ▴" : "펼치기 ▾";
+  if(open && !TV_LOADED) tvRender();
+  try { localStorage.setItem("qld_tv_open", open ? "1" : "0"); } catch(e){}
+};
+window.tvSymbol = function(btn){
+  TV_SYM = btn.dataset.sym;
+  try { localStorage.setItem("qld_tv_sym", TV_SYM); } catch(e){}
+  tvRender();
+};
+document.addEventListener("DOMContentLoaded", () => {
+  let o = "0"; try { o = localStorage.getItem("qld_tv_open") || "0"; } catch(e){}
+  if(o === "1") tvToggle();
+});
 // ── 비밀번호 ──
 const PW_HASH = "44798dd7d0f2c058bff13fdbac8c49b3a2ee56823eddcc2d26054a15ef41c842"; // 입장 비번
 async function sha256(str) {

@@ -594,11 +594,11 @@ details.strat-acc > summary:active { opacity: 0.85; }
 
   <!-- 🔄 연 1회 리밸런싱 -->
   <div class="card" id="rb-card" style="padding:12px 14px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-      <div class="card-label" style="margin:0;">🔄 연 1회 리밸런싱</div>
+    <div onclick="rbFold()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;">
+      <div class="card-label" style="margin:0;"><span id="rb-arrow" style="display:inline-block;width:12px;color:var(--text3);">▸</span>🔄 연 1회 리밸런싱</div>
       <span id="rb-due" style="font-size:10.5px;font-weight:800;border-radius:8px;padding:2px 8px;background:var(--bg3);color:var(--text3);">—</span>
     </div>
-    <div id="rb-body"></div>
+    <div id="rb-body" style="display:none;margin-top:6px;"></div>
   </div>
 
   <!-- 💱 환전·입금 계산 -->
@@ -3074,6 +3074,8 @@ function rbDone(){
   S.rbHist = (S.rbHist || []).concat([rec]).slice(-10);
   S.rbLastYear = y; localStorage.setItem("qld_s11", JSON.stringify(S)); renderRebal();
 }
+let RB_OPEN = null;   // null = 자동(리밸런싱 달·전달·놓쳤을 때만 펼침), 사용자가 누르면 그 상태 유지
+function rbFold(){ const b = document.getElementById("rb-body"); RB_OPEN = !(b && b.style.display !== "none"); renderRebal(); }
 function renderRebal(){
   if(typeof renderPf === "function") setTimeout(renderPf, 0);
   const body = document.getElementById("rb-body"), due = document.getElementById("rb-due"); if(!body) return;
@@ -3093,6 +3095,10 @@ function renderRebal(){
     due.style.background = hot ? "#fef2f2" : preMonth ? "#eff4ff" : "var(--bg3)"; due.style.color = hot ? "#b91c1c" : preMonth ? "#1e3a8a" : "var(--text3)";
   }
   const hotCard = isDue || overdue;
+  const autoOpen = hotCard || (!isDue && !overdue && (cm % 12) + 1 === mon);
+  const open = RB_OPEN == null ? autoOpen : RB_OPEN;
+  body.style.display = open ? "block" : "none";
+  const arw = document.getElementById("rb-arrow"); if(arw) arw.textContent = open ? "▾" : "▸";
   const card = document.getElementById("rb-card"); if(card) card.style.border = hotCard ? "1.5px solid rgba(220,38,38,0.4)" : "";
   const inp = "width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:8px;padding:6px 7px;font-size:12.5px;font-family:inherit;background:var(--bg2,#fff);color:var(--text1);";
   const monthSel = `<select onchange="rbSet('rbMonth', +this.value)" style="border:1px solid var(--border);border-radius:6px;padding:2px 4px;font-size:10.5px;font-family:inherit;background:var(--bg2,#fff);color:var(--text2);">${[...Array(12)].map((_,i)=>`<option value="${i+1}" ${i+1===mon?"selected":""}>${i+1}월</option>`).join("")}</select>`;

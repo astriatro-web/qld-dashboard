@@ -2928,6 +2928,123 @@ async function fetchSchd(){
   SCHD_BUSY = false;
 }
 
+
+
+// ── 토스 직접 연결 (이 기기 → 토스) · 키는 이 기기 브라우저에만 저장 · 토스 허용 IP 네트워크(집·병원 와이파이)에서만 갱신 ──
+const TD_CID = "qld_toss_cid", TD_SEC = "qld_toss_sec", TD_TOK = "qld_toss_tok", TOSS_API = "https://openapi.tossinvest.com";
+function tdGet(k){ try { return localStorage.getItem(k) || ""; } catch(e){ return ""; } }
+function tdSet(k, v){ try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch(e){} }
+function tossDirectOn(){ return !!(tdGet(TD_CID) && tdGet(TD_SEC)); }
+function tossDirectSave(){
+  const c = (document.getElementById("td-cid") || {}).value || "", k = (document.getElementById("td-sec") || {}).value || "";
+  if(!c.trim() || !k.trim()){ alert("client_id와 client_secret을 모두 입력하세요."); return; }
+  tdSet(TD_CID, c.trim()); tdSet(TD_SEC, k.trim()); tdSet(TD_TOK, ""); TOSS_ERR = ""; tossFetch(true);
+}
+function tossDirectClear(){
+  if(!confirm("이 기기에 저장된 토스 키를 지울까요? (마지막 보유 수량 값은 남습니다)")) return;
+  tdSet(TD_CID, ""); tdSet(TD_SEC, ""); tdSet(TD_TOK, ""); TOSS_ERR = ""; renderPf();
+}
+function tdErr(st, j, stage){
+  const code = j && (typeof j.error === "object" ? (j.error.code || "") : (j.error || "")) || "";
+  if(st === 403) { const e = new Error("지금 네트워크(IP)는 토스 허용 IP가 아닙니다 — 등록한 집·병원 와이파이에서 열면 갱신됩니다"); e.soft = true; return e; }
+  if(st === 401 && stage === "토큰") return new Error("client_id 또는 client_secret이 맞지 않습니다");
+  if(st === 429) { const e = new Error("요청이 잦아 잠시 막혔습니다 — 1분 뒤 ↻"); e.soft = true; return e; }
+  return new Error(`${stage} 조회 실패 HTTP ${st}${code ? " · " + code : ""}`);
+}
+async function tdFetch(url, opt){
+  try { return await fetch(url, opt); }
+  catch(e){ const er = new Error("토스 서버에 연결하지 못했습니다 (네트워크 또는 브라우저 차단)"); er.soft = true; throw er; }
+}
+async function tdToken(force){
+  if(!force){ try { const t = JSON.parse(tdGet(TD_TOK) || "null"); if(t && t.exp > Date.now() + 60000) return t.tok; } catch(e){} }
+  const body = new URLSearchParams({ grant_type:"client_credentials", client_id: tdGet(TD_CID), client_secret: tdGet(TD_SEC) });
+  const r = await tdFetch(TOSS_API + "/oauth2/token", { method:"POST", headers:{ "Content-Type":"application/x-www-form-urlencoded" }, body });
+  const j = await r.json().catch(() => ({}));
+  if(!r.ok || !j.access_token) throw tdErr(r.status, j, "토큰");
+  tdSet(TD_TOK, JSON.stringify({ tok: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000 }));
+  return j.access_token;
+}
+async function tdApi(path, acct){
+  for(const force of [false, true]){   // 토스는 키당 유효 토큰 1개 → 다른 기기가 새로 받으면 401, 그때 한 번 재발급
+    const h = { Authorization: "Bearer " + await tdToken(force), Accept: "application/json" };
+    if(acct != null) h["X-Tossinvest-Account"] = String(acct);
+    const r = await tdFetch(TOSS_API + path, { headers: h });
+    const j = await r.json().catch(() => ({}));
+    if(r.status === 401 && !force) continue;
+    if(!r.ok) throw tdErr(r.status, j, path.indexOf("holdings") >= 0 ? "보유자산" : "계좌");
+    return j;
+  }
+}
+async function tossDirectFetch(){
+  const ac = ((await tdApi("/api/v1/accounts")) || {}).result || [];
+  const a = ac.find(x => String(x.accountType || "").toUpperCase() === "BROKERAGE") || ac[0];
+  if(!a) throw new Error("조회되는 계좌가 없습니다");
+  const res = ((await tdApi("/api/v1/holdings", a.accountSeq)) || {}).result || {};
+  const num = x => x == null ? null : (typeof x === "object" ? num(x.value != null ? x.value : x.amount) : parseFloat(String(x).replace(/,/g, "")));
+  const now = new Date().toISOString();
+  return { ok:true, src:"direct", ts: now, received_at: now,
+    items: (res.items || []).map(it => ({ symbol: String(it.symbol || "").toUpperCase(), name: it.name, qty: num(it.quantity), avg: num(it.averagePurchasePrice), last: num(it.lastPrice) })) };
+}
+// ══ 🔗 토스 자동 연동 (라이트세일 중계 서버 → GAS 보관 → 여기서 조회) · 토스 키는 이 페이지·GAS 어디에도 없음 ══
+const TOSS_VK_KEY = "qld_toss_vk", TOSS_CACHE_KEY = "qld_toss_cache";
+let TOSS = null, TOSS_ERR = "", TOSS_BUSY = false;
+function tossVk(){ try { return localStorage.getItem(TOSS_VK_KEY) || ""; } catch(e){ return ""; } }
+function tossSetVk(v){
+  v = String(v || "").trim();
+  try { v ? localStorage.setItem(TOSS_VK_KEY, v) : (localStorage.removeItem(TOSS_VK_KEY), localStorage.removeItem(TOSS_CACHE_KEY)); } catch(e){}
+  TOSS = null; TOSS_ERR = ""; if(v) tossFetch(true); else renderPf();
+}
+let TOSS_SOFT = false;
+async function tossFetch(force){
+  const vk = tossVk(), direct = tossDirectOn(); if(!vk && !direct) return;
+  if(!TOSS){ try { TOSS = JSON.parse(localStorage.getItem(TOSS_CACHE_KEY) || "null"); } catch(e){} }
+  if(!force && TOSS && Date.now() - TOSS.fetched < 10 * 60 * 1000) return;
+  if(TOSS_BUSY) return; TOSS_BUSY = true; renderPf();
+  if(direct){
+    try {
+      const d = await tossDirectFetch();
+      TOSS = { fetched: Date.now(), d }; TOSS_ERR = ""; TOSS_SOFT = false;
+      try { localStorage.setItem(TOSS_CACHE_KEY, JSON.stringify(TOSS)); } catch(e){}
+      TOSS_BUSY = false; tossApply(d); renderPf(); return;
+    } catch(e){ TOSS_ERR = e.message || String(e); TOSS_SOFT = !!e.soft; if(!vk){ TOSS_BUSY = false; renderPf(); return; } }
+  }
+  try {
+    const res = await fetch(`${GAS_URL}?action=holdings&vk=${encodeURIComponent(vk)}`, { method:"GET", mode:"cors", redirect:"follow" });
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.error === "unauthorized" ? "조회키가 맞지 않습니다 (GAS의 TOSS_VIEW_KEY와 같은지 확인)" : d.error === "no_data" ? "아직 서버에서 받은 데이터가 없습니다 (서버에서 toss_relay.py 실행 확인)" : (d.error || "조회 실패"));
+    TOSS = { fetched: Date.now(), d }; TOSS_ERR = ""; TOSS_SOFT = false;
+    try { localStorage.setItem(TOSS_CACHE_KEY, JSON.stringify(TOSS)); } catch(e){}
+    tossApply(d);
+  } catch(e){ if(!direct){ TOSS_ERR = e.message || String(e); TOSS_SOFT = false; } }
+  TOSS_BUSY = false; renderPf();
+}
+function tossApply(d){
+  const map = { QLD:["rbQldSh","rbQldAvg"], TQQQ:["rbTqSh","rbTqAvg"], SCHD:["rbSchdSh","rbSchdAvg"] };
+  (d.items || []).forEach(it => {
+    const m = map[String(it.symbol || "").toUpperCase()]; if(!m) return;
+    if(it.qty != null) S[m[0]] = it.qty;
+    if(it.avg > 0) S[m[1]] = it.avg;
+  });
+  S.rbSrcAt = d.received_at || d.ts || "";
+  try { localStorage.setItem("qld_s11", JSON.stringify(S)); } catch(e){}
+  if(typeof renderRebal === "function") renderRebal();
+  if(typeof MD !== "undefined" && MD) renderDaily(MD);
+}
+function tossStatusHtml(){
+  const vk = tossVk(), direct = tossDirectOn();
+  if(!vk && !direct) return "";
+  if(TOSS_BUSY && !TOSS) return `<div style="font-size:10.5px;color:var(--text3);margin-bottom:8px;">🔗 토스 보유 수량 불러오는 중…</div>`;
+  const d = TOSS && TOSS.d, at = d ? new Date(d.received_at || d.ts) : null;
+  const ageH = at ? (Date.now() - at.getTime()) / 3600000 : null;
+  const pick = sym => { const it = d && (d.items || []).find(i => String(i.symbol).toUpperCase() === sym); return it ? `${sym} ${+it.qty}주` : null; };
+  const list = d ? ["QLD","TQQQ","SCHD"].map(pick).filter(Boolean).join(" · ") : "";
+  const when = at ? `${at.getMonth()+1}/${at.getDate()} ${String(at.getHours()).padStart(2,"0")}:${String(at.getMinutes()).padStart(2,"0")}` : "";
+  const warn = TOSS_ERR ? `<div style="color:${TOSS_SOFT ? "#b45309" : "#b91c1c"};font-weight:700;margin-top:3px;">${TOSS_SOFT ? "📶" : "⚠️"} ${TOSS_ERR}${TOSS_SOFT && d ? " · 마지막 값으로 표시 중" : ""}</div>` : (!direct && ageH != null && ageH > 26 ? `<div style="color:#b45309;font-weight:700;margin-top:3px;">⚠️ 서버 갱신이 ${Math.floor(ageH)}시간째 없습니다 — 중계 서버 상태를 확인하세요</div>` : "");
+  return `<div style="font-size:10.5px;color:var(--text2);background:var(--bg3);border-radius:8px;padding:6px 9px;margin-bottom:8px;line-height:1.5;">
+      <div style="display:flex;justify-content:space-between;gap:6px;"><span>🔗 <b>토스 ${d && d.src === "direct" ? "직접" : "자동"}</b>${when ? ` · ${when} 기준` : ""}${list ? ` · ${list}` : ""}</span>
+      <a href="javascript:void(0)" onclick="tossFetch(true)" style="color:var(--text3);text-decoration:none;white-space:nowrap;">${TOSS_BUSY ? "…" : "↻"}</a></div>${warn}</div>`;
+}
+setInterval(() => tossFetch(false), 10 * 60 * 1000);
 // ══ 📊 내 계좌 현황 · TQQQ 상한 (2026-11 백테스트: 평가액의 10%에 닿으면 웅덩이 TQQQ 매수 중단) ══
 function pfSet(k, v){ S[k] = v; localStorage.setItem("qld_s11", JSON.stringify(S)); renderPf(); if(typeof MD !== "undefined") renderDaily(MD); }
 function tqCapToggle(){ S.tqCapOn = !(S.tqCapOn !== false); pfSet("tqCapOn", S.tqCapOn); }
@@ -2961,8 +3078,8 @@ function renderPf(){
   const sharePct = C.share * 100, over = C.on && C.known && C.share >= C.cap;
   const barW = Math.min(100, sharePct / Math.max(capPct * 2, 1) * 100), capX = 50;
   const noHold = !C.P || C.P.V <= 0;
-  body.innerHTML = `
-    ${noHold ? `<div style="font-size:11.5px;color:var(--text2);background:var(--bg3);border-radius:9px;padding:9px 11px;line-height:1.6;">아래 <b>🔄 연 1회 리밸런싱</b> 카드에 QLD·TQQQ·SCHD 보유 수량을 입력하면 평가액과 TQQQ 비중이 계산됩니다. (금은 적립 기록에서 자동)</div>` : `
+  body.innerHTML = `${tossStatusHtml()}
+    ${noHold ? `<div style="font-size:11.5px;color:var(--text2);background:var(--bg3);border-radius:9px;padding:9px 11px;line-height:1.6;">아래 설정의 <b>토스 직접 연결</b>에 키를 넣으면 보유 수량이 자동으로 들어옵니다. 직접 입력하려면 <b>🔄 연 1회 리밸런싱</b> 카드에 QLD·TQQQ·SCHD 수량을 넣으세요. (금은 적립 기록에서 자동)</div>` : `
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
       <div style="background:var(--bg3);border-radius:9px;padding:8px 9px;"><div style="font-size:10px;color:var(--text3);font-weight:700;">평가액</div><b style="font-size:14px;">${eokFmt(tot)}</b></div>
       <div style="background:var(--bg3);border-radius:9px;padding:8px 9px;"><div style="font-size:10px;color:var(--text3);font-weight:700;">원금${pr.est && pr.v > 0 ? " (추정)" : ""}</div><b style="font-size:14px;">${pr.v > 0 ? eokFmt(pr.v) : "—"}</b></div>
@@ -2986,9 +3103,22 @@ function renderPf(){
         <label>월 예비금 (TQQQ용)<input type="text" inputmode="numeric" placeholder="예: 4,000,000" value="${S.pfResM ? d2fmt(d2num(S.pfResM)).replace(/[^0-9,]/g,"") : ""}" onchange="pfSet('pfResM',d2num(this.value))" style="${inp}"></label>
         <label>예비금 현금 잔액 (지금)<input type="text" inputmode="numeric" placeholder="비우면 0" value="${S.pfResCash ? d2fmt(d2num(S.pfResCash)).replace(/[^0-9,]/g,"") : ""}" onchange="pfSet('pfResCash',d2num(this.value))" style="${inp}"></label>
         <label>원금 직접 입력 (선택)<input type="text" inputmode="numeric" placeholder="비우면 시작일로 추정" value="${S.pfPrin ? d2fmt(d2num(S.pfPrin)).replace(/[^0-9,]/g,"") : ""}" onchange="pfSet('pfPrin',d2num(this.value))" style="${inp}"></label>
+        <div style="grid-column:1 / -1;background:var(--bg3);border-radius:8px;padding:8px;">
+          <div style="font-weight:800;color:var(--text2);margin-bottom:5px;">🔗 토스 직접 연결 (이 기기)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <input id="td-cid" type="text" autocomplete="off" placeholder="${tossDirectOn() ? "저장됨 · client_id" : "client_id"}" style="${inp}">
+            <input id="td-sec" type="password" autocomplete="off" placeholder="${tossDirectOn() ? "저장됨 · client_secret" : "client_secret"}" style="${inp}">
+          </div>
+          <div style="display:flex;gap:6px;margin-top:6px;align-items:center;">
+            <button type="button" onclick="tossDirectSave()" style="border:none;background:var(--purple);color:#fff;border-radius:7px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">저장 후 불러오기</button>
+            ${tossDirectOn() ? `<a href="javascript:void(0)" onclick="tossDirectClear()" style="font-size:10px;color:var(--text3);">이 기기에서 키 지우기</a>` : ""}
+          </div>
+          <div style="font-size:9.5px;color:var(--text3);margin-top:5px;line-height:1.5;">키는 이 기기 브라우저에만 저장됩니다(페이지 소스·서버에 없음). 토스 허용 IP에 등록한 네트워크(집·병원 와이파이)에서만 갱신되고, 밖에서는 마지막 값을 보여줍니다. <b>토스에서 주문 권한을 끈 키</b>를 쓰세요 — 키가 새더라도 허용 IP 밖에서는 쓸 수 없고 주문도 불가합니다.</div>
+        </div>
+        <label>(선택) 서버 중계 조회키<input type="password" autocomplete="off" placeholder="${tossVk() ? "저장됨 · 바꾸려면 새로 입력" : "서버 중계를 쓸 때만"}" onchange="tossSetVk(this.value)" style="${inp}"></label>
         <label>TQQQ 상한 %<select onchange="pfSet('tqCapPct',this.value)" style="${inp}">${[5,10,15,20].map(v => `<option value="${v}" ${v === capPct ? "selected" : ""}>${v}%${v === 10 ? " (권장)" : v === 5 ? " (방어 최우선)" : ""}</option>`).join("")}</select></label>
       </div>
-      <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.6;">원금 추정 = 시작일부터 거래일 × 일일 매수액 + 개월 수 × 월 예비금${pr.est && pr.v > 0 ? ` (거래일 ${pr.days}일 · ${pr.months}개월)` : ""}. 정확히 보려면 원금을 직접 입력하세요. 평가액 = 리밸런싱 카드 보유 수량 × 현재가 + 예비금 현금.</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.6;">원금 추정 = 시작일부터 거래일 × 일일 매수액 + 개월 수 × 월 예비금${pr.est && pr.v > 0 ? ` (거래일 ${pr.days}일 · ${pr.months}개월)` : ""}. 정확히 보려면 원금을 직접 입력하세요. 평가액 = 리밸런싱 카드 보유 수량 × 현재가 + 예비금 현금. 토스를 연결하면 대시보드를 열 때마다(최대 10분에 한 번) QLD·TQQQ·SCHD 수량과 평단이 자동으로 채워집니다(직접 고친 값은 다음 갱신 때 토스 값으로 덮어씀). </div>${tossVk() ? `<div style="text-align:right;margin-top:4px;"><a href="javascript:void(0)" onclick="if(confirm('이 기기에서 토스 조회키를 지울까요?'))tossSetVk('')" style="font-size:10px;color:var(--text3);">토스 조회키 지우기</a></div>` : ""}
     </details>`;
 }
 function rbTotal(){ const P = rbPlan(); return { vE: P.E, vG: P.A.find(a => a.k === "gold").v, tot: P.V }; }
@@ -4024,7 +4154,7 @@ async function ladderScanAll(){
   btn.disabled = false; icon.textContent = "↻";
 }
 
-loadSettings(); renderStatic(null); renderRules(); ladderRender(); dailyLoad(); renderDaily(null);
+loadSettings(); renderStatic(null); renderRules(); ladderRender(); dailyLoad(); renderDaily(null); setTimeout(() => tossFetch(false), 1500);
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";

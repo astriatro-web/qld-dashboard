@@ -2949,6 +2949,33 @@ function pfPrincipal(){
   const months = Math.max(0, (now.getFullYear() - st.getFullYear()) * 12 + now.getMonth() - st.getMonth() + 1);
   return { v: days * (d2num(S.dailyBuy) || 0) + months * (d2num(S.pfResM) || 0), est: true, days, months };
 }
+// ══ 📅 매주 월요일 점검: 금 매수 + QLD·TQQQ·SCHD 수량 입력 (TQQQ 상한 판단용) ══
+function wkMonday(){ const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return goldYmd(d); }
+function goldCan(){
+  const gp = goldPrice(); if(!S.goldStart || !(GOLD_DAILY > 0) || !gp) return null;
+  const spent = (S.goldLog || []).reduce((a, r) => a + r.krw, 0);
+  const pending = goldWeekdays(S.goldStart, goldToday()) * GOLD_DAILY - spent;
+  return { g: Math.floor(Math.max(0, pending) / gp.p), p: gp.p, left: Math.ceil((gp.p - Math.max(0, pending) % gp.p) / GOLD_DAILY) };
+}
+function wkQty(k, v){ S[k] = d2num(v); S.wkQtyAt = goldToday(); localStorage.setItem("qld_s11", JSON.stringify(S)); if(typeof renderRebal === "function") renderRebal(); if(typeof MD !== "undefined") renderDaily(MD); }
+function wkDone(){ S.wkDone = wkMonday(); S.wkQtyAt = S.wkQtyAt || goldToday(); localStorage.setItem("qld_s11", JSON.stringify(S)); renderPf(); }
+function wkHtml(inp){
+  const mon = wkMonday(), done = S.wkDone === mon, g = goldCan();
+  const md = mon.slice(5).replace("-", "/");
+  const nx = new Date(mon + "T00:00:00"); nx.setDate(nx.getDate() + 7);
+  const ago = S.wkQtyAt ? Math.round((new Date(goldToday() + "T00:00:00") - new Date(S.wkQtyAt + "T00:00:00")) / 86400000) : null;
+  if(done) return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;background:var(--bg3);border-radius:9px;padding:7px 10px;margin-bottom:9px;">
+      <span style="color:var(--text2);">✅ 이번 주 점검 완료 <span style="color:var(--text3);">(${md} 주)</span></span>
+      <span style="color:var(--text3);">다음: ${nx.getMonth()+1}/${nx.getDate()} 월</span></div>`;
+  const q = (lbl, k) => `<label style="font-size:10.5px;color:var(--text3);font-weight:700;">${lbl}<input type="text" inputmode="decimal" value="${S[k] != null && S[k] !== "" ? S[k] : ""}" placeholder="주" onchange="wkQty('${k}',this.value)" style="${inp}"></label>`;
+  return `<div style="background:#eff6ff;border:1.5px solid rgba(37,99,235,0.3);border-radius:10px;padding:10px 11px;margin-bottom:10px;">
+    <div style="font-size:12.5px;font-weight:900;color:var(--blue);">📅 이번 주 월요일 점검 <span style="font-weight:600;font-size:10.5px;color:var(--text3);">(${md} 주)</span></div>
+    <div style="font-size:11.5px;color:var(--text2);margin-top:6px;line-height:1.6;">① 금: ${g == null ? "금 적립 카드에서 시작일을 설정하면 계산됩니다" : g.g >= 1 ? `<b style="color:#b45309;">${g.g}g 매수</b> (≈ ${d2fmt(g.g * g.p)}) → 사고 나서 아래 🥇 카드 '샀어요'` : `이번 주는 없음 (1g까지 약 ${g.left}거래일)`}</div>
+    <div style="font-size:11.5px;color:var(--text2);margin-top:4px;">② 토스 앱 보고 보유 수량 입력${ago != null ? ` <span style="color:var(--text3);font-size:10.5px;">· 마지막 입력 ${ago === 0 ? "오늘" : ago + "일 전"}</span>` : ""}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:5px;">${q("QLD","rbQldSh")}${q("TQQQ","rbTqSh")}${q("SCHD","rbSchdSh")}</div>
+    <button type="button" onclick="wkDone()" style="width:100%;margin-top:8px;border:none;background:var(--blue);color:#fff;border-radius:9px;padding:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">✅ 이번 주 점검 완료</button>
+  </div>`;
+}
 function renderPf(){
   const body = document.getElementById("pf-body"), btn = document.getElementById("tqcap-btn"); if(!body) return;
   const C = tqCapState(), capPct = Math.round(C.cap * 100);
@@ -2962,7 +2989,8 @@ function renderPf(){
   const barW = Math.min(100, sharePct / Math.max(capPct * 2, 1) * 100), capX = 50;
   const noHold = !C.P || C.P.V <= 0;
   body.innerHTML = `
-    ${noHold ? `<div style="font-size:11.5px;color:var(--text2);background:var(--bg3);border-radius:9px;padding:9px 11px;line-height:1.6;">아래 <b>🔄 연 1회 리밸런싱</b> 카드에 QLD·TQQQ·SCHD 보유 수량을 입력하면 평가액과 TQQQ 비중이 계산됩니다. (금은 적립 기록에서 자동)</div>` : `
+    ${wkHtml(inp)}
+    ${noHold ? `<div style="font-size:11.5px;color:var(--text2);background:var(--bg3);border-radius:9px;padding:9px 11px;line-height:1.6;">월요일 점검(또는 아래 🔄 리밸런싱 카드)에 QLD·TQQQ·SCHD 보유 수량을 입력하면 평가액과 TQQQ 비중이 계산됩니다. (금은 적립 기록에서 자동)</div>` : `
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
       <div style="background:var(--bg3);border-radius:9px;padding:8px 9px;"><div style="font-size:10px;color:var(--text3);font-weight:700;">평가액</div><b style="font-size:14px;">${eokFmt(tot)}</b></div>
       <div style="background:var(--bg3);border-radius:9px;padding:8px 9px;"><div style="font-size:10px;color:var(--text3);font-weight:700;">원금${pr.est && pr.v > 0 ? " (추정)" : ""}</div><b style="font-size:14px;">${pr.v > 0 ? eokFmt(pr.v) : "—"}</b></div>

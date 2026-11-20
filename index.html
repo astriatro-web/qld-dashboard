@@ -567,6 +567,15 @@ details.strat-acc > summary:active { opacity: 0.85; }
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;border-top:2px solid var(--text1);"><span style="font-weight:800;">합계</span><b id="dd-total2">—</b></div>
   </div>
 
+  <!-- 📊 내 계좌 현황 · TQQQ 상한 -->
+  <div class="card" id="pf-card" style="padding:12px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="card-label" style="margin:0;">📊 내 계좌 현황 · TQQQ 상한</div>
+      <button type="button" id="tqcap-btn" onclick="tqCapToggle()" style="border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">—</button>
+    </div>
+    <div id="pf-body"></div>
+  </div>
+
   <!-- 🥇 KRX 금 적립 -->
   <div class="card" id="gold-card" style="display:none;padding:12px 14px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1464,6 +1473,7 @@ function getRULES() {
         ["얼마 추가?","웅덩이날 TQQQ를 일일 QLD 금액의 0.5~1.0배 추가(설정값, 1.0=표준). 매수법은 '주수'가 아니라 '금액' 기준."],
         ["전체 웅덩이 · 깊이 안 가림","120선 아래면 전부 추가. 깊은 딥만 골라 넣으면 오히려 배수 하락(비효율). 깊이 비례·특정 깊이 필터는 백테스트상 손해였다."],
         ["배수","확정 1.0배 (2026-11 하향). 남는 예비금은 현금으로 계속 보유 → 적립기 현금 약 9%. 1.5배 대비 기대 배수 동일, 최악 낙폭은 거의 같음(낙폭 주범은 엔진 75% 자체). 최악을 확실히 줄이려면 0배+예비금 전부 현금(최악 −75→−47%, 기대 −30%). 참고(이전 근거): 40년 부트스트랩에서 금·SCHD 리밸런싱과 함께면 1.5~2배에서도 나쁜 경로(하위 10%)는 그대로, 중앙값만 오름. 2배 초과는 미검증. 웅덩이 날 추가로 들어가는 돈은 예비금에서 — 배수를 올릴수록 그 돈이 커진다."],
+        ["상한 10% (2026-11)","TQQQ 평가액이 전체 평가액(QLD+TQQQ+방어+예비금 현금)의 10%에 닿으면 웅덩이 날에도 TQQQ를 사지 않고 그 돈은 예비금 현금으로 둔다. 10% 아래로 내려가면(매수 누적·TQQQ 하락) 자동 재개. 이미 가진 TQQQ는 팔지 않고, 연 1회 리밸런싱은 그대로. 백테스트(세후): 최악 낙폭 실제 −74→−66%, 가상 −91→−80%, 가상 최악 배수 0.15→0.27배 · 대가는 중앙 −9~14%. 리밸 때 초과분을 덜어내는 방식은 효과 없음(최악 −73%), 5% 상한은 방어 최우선용(최악 −58%/−70%, 중앙 −16~21%)."],
         ["120선은 과적합 아님","1986~2026 가상 데이터로 60·100·120·150·200일선을 비교하면 10년 적립 중앙 4.1~4.3배로 거의 같다(200선이 약간 안정). 특정 숫자를 운 좋게 고른 게 아니라 '강한 지수가 조정받을 때 레버리지를 싸게 담는다'는 메커니즘이 작동하는 것. 120선 유지."],
       ]
     },
@@ -2198,6 +2208,7 @@ function dailyLoad(){
   if(S.investYears == null) S.investYears = 20;
   if(S.incomeGrowth == null)S.incomeGrowth= 3;
   if(S.tqqqMult == null)    S.tqqqMult    = 1.0;
+  if(S.tqCapPct == null) S.tqCapPct = 10;
   if(!S._migTq10){ if(Number(S.tqqqMult) === 1.5) S.tqqqMult = 1.0; S._migTq10 = true; }  // 2026-11 확정 1.5→1.0 1회 이전
   if(S.qldWeight == null)   S.qldWeight   = 100;
   if(S.gldWeight == null)   S.gldWeight   = 0;
@@ -2916,6 +2927,70 @@ async function fetchSchd(){
   } catch(e){ SCHD_FAIL = Date.now(); }
   SCHD_BUSY = false;
 }
+
+// ══ 📊 내 계좌 현황 · TQQQ 상한 (2026-11 백테스트: 평가액의 10%에 닿으면 웅덩이 TQQQ 매수 중단) ══
+function pfSet(k, v){ S[k] = v; localStorage.setItem("qld_s11", JSON.stringify(S)); renderPf(); if(typeof MD !== "undefined") renderDaily(MD); }
+function tqCapToggle(){ S.tqCapOn = !(S.tqCapOn !== false); pfSet("tqCapOn", S.tqCapOn); }
+function tqCapState(){
+  const on = S.tqCapOn !== false, cap = (d2num(S.tqCapPct) || 10) / 100;
+  let P = null; try { P = rbPlan(); } catch(e){}
+  const cash = Math.max(0, d2num(S.pfResCash) || 0);
+  if(!P) return { on, cap, known:false, share:0, tqV:0, tot:cash, cash, P:null };
+  const tq = P.A.find(a => a.k === "tq"), tqV = tq ? tq.v : 0, tot = P.V + cash;
+  const known = !!(tq && tq.sh > 0 && tq.uPx > 0) || (tq && tq.sh === 0 && tot > 0);
+  return { on, cap, known, share: tot > 0 ? tqV / tot : 0, tqV, tot, cash, P };
+}
+function pfPrincipal(){
+  const man = d2num(S.pfPrin);
+  if(man > 0) return { v: man, est: false };
+  if(!S.pfStart || !/^\d{4}-\d{2}-\d{2}$/.test(S.pfStart)) return { v: 0, est: true };
+  const days = goldWeekdays(S.pfStart, goldToday());
+  const st = new Date(S.pfStart + "T00:00:00"), now = new Date();
+  const months = Math.max(0, (now.getFullYear() - st.getFullYear()) * 12 + now.getMonth() - st.getMonth() + 1);
+  return { v: days * (d2num(S.dailyBuy) || 0) + months * (d2num(S.pfResM) || 0), est: true, days, months };
+}
+function renderPf(){
+  const body = document.getElementById("pf-body"), btn = document.getElementById("tqcap-btn"); if(!body) return;
+  const C = tqCapState(), capPct = Math.round(C.cap * 100);
+  if(btn){
+    btn.textContent = C.on ? `상한 ${capPct}% 적용 중` : "상한 꺼짐";
+    btn.style.background = C.on ? "var(--purple)" : "var(--bg3)"; btn.style.color = C.on ? "#fff" : "var(--text3)";
+  }
+  const inp = "width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12.5px;font-family:inherit;background:var(--bg2,#fff);color:var(--text1);";
+  const pr = pfPrincipal(), tot = C.tot, pl = pr.v > 0 && tot > 0 ? tot / pr.v - 1 : null;
+  const sharePct = C.share * 100, over = C.on && C.known && C.share >= C.cap;
+  const barW = Math.min(100, sharePct / Math.max(capPct * 2, 1) * 100), capX = 50;
+  const noHold = !C.P || C.P.V <= 0;
+  body.innerHTML = `
+    ${noHold ? `<div style="font-size:11.5px;color:var(--text2);background:var(--bg3);border-radius:9px;padding:9px 11px;line-height:1.6;">아래 <b>🔄 연 1회 리밸런싱</b> 카드에 QLD·TQQQ·SCHD 보유 수량을 입력하면 평가액과 TQQQ 비중이 계산됩니다. (금은 적립 기록에서 자동)</div>` : `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+      <div style="background:var(--bg3);border-radius:9px;padding:8px 9px;"><div style="font-size:10px;color:var(--text3);font-weight:700;">평가액</div><b style="font-size:14px;">${eokFmt(tot)}</b></div>
+      <div style="background:var(--bg3);border-radius:9px;padding:8px 9px;"><div style="font-size:10px;color:var(--text3);font-weight:700;">원금${pr.est && pr.v > 0 ? " (추정)" : ""}</div><b style="font-size:14px;">${pr.v > 0 ? eokFmt(pr.v) : "—"}</b></div>
+      <div style="background:var(--bg3);border-radius:9px;padding:8px 9px;"><div style="font-size:10px;color:var(--text3);font-weight:700;">원금 대비</div><b style="font-size:14px;color:${pl == null ? "var(--text1)" : pl >= 0 ? "#16a34a" : "#dc2626"};">${pl == null ? "—" : (pl >= 0 ? "+" : "") + (pl * 100).toFixed(1) + "%"}</b></div>
+    </div>
+    <div style="margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:11.5px;"><span style="color:var(--text3);font-weight:700;">TQQQ 비중 (평가액 기준)</span><b style="color:${over ? "#dc2626" : "var(--purple)"};">${sharePct.toFixed(1)}%${C.on ? ` / 상한 ${capPct}%` : ""}</b></div>
+      <div style="position:relative;height:8px;background:var(--border);border-radius:5px;margin-top:5px;overflow:hidden;">
+        <div style="height:100%;width:${barW}%;background:${over ? "#dc2626" : "var(--purple)"};"></div>
+        ${C.on ? `<div style="position:absolute;top:0;bottom:0;left:${capX}%;width:2px;background:var(--text1);"></div>` : ""}
+      </div>
+      <div style="font-size:11px;margin-top:6px;line-height:1.6;color:${over ? "#b91c1c" : "var(--text2)"};font-weight:${over ? 800 : 500};">${
+        !C.on ? "상한 꺼짐 — 웅덩이마다 TQQQ를 삽니다." :
+        !C.known ? "TQQQ 시세를 불러오는 중이거나 보유 수량이 없습니다." :
+        over ? `⛔ 상한 도달 — 웅덩이가 와도 TQQQ는 쉬고, 그 돈은 예비금 현금으로 둡니다. ${capPct}% 아래로 내려가면 자동으로 다시 켜집니다.` :
+        `✅ 상한 아래 — 웅덩이 날 TQQQ 매수 켜짐 (상한까지 약 ${eokFmt(Math.max(0, C.cap * tot - C.tqV))} 여유)`}</div>
+    </div>`}
+    <details style="margin-top:9px;" ${S.pfStart ? "" : "open"}><summary style="font-size:11px;color:var(--text3);cursor:pointer;font-weight:700;">원금 · 예비금 · 상한 설정</summary>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px;font-size:10.5px;color:var(--text3);">
+        <label>매수 시작일<input type="date" value="${S.pfStart || ""}" onchange="pfSet('pfStart',this.value)" style="${inp}"></label>
+        <label>월 예비금 (TQQQ용)<input type="text" inputmode="numeric" placeholder="예: 4,000,000" value="${S.pfResM ? d2fmt(d2num(S.pfResM)).replace(/[^0-9,]/g,"") : ""}" onchange="pfSet('pfResM',d2num(this.value))" style="${inp}"></label>
+        <label>예비금 현금 잔액 (지금)<input type="text" inputmode="numeric" placeholder="비우면 0" value="${S.pfResCash ? d2fmt(d2num(S.pfResCash)).replace(/[^0-9,]/g,"") : ""}" onchange="pfSet('pfResCash',d2num(this.value))" style="${inp}"></label>
+        <label>원금 직접 입력 (선택)<input type="text" inputmode="numeric" placeholder="비우면 시작일로 추정" value="${S.pfPrin ? d2fmt(d2num(S.pfPrin)).replace(/[^0-9,]/g,"") : ""}" onchange="pfSet('pfPrin',d2num(this.value))" style="${inp}"></label>
+        <label>TQQQ 상한 %<select onchange="pfSet('tqCapPct',this.value)" style="${inp}">${[5,10,15,20].map(v => `<option value="${v}" ${v === capPct ? "selected" : ""}>${v}%${v === 10 ? " (권장)" : v === 5 ? " (방어 최우선)" : ""}</option>`).join("")}</select></label>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.6;">원금 추정 = 시작일부터 거래일 × 일일 매수액 + 개월 수 × 월 예비금${pr.est && pr.v > 0 ? ` (거래일 ${pr.days}일 · ${pr.months}개월)` : ""}. 정확히 보려면 원금을 직접 입력하세요. 평가액 = 리밸런싱 카드 보유 수량 × 현재가 + 예비금 현금.</div>
+    </details>`;
+}
 function rbTotal(){ const P = rbPlan(); return { vE: P.E, vG: P.A.find(a => a.k === "gold").v, tot: P.V }; }
 // ══ 🔄 연 1회 리밸런싱 카드 (보유 수량 기반 · 새 매수금 먼저 · 세금 추정 · 기록) ══
 function rbSet(k, v){ S[k] = v; localStorage.setItem("qld_s11", JSON.stringify(S)); renderRebal(); }
@@ -2972,6 +3047,7 @@ function rbDone(){
   S.rbLastYear = y; localStorage.setItem("qld_s11", JSON.stringify(S)); renderRebal();
 }
 function renderRebal(){
+  if(typeof renderPf === "function") setTimeout(renderPf, 0);
   const body = document.getElementById("rb-body"), due = document.getElementById("rb-due"); if(!body) return;
   const PW = portW();
   const qldW = Math.round(PW.qld), gldW = Math.round(PW.gld), schdW = Math.round(PW.schd), midW = Math.max(0, 100 - qldW - gldW - schdW);
@@ -3296,7 +3372,8 @@ function renderDaily(d){
 
   const qld = d.qld, ma120 = d.ma120;
   const inDip = (ma120 != null && qld < ma120);
-  const tqqqAdd = inDip ? qldAmt * tmult : 0;
+  const CAP = tqCapState(), capHit = inDip && CAP.on && CAP.known && CAP.share >= CAP.cap;
+  const tqqqAdd = inDip && !capHit ? qldAmt * tmult : 0;
   const total = daily + tqqqAdd;
   const gap = ma120 ? (qld - ma120) / ma120 * 100 : null;
   const parts = [];
@@ -3306,7 +3383,12 @@ function renderDaily(d){
   if(schdW > 0) parts.push(`SCHD ${Math.round(schdW)}`);
   const mixTxt = parts.length > 1 ? `${parts.join("·")} 비율로 ` : "";
 
-  if(inDip){
+  if(capHit){
+    setBadge("🔔 웅덩이 · TQQQ 상한 도달", "#fee2e2", "#b91c1c");
+    setText("dd-explain", daily > 0
+      ? `웅덩이지만 TQQQ가 평가액의 ${(CAP.share*100).toFixed(1)}%로 상한(${Math.round(CAP.cap*100)}%)에 닿았어요. 오늘은 매일 매수액 ${d2fmt(daily)}만 ${mixTxt}넣고, TQQQ 몫(${d2fmt(qldAmt * tmult)})은 예비금 현금으로 둡니다.`
+      : "웅덩이 상태지만 TQQQ 상한에 닿아 TQQQ는 쉽니다.");
+  } else if(inDip){
     setBadge("🔔 웅덩이 — TQQQ 추가", "var(--purple-lt)", "var(--purple)");
     setText("dd-explain", daily > 0
       ? `지금은 웅덩이예요 (QLD 120선 대비 ${gap.toFixed(1)}%). 매일 매수액 ${d2fmt(daily)}을 ${mixTxt}넣고, TQQQ를 QLD분의 ${tmult}배(${d2fmt(tqqqAdd)}) 추가로 넣습니다.`
@@ -3321,7 +3403,7 @@ function renderDaily(d){
   setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
   setText("dd-sso-amt", PW.out ? "매수 안 함 · 연 1회 리밸런싱" : (ssoW > 0 ? d2fmt(ssoAmt) : "—"));
   setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) + " 적립" : "—");
-  setText("dd-tqqq-amt", inDip ? (daily > 0 ? "+" + d2fmt(tqqqAdd) : "웅덩이 (금액 미설정)") : "– (웅덩이 아님)");
+  setText("dd-tqqq-amt", capHit ? "쉬기 · 상한 도달" : inDip ? (daily > 0 ? "+" + d2fmt(tqqqAdd) : "웅덩이 (금액 미설정)") : "– (웅덩이 아님)");
   setText("dd-total2", daily > 0 ? d2fmt(total) : "—");
   renderFx(daily, tqqqAdd, d.usdkrw, gldAmt);
   renderGold(gldAmt);
@@ -3599,7 +3681,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if(o === "1") tvToggle();
 });
 // ── 비밀번호 ──
-const PW_HASH = "44798dd7d0f2c058bff13fdbac8c49b3a2ee56823eddcc2d26054a15ef41c842"; // 입장 비번
+const PW_HASH = "c4fe6b6dbe94790f232013154cb80fc5dd3ec9106d433492f20f038b1ce25656"; // 입장 비번
 async function sha256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");

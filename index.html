@@ -553,6 +553,14 @@ details.strat-acc > summary:active { opacity: 0.85; }
   </div>
 
   <!-- 오늘의 매수 구성 -->
+  <div class="card" id="lite-buy">
+    <div class="card-label">🧮 오늘 얼마 살까</div>
+    <label style="display:block;font-size:11px;color:var(--text3);font-weight:700;">하루 투자금 (원 · 이 기기에만 저장)
+      <input id="lite-daily" type="text" inputmode="numeric" placeholder="예: 50000" onchange="liteSet(this.value)"
+        style="width:100%;box-sizing:border-box;margin-top:4px;padding:9px 10px;border:1.5px solid var(--border);border-radius:9px;font-size:15px;font-weight:700;background:var(--bg2,#fff);color:var(--text1);font-family:inherit;">
+    </label>
+    <div id="lite-out" style="margin-top:10px;"></div>
+  </div>
   <div class="card lite-hide">
     <div class="card-label">🧾 오늘의 매수 구성</div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD (매일 정액)</span><b id="dd-qld-amt">—</b></div>
@@ -4465,6 +4473,42 @@ pondLoad();
 swingLoad();
 
 document.getElementById("pwInput").addEventListener("focus", () => { document.getElementById("pwErr").style.display="none"; });
+</script>
+<script>
+(function(){
+  var K = "qld_lite_daily";
+  function get(){ try { return parseFloat(String(localStorage.getItem(K)||"").replace(/[^0-9.]/g,"")) || 0; } catch(e){ return 0; } }
+  window.liteSet = function(v){
+    var n = parseFloat(String(v||"").replace(/[^0-9.]/g,"")) || 0;
+    try { n ? localStorage.setItem(K, String(n)) : localStorage.removeItem(K); } catch(e){}
+    liteBuy();
+  };
+  function won(n){ return Math.round(n).toLocaleString() + "원"; }
+  function sh(amt, px, fx){ return (px && fx) ? " <span style='color:var(--text3);font-size:11px;'>(≈ " + (amt/(px*fx)).toFixed(2) + "주)</span>" : ""; }
+  function row(lbl, val, col){ return "<div style='display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-top:1px solid var(--border);'><span style='font-size:13px;font-weight:800;color:" + col + ";'>" + lbl + "</span><span style='font-size:14px;font-weight:800;color:var(--text1);'>" + val + "</span></div>"; }
+  window.liteBuy = function(){
+    var out = document.getElementById("lite-out"), inp = document.getElementById("lite-daily");
+    if(!out) return;
+    var daily = get();
+    if(inp && document.activeElement !== inp) inp.value = daily ? Math.round(daily).toLocaleString() : "";
+    if(!daily){ out.innerHTML = "<div style='font-size:12px;color:var(--text3);'>하루에 넣을 금액을 적으면 오늘 살 금액이 나와요.</div>"; return; }
+    var d = (typeof MD !== "undefined") ? MD : null;
+    if(!d || d.qld == null){ out.innerHTML = "<div style='font-size:12px;color:var(--text3);'>시세를 불러오는 중… (상단 새로고침)</div>"; return; }
+    var fx = d.usdkrw || 0, dip = d.ma120 != null && d.qld < d.ma120;
+    var h = row("QLD", won(daily) + sh(daily, d.qld, fx), "var(--blue)");
+    if(dip) h += row("TQQQ (웅덩이 추가)", "+" + won(daily) + sh(daily, d.tqqq, fx), "var(--purple)");
+    h += "<div style='display:flex;justify-content:space-between;padding:8px 0 0;border-top:2px solid var(--border);font-size:13px;font-weight:900;color:var(--text1);'><span>오늘 합계</span><span>" + won(dip ? daily*2 : daily) + "</span></div>";
+    h += "<div style='font-size:11px;color:var(--text3);line-height:1.6;margin-top:8px;'>" + (dip
+      ? "웅덩이(QLD가 120일선 아래)라서 QLD와 같은 금액만큼 TQQQ를 더 삽니다. TQQQ가 전체 자산의 일정 비율을 넘었다면 TQQQ는 쉬세요."
+      : "평상시라 QLD만 삽니다. QLD가 120일선 아래로 내려가면 TQQQ 추가가 켜져요.") + " 주 수는 현재가·환율 기준 대략치예요.</div>";
+    out.innerHTML = h;
+  };
+  if(typeof renderDaily === "function"){
+    var _rd = renderDaily;
+    renderDaily = function(x){ var r; try { r = _rd.apply(this, arguments); } finally { liteBuy(); } return r; };
+  }
+  liteBuy();
+})();
 </script>
 </body>
 </html>

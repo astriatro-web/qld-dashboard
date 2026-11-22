@@ -430,6 +430,10 @@ details.strat-acc > summary:active { opacity: 0.85; }
 .pnl-chip.dn { background: var(--red-lt); color: var(--red); }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+#pf-card,#gold-card,#rb-card,#fx-card,#dd-total,#dd-explain{display:none !important;}
+.lite-hide{display:none !important;}
+</style>
 </head>
 <body>
 
@@ -499,11 +503,6 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div class="hdr-stat-lbl" id="hdr-dip-lbl">120선</div>
       <div class="hdr-stat-val"><i class="hdr-dot" id="hdr-dip-dot"></i><span id="hdr-dip">—</span></div>
     </div>
-    <div class="hdr-divider"></div>
-    <div class="hdr-stat" onclick="switchTab('heat')">
-      <div class="hdr-stat-lbl">과열</div>
-      <div class="hdr-stat-val"><i class="hdr-dot" id="hdr-heat-dot"></i><span id="hdr-heat">—</span></div>
-    </div>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="fetchAll()">
     <span id="btnIcon">↻</span><span class="btn-refresh-txt"> 새로고침</span>
@@ -513,10 +512,7 @@ details.strat-acc > summary:active { opacity: 0.85; }
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab('dashboard')">매일매수</button>
-  <button class="tab" onclick="switchTab('rules')">전략원칙</button>
-  <button class="tab" onclick="switchTab('heat')">과열지표</button>
-  <button class="tab" onclick="switchTab('swing')">단기스캔</button>
-  <button class="tab" onclick="switchTab('settings')">설정</button>
+  <button class="tab" onclick="switchTab('rules')">원칙</button>
 </div>
 
 <!-- ── 대시보드 패널 ── -->
@@ -551,13 +547,13 @@ details.strat-acc > summary:active { opacity: 0.85; }
       <div id="dd-badge" style="display:inline-block;font-size:12px;font-weight:900;padding:4px 13px;border-radius:20px;background:var(--bg3);color:var(--text3);">—</div>
       <span style="font-size:10.5px;color:var(--text3);font-weight:600;">갱신 <span id="dd-upd">—</span></span>
     </div>
-    <div style="font-size:11px;color:var(--text3);font-weight:700;">오늘 매수 (하루치)</div>
+    
     <div id="dd-total" style="font-size:30px;font-weight:900;line-height:1;color:var(--text1);margin-top:2px;">—</div>
     <div id="dd-explain" style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:10px;">시세를 불러오는 중…</div>
   </div>
 
   <!-- 오늘의 매수 구성 -->
-  <div class="card">
+  <div class="card lite-hide">
     <div class="card-label">🧾 오늘의 매수 구성</div>
     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:var(--text3);">QLD (매일 정액)</span><b id="dd-qld-amt">—</b></div>
     <div id="dd-sso-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px solid var(--border);"><span id="dd-sso-label" style="color:var(--text3);">SCHD (배당 방어)</span><b id="dd-sso-amt" style="color:var(--teal);">—</b></div>
@@ -628,690 +624,15 @@ details.strat-acc > summary:active { opacity: 0.85; }
   </div>
 
 
-  <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6;">일일 매수액·TQQQ 배수는 <b>설정</b> 탭에서 조정합니다. 시세는 상단 새로고침 시 갱신됩니다.</div>
 </div>
 
-<!-- ── 전략원칙 패널 ── -->
-<!-- ══ 대시보드2 · 하이브리드 전략 ══ -->
 <div class="panel" id="panel-rules">
   <div class="card">
-    <div class="card-label">📌 전략 (2026-11 확정)</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.85;">
-      <b style="color:var(--text1);">목표: 정해진 투자금(월급 × 투자비율)의 중앙값을 최대로, 나쁜 경로는 무너지지 않게.</b> 투자비율 밖의 현금은 본인이 판단합니다.<br>
-      <b style="color:var(--text1);">① 매일 QLD 정액 (75%)</b> · <b style="color:var(--purple);">② 웅덩이(QLD 120일선 아래)엔 TQQQ를 그날 QLD의 1.0배 추가</b> · <b style="color:var(--purple);">남는 예비금은 현금으로 계속 보유(다음 웅덩이 실탄)</b> · <b style="color:var(--teal);">③ 금 15% · SCHD 10%</b> · <b style="color:#b91c1c;">④ 연 1회 고정 달 리밸런싱</b>.
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:12px;border:1.5px solid rgba(185,28,28,0.25);">
-    <div class="card-label">🧪 40년 검증 (1986~2026 · 닷컴·2008 포함)</div>
-    <div style="font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:8px;">나스닥100 지수로 가상 QLD·TQQQ를 만들어(차입비용·보수 반영) 실측과 대조: TQQQ 2022 낙폭 −81.9%(실측 −82%) · QLD 2008 −83.1%(−84%) · QLD 2015~2026 19.1배(18.7배). 1987~2016년 매년 시작하는 <b>10년 적립 30구간</b>을 전부 돌렸습니다.</div>
-    <div style="overflow-x:auto;">
-      <table class="bt-table">
-        <thead><tr><th>구성 (10년 적립)</th><th class="num">중앙</th><th class="num">최악</th><th class="num">원금 미만</th><th class="num">MDD 중앙</th></tr></thead>
-        <tbody>
-          <tr><td>나스닥 1배</td><td class="num">2.06</td><td class="num">0.76</td><td class="num">3%</td><td class="num">-42%</td></tr>
-          <tr><td>QLD만</td><td class="num">3.39</td><td class="num">0.38</td><td class="num">23%</td><td class="num">-73%</td></tr>
-          <tr><td>QLD + 웅덩이 TQQQ (방어 0)</td><td class="num">4.24</td><td class="num">0.32</td><td class="num" style="color:#dc2626;font-weight:800;">23%</td><td class="num">-77%</td></tr>
-          <tr><td>+ 방어 20% · 연 1회 리밸런싱</td><td class="num">3.52</td><td class="num">0.49</td><td class="num" style="color:#16a34a;font-weight:800;">3%</td><td class="num">-59%</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="overflow-x:auto;margin-top:10px;">
-      <table class="bt-table">
-        <thead><tr><th>시작 → 10년 뒤</th><th class="num">1배</th><th class="num">채택(방어0)</th><th class="num">+방어20 리밸</th></tr></thead>
-        <tbody>
-          <tr><td>1990 → 2000 (닷컴 정점)</td><td class="num">8.5</td><td class="num">84.5</td><td class="num">45.7</td></tr>
-          <tr><td>1993 → 2003</td><td class="num">1.30</td><td class="num" style="color:#dc2626;">0.47</td><td class="num">1.11</td></tr>
-          <tr><td>1999 → 2009 (최악)</td><td class="num">0.76</td><td class="num" style="color:#dc2626;">0.32</td><td class="num">0.49</td></tr>
-          <tr><td>2003 → 2013</td><td class="num">1.61</td><td class="num">1.86</td><td class="num">1.90</td></tr>
-          <tr><td>2012 → 2022</td><td class="num">3.31</td><td class="num">11.40</td><td class="num">7.46</td></tr>
-          <tr><td>2013 → 2023 (2022 폭락 직후)</td><td class="num">1.86</td><td class="num">2.43</td><td class="num">2.44</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="background:#fef2f2;border:1px solid rgba(220,38,38,0.25);border-radius:9px;padding:9px 11px;margin-top:10px;font-size:11px;color:var(--text2);line-height:1.65;">
-      <b style="color:#b91c1c;">⚠️ 부트스트랩 검증</b> — 위 표는 실제 역사 한 줄이라 운이 섞입니다. 40년 일간 수익률을 1년 단위로 섞어 만든 <b>가상 역사 300개</b>로 다시 보면. <b>단, 이 표의 '방어'는 현금(단기국채)</b>입니다 — 실제 확정 구성의 방어는 금15%+SCHD10%라 아래 숫자보다 유리할 가능성이 큽니다.
-    </div>
-    <div style="overflow-x:auto;margin-top:6px;">
-      <table class="bt-table">
-        <thead><tr><th>20년 적립 · 부트스트랩</th><th class="num">중앙</th><th class="num">하위25%</th><th class="num">하위10%</th></tr></thead>
-        <tbody>
-          <tr><td>엔진 100 · TQQQ 1</td><td class="num">9.23</td><td class="num">2.72</td><td class="num" style="color:#dc2626;">1.03</td></tr>
-          <tr><td>엔진 90 · 방어 10 · TQQQ 1.5</td><td class="num">9.09</td><td class="num">3.05</td><td class="num">1.25</td></tr>
-          <tr><td>엔진 90 · 방어 10 · TQQQ 2</td><td class="num">9.22</td><td class="num">3.09</td><td class="num">1.25</td></tr>
-          <tr><td>엔진 80 · 방어 20 · TQQQ 1</td><td class="num">8.50</td><td class="num">3.24</td><td class="num">1.44</td></tr>
-          <tr><td>엔진 75 · 방어 25 · TQQQ 1.5 (이전 확정)<br><span style="font-size:9.5px;color:var(--text3);">방어=금15+SCHD10 · 표 수치는 현금 기준 20%·30% 사이 보간</span></td><td class="num">8.22</td><td class="num">3.29</td><td class="num" style="color:#16a34a;font-weight:800;">1.53</td></tr>
-          <tr class="highlight-blue"><td><b>★ 엔진 75 · 방어 25 · TQQQ 1.0 + 남는 예비금 현금 (확정)</b><br><span style="font-size:9.5px;color:var(--text3);">2026-11 재검증 · 가상 300개: 1.5배 대비 중앙 −1%, 하위10% +5% (같은 모델 비교) → 표 기준 환산</span></td><td class="num">≈8.1</td><td class="num">≈3.3</td><td class="num" style="color:#16a34a;font-weight:800;">≈1.6</td></tr>
-          <tr><td>엔진 70 · 방어 30 · TQQQ 1</td><td class="num">7.50</td><td class="num">3.27</td><td class="num">1.60</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.7;">
-      · <b>왜 확정이 90/10이 아니라 75/25인가</b>: 방어를 '현금'으로 계산하면 90/10이 중앙값을 거의 안 깎는 균형점이다(9.09 vs 9.23). 하지만 실제 방어는 <b>금</b> — 폭락기에 오르고 리밸런싱 실탄이 되는 자산이라 현금보다 중앙값을 덜 깎는다. 현금 기준으로도 75/25는 중앙 8.22배(−11%)를 내주고 <b>하위 10%를 1.03 → 1.53배로 가장 크게 개선</b>한다. 40년에 한 번 오는 −99%를 버티는 쪽을 택한 것.<br>
-      · <b>10년만 적립하면</b> 방어를 넣어도 약 15%는 원금 아래 → 10년 차 결과가 나쁘면 적립 기간을 늘릴 여지를 두기.<br>
-      · <b>TQQQ 웅덩이 추가</b>는 나쁜 경로는 그대로 두고 중앙값만 올림. 방어와 함께면 1.5~2배까지 같은 효과. <b>2026-11 재검증 후 1.0배로 하향</b>(아래 카드 참고).<br>
-      · <b>리밸런싱</b>: 연 1회 고정 달이 정답. '비중이 ±5·10%p 벗어나면' 방식은 하락장 초반에 떨어지는 레버리지를 계속 사서 더 나빴음. 매도 리밸런싱 세금은 10년 중앙 1.8억(연 1억 적립 기준) → 신규 매수금으로 먼저 맞추기.<br>
-      · <b>TQQQ 비중 상한</b>(엔진 내 30%)은 결과 차이 없음 → 불필요.<br>
-      · <b>120일선은 과적합 아님</b>: 60·100·120·150·200일선 모두 중앙 4.1~4.3배로 비슷(200일선이 약간 안정).<br>
-      · <b>20년 적립</b>: 실제 역사 한 줄에선 방어 20% 쪽 중앙값이 더 높았지만(3.75 → 5.03배), 부트스트랩에선 9.23 → 8.50배로 약간 낮음 — 역사 한 줄의 운이 섞인 결과라 부트스트랩 쪽을 기준으로 봅니다.<br>
-      · <b>효과 없던 장치</b>: 200일선 이탈 시 현금 전환(중앙 2.71배로 급감·세금 별도) · 장기 하락기 TQQQ 추가 중단(3.57배) · 신규 돈만 1배로 돌리기(최악 개선 없음).<br>
-      · 가상 QLD는 2000년 고점에서 −98.7%, 고점 회복까지 21년. 레버리지 단독 보유는 닷컴형에 무방비입니다.
-    </div>
-    <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.6;">※ 배당 미포함 가격지수(약간 보수적) · 세금 미반영 · 방어자산은 현금(단기국채)으로 근사 — 금(2000년대 4~5배)이었다면 방어는 더 강했을 가능성. 중앙값도 '역대급 나스닥 40년'의 산물.</div>
-  </div>
-
-  <div class="card" style="margin-bottom:12px;border:1.5px solid rgba(124,58,237,0.25);">
-    <div class="card-label">🧪 "원금이 녹지 않게" 재검증 (2026-11 · 월 1,350만 × 10년 적립 + 10년 보유)</div>
-    <div style="overflow-x:auto;">
-      <table class="bt-table">
-        <thead><tr><th>방식 (실제 40년 80구간)</th><th class="num">원금−20% 깨진 적</th><th class="num">원금대비 최악</th><th class="num">20년차 중앙</th></tr></thead>
-        <tbody>
-          <tr><td>TQ 1.5배 (이전)</td><td class="num">85%</td><td class="num">−75%</td><td class="num">5.9</td></tr>
-          <tr class="highlight-blue"><td><b>★ TQ 1.0배 + 남는 예비금 현금 보유 (확정)</b></td><td class="num">85%</td><td class="num">−74%</td><td class="num"><b>6.2</b></td></tr>
-          <tr><td>TQ 0 + 예비금 전부 현금 (Plan: 최대 안정)</td><td class="num">68%</td><td class="num" style="color:#16a34a;font-weight:800;">−47%</td><td class="num">4.1</td></tr>
-          <tr><td>웅덩이 때만 매수 (깊이비례·40일분할)</td><td class="num">78~84%</td><td class="num">−68~71%</td><td class="num">5.2</td></tr>
-          <tr><td>신고가 다음 달 매수 휴식</td><td class="num">79%</td><td class="num">−67%</td><td class="num">5.5</td></tr>
-          <tr><td>매년 12월 복기 → 비중 조절(추세·역발상 등)</td><td class="num">82~92%</td><td class="num">−71~79%</td><td class="num">4.7~6.3</td></tr>
-          <tr><td>참고: 방어 35% (TQ 1.5)</td><td class="num">79%</td><td class="num">−69%</td><td class="num">5.4</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.7;">
-      · <b>타이밍으로는 원금 위험이 안 사라진다</b> — 웅덩이에서 사도 더 깊은 웅덩이가 옴(2000~02). 낙폭의 주범은 엔진 75%라는 자산 자체.<br>
-      · <b>원금 −20%는 85% 확률로 오는 통과의례</b>. 단, 실제 80구간 모두 20년차엔 원금 이상.<br>
-      · <b>매년 복기해 비중 바꾸기</b>: 1년 데이터로 다음 1년 예측력은 거의 없음. 변동성 타깃만 좋아 보였으나 닷컴 1회에서 나온 효과(뒤쪽 구간은 오히려 열위) → 비중은 고정, 복기는 '규칙 지켰나' 점검용.<br>
-      · <b>신고가 직후 매수는 손해가 아님</b> — 막을 추격매수는 '계획 밖 돈을 더 넣는 행동'.<br>
-      · <b>방어자산 구멍</b>: 유동성 공포(2008 금 −29%, 2020 SCHD −32%) · 디플레형 장기불황 · 금 장기약세 · 원화 급강세 → 쌓아둔 현금(예비금)이 이 구멍을 메움.
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:12px;">
-    <div class="card-label">📊 전략별 비교 (실측 ETF · 2012~2026 강세장 구간)</div>
-    <div style="overflow-x:auto;">
-      <table class="bt-table">
-        <thead><tr><th>전략</th><th class="num">적립배수*</th><th class="num">평가액(억)</th><th class="num">MDD</th></tr></thead>
-        <tbody>
-          <tr><td>매일 QLD만</td><td class="num">12.74</td><td class="num">179.8</td><td class="num">-63%</td></tr>
-          <tr><td>웅덩이 대기(모아서 투입)</td><td class="num">11.49</td><td class="num">161.4</td><td class="num">-63%</td></tr>
-          <tr><td>매일+웅덩이 QLD 2x증량</td><td class="num">12.71</td><td class="num">219.4</td><td class="num">-62%</td></tr>
-          <tr class="highlight-blue"><td>매일+웅덩이 <b>TQQQ 추가(채택)</b></td><td class="num">14.93</td><td class="num">257.6</td><td class="num">-69%</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6;">웅덩이 '대기'가 꼴찌(11.49). 매일 매수(12.74)에 웅덩이날 TQQQ 추가 시 <b style="color:var(--blue);">14.93배</b>로 최고.</div>
-    <div style="font-size:10.5px;color:var(--amber);line-height:1.65;margin-top:8px;background:var(--amber-lt);border:1px solid rgba(217,119,6,0.2);border-radius:9px;padding:9px 11px;">
-      <b>* '적립배수'는 거치식 배수가 아닙니다.</b> 14.2년(2012~2026) 동안 <b>매일 적립</b>했을 때 계좌 전체가 원금 대비 몇 배가 됐는지입니다. 한 번에 넣고 묵힌 값이 아니라, 늦게 넣은 돈일수록 굴러간 기간이 짧아 <b>기간에 크게 좌우</b>됩니다 — 같은 페이스라도 <b>10년 ≈5배, 15년 ≈15배, 14.2년이 딱 12.74배</b>. 이는 당시 연 수익률(QLD 약 34%)이 이어진다는 가정이니, 20~30년으로 늘리면 숫자가 비현실적으로 커집니다(강세장 산물). 실제 내 기간 금액은 설정 탭 '미래가치 시뮬레이터'에서 확인하세요.
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:12px;">
-    <div class="card-label">🔔 웅덩이 TQQQ 추가량 (실측 2012~2026)</div>
-    <div style="overflow-x:auto;">
-      <table class="bt-table">
-        <thead><tr><th>TQQQ 배수</th><th>딥 범위</th><th class="num">적립배수*</th><th class="num">MDD</th></tr></thead>
-        <tbody>
-          <tr><td>0.5x</td><td>전체 웅덩이</td><td class="num">13.94</td><td class="num">-67%</td></tr>
-          <tr class="highlight-blue"><td><b>1.0x</b></td><td><b>전체 웅덩이</b></td><td class="num">14.93</td><td class="num">-69%</td></tr>
-          <tr><td>2.0x</td><td>전체 웅덩이</td><td class="num">16.44</td><td class="num">-72%</td></tr>
-          <tr><td>3.0x</td><td>전체 웅덩이</td><td class="num">17.55</td><td class="num">-74%</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6;">2012~2026 실측 기준으론 0.5~1.0배였지만, 40년 검증 결과 <b>확정은 1.0배 + 남는 예비금 현금 보유</b>. 1.5배와 기대 배수는 같고(실제 80구간 중앙 6.2 vs 5.9배) 적립기 현금이 5→9%로 쌓임. 깊은 딥만 거르는 건 비효율.</div>
-  </div>
-
-  <div class="card" style="margin-bottom:12px;">
-    <div class="card-label">📅 시작 시점 민감도 (QLD · 매일+웅덩이TQQQ)</div>
-    <div style="overflow-x:auto;">
-      <table class="bt-table">
-        <thead><tr><th>시작</th><th>기간</th><th class="num">매일QLD</th><th class="num">+웅덩이TQQQ</th></tr></thead>
-        <tbody>
-          <tr><td>2006-06 (20년)</td><td>19.4년</td><td class="num">31.2</td><td class="num">51.2*</td></tr>
-          <tr><td>2007-06 (위기직전)</td><td>18.9년</td><td class="num">30.5</td><td class="num">50.8*</td></tr>
-          <tr><td>2012-01</td><td>14.3년</td><td class="num">12.4</td><td class="num">14.5</td></tr>
-          <tr><td>2015-06</td><td>10.8년</td><td class="num">6.1</td><td class="num">6.9</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6;">적립식(DCA)은 위기 직전 시작(2007)에도 강건 — 폭락을 싸게 담아 계좌 MDD -64~-74%(거치식 -84%보다 얕음). *2010년 이전 TQQQ는 재구성값(낙관 상한).</div>
-  </div>
-
-  <div id="rules-content"></div>
-
-  <details class="strategy-block strat-acc">
-    <summary class="strategy-header" style="background:var(--amber-lt);color:var(--amber);"><span>⚠️ 대전제 · 한계 · Plan B (반드시 읽기)</span><span class="strat-chevron">▸</span></summary>
-    <div class="strat-rows">
-      <div class="strategy-row"><div class="s-label" style="color:var(--text1);font-weight:800;">이 전략이 거는 7가지 전제</div><div class="s-desc">① 나스닥 성장주가 장기 우상향한다(핵심 베팅) · ② 폭락 뒤엔 회복한다(DCA·웅덩이의 근거) · ③ 레버리지 ETF가 존속한다 · ④ 매달 소득이 유입된다 · ⑤ −60~−99% 낙폭과 수년 횡보를 심리적으로 버틴다 · ⑥ 달러 자산 접근·보유가 유지된다 · ⑦ 20~30년 긴 시계열(최소 총 20년 — 아래 표). <b>하나라도 깨지면 아래 한계가 현실이 된다.</b></div></div>
-
-      <div class="strategy-row" style="background:var(--bg3);border-radius:9px;"><div class="s-label" style="color:var(--text1);font-weight:800;">⏳ 최소 권장 기한<br><span style="font-size:9.5px;color:var(--text3);">전제 ⑦의 숫자</span></div><div class="s-desc"><b>첫 매수부터 총 20년, 그중 적립 10년 이상.</b> 확정 구성(엔진75·TQQQ1.5·방어25·매년 리밸·세후)을 기간별로 검증(실제 40년 분기별 시작 + 가상 역사 300개):
-        <table class="data-table" style="margin:6px 0 4px;font-size:10.5px;">
-          <thead><tr><th>기간</th><th>원금 미만 확률<br>실제 / 가상</th><th>최악(실제)</th></tr></thead>
-          <tbody>
-            <tr><td>1~5년 적립</td><td class="num">14~22% / 19~22%</td><td class="num" style="color:#dc2626;">0.27~0.31배</td></tr>
-            <tr><td>7~10년 적립</td><td class="num">11~17% / 15%</td><td class="num" style="color:#dc2626;">0.48배</td></tr>
-            <tr><td>10년 적립 + 5년 보유</td><td class="num">3% / 13%</td><td class="num">0.84배</td></tr>
-            <tr class="highlight-blue"><td><b>10년 적립 + 10년 보유</b></td><td class="num"><b>0% / 7%</b></td><td class="num" style="color:#16a34a;font-weight:800;">2.93배</td></tr>
-            <tr><td>10년 적립 + 15년 보유</td><td class="num">0% / 4%</td><td class="num">6.89배</td></tr>
-          </tbody>
-        </table>
-        · <b>10년 안쪽은 위험 구간</b> — 원금 손실 확률이 1년짜리와 비슷하고, 돈이 쌓인 뒤 폭락을 맞으면 최악이 절반(1999→2009).<br>
-        · <b>20년이 되면 안정</b> — 큰 폭락을 한 번 맞아도 회복할 시간이 생긴다. 적립을 10년에 멈추고 들고만 있어도 같다(리밸런싱은 계속).<br>
-        · <b>시간이 못 고치는 것</b>: 가상 역사 기준 '나스닥 1배(QQQ) 적립보다 못할 확률'은 기간과 상관없이 약 27%. 시간은 원금 손실 위험을 줄일 뿐, 레버리지가 1배에 질 가능성(4번 중 1번)은 끝까지 남는다.<br>
-        <b>▶ 원칙</b> 10년 안에 쓸 돈(날짜가 정해진 돈)은 넣지 않는다 · 적립 10년을 채우고 이후 최소 10년은 그대로 들고 간다 · 5~10년차(돈은 커졌는데 회복 시간이 짧아 보일 때)가 심리적으로 가장 위험하다 — 이 표의 '총 20년' 줄을 떠올릴 것.</div></div>
-
-      <div class="strategy-row"><div class="s-label">① 잃어버린 10년<br><span style="font-size:9.5px;color:var(--text3);">전제 1·2 붕괴</span></div><div class="s-desc">나스닥이 10년+ 횡보·쇠퇴하면 레버리지는 변동성 감가로 −99%에서 회복 불가(실제: 2000~2015 나스닥 15년 횡보, 가상 TQQQ −99.95%).<br><b>▶ Plan B</b> 금·SCHD 25% + 연 1회 리밸런싱이 바닥에서 엔진 되사는 실탄. 적립을 멈추지 말 것(멈추면 회복을 못 탐). '버티는 게 전략'.</div></div>
-
-      <div class="strategy-row"><div class="s-label">② 심리 붕괴<br><span style="font-size:9.5px;color:#b91c1c;">실질 1순위</span></div><div class="s-desc">백테스트는 감정이 없다. 실제 −60%에서 바닥에 던지면 게임 끝. 전제 5가 가장 약하다.<br><b>▶ Plan B</b> 자동매수(토스 모으기)로 판단 자체를 제거 · 비중/배수 상한 고정 · 시뮬레이션으로 출렁임 미리 겪어 면역 · 던지고 싶을 땐 '아무것도 안 하기'가 기본값.</div></div>
-
-      <div class="strategy-row"><div class="s-label">③ 소득 중단<br><span style="font-size:9.5px;color:var(--text3);">전제 4 붕괴</span></div><div class="s-desc">실직·개원 공백·건강 문제로 소득이 끊기면 적립 중단 + 생활비로 바닥 매도하는 최악. 가장 과소평가된 구멍.<br><b>▶ Plan B</b> 생활비 6~12개월치 비상금을 투자계좌와 <b>완전 분리</b>(이게 있으면 소득이 끊겨도 안 판다) · 적립은 여유자금으로만 · 공백이 보이면 적립액만 줄이고 보유분은 안 건드린다.</div></div>
-
-      <div class="strategy-row"><div class="s-label">④ 상품·제도 위험<br><span style="font-size:9.5px;color:var(--text3);">전제 3·6 붕괴</span></div><div class="s-desc">레버리지 ETF 청산(기초 하루 −33%)·운용사 폐쇄·규제, 양도세 인상·금투세.<br><b>▶ Plan B</b> 코어는 2배(QLD), 3배(TQQQ)는 웅덩이 보조로 제한 · 1월 리밸런싱 때 엔진 안 TQQQ 비중 확인(커지면 실효 배수↑) · 상품이 사라지면 동급 대체로 갈아타되 로직 유지 · 절세계좌(ISA·연금) 우선, 리밸런싱은 신규 매수금으로 맞춰 실현 최소화.</div></div>
-
-      <div class="strategy-row"><div class="s-label">⑤ 환율<br><span style="font-size:9.5px;color:var(--text3);">전제 6 붕괴</span></div><div class="s-desc">원화 1,450→1,100원이면 달러 자산 원화로 −24%. 은퇴 인출은 원화. 백테스트는 1,350 고정이라 이 위험이 안 보인다.<br><b>▶ Plan B</b> 방어 일부를 KRX 금·국내 파킹(원화)으로 · 인출기엔 환율 좋을 때 분할 환전 · 적립기엔 원화 강세 = 싸게 사는 기회로 활용.</div></div>
-
-      <div class="strategy-row"><div class="s-label">⑥ 지수 리더십 교체<br><span style="font-size:9.5px;color:var(--text3);">전제 1 붕괴</span></div><div class="s-desc">나스닥100은 거래소 제한으로 방어주(월마트 등) 자동 편입 불가. 성장주 스타일이 지면(가치·비미국 사이클) 속수무책.<br><b>▶ Plan B</b> 금(주식 리그 밖)이 1차 헤지 · 불안이 크면 엔진에 S&P(SSO) 일부 혼합 · '나는 미국을 믿나, 나스닥 영구우위를 믿나'를 주기적으로 자문.</div></div>
-
-      <div class="strategy-row"><div class="s-label">⑦ 백테스트 편향<br><span style="font-size:9.5px;color:var(--text3);">숫자 과신</span></div><div class="s-desc">재구성 데이터·환율 고정·세금 제외·단일 경로(역대급 강세장). 실제는 이보다 나쁠 수 있다.<br><b>▶ Plan B</b> 모든 수익률은 '낙관 상한'으로만 · 계획은 보수 시나리오(하위 25%)로 · 시나리오 토글(중앙/하위25/하위10)을 기본 참고치로.</div></div>
-
-      <div class="strategy-row" style="background:var(--amber-lt);border-radius:9px;"><div class="s-label" style="color:var(--amber);font-weight:800;">관통 원칙</div><div class="s-desc"><b>확신을 이기려 말고, 확신이 날뛰어도 안 망하게 시스템에 못을 박는다</b> — Plan B 대부분이 자동화·상한·분리·기록으로 수렴한다. 가장 큰 위험은 ①잃어버린10년(자산)·②심리붕괴·③소득중단(생활)이고, 백테스트는 ①만 보여준다. ②③은 비상금 분리 + 자동화 + 여유자금 원칙으로만 막힌다.</div></div>
-    </div>
-  </details>
-</div>
-
-<!-- ── 웅덩노트 패널 ── -->
-<div class="panel" id="panel-pond">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-    <div>
-      <div style="font-size:15px;font-weight:800;color:var(--text1);">📓 웅덩매매 노트</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">관심 종목 120일선 모니터링 · 매수 기록</div>
-    </div>
-    <div style="display:flex;gap:5px;align-items:center;">
-      <button id="btnPondAI" onclick="pondAIOpen()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;"><span id="pondAIBtnIcon">🤖</span> AI</button>
-      <button onclick="pondRefreshAll()" id="btnPondRefresh" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;white-space:nowrap;"><span id="pondRefreshIcon">↻</span></button>
-      <button onclick="pondAddTicker()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 추가</button>
-    </div>
-  </div>
-  <!-- 일일 투입 예상금액 -->
-  <div id="pond-total-card" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
-    <span style="font-size:11px;color:var(--text3);font-weight:600;">📅 하루 예상 투입금액 (활성 종목 합산)</span>
-    <span id="pond-total-value" style="font-size:16px;font-weight:900;color:var(--blue);">-</span>
-  </div>
-  <div id="pond-list"></div>
-  <div id="pond-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;">
-    ＋ 종목 추가 버튼을 눌러 관심 종목을 등록하세요
+    <div class="card-label">📌 DipBoost 원칙 (요약)</div>
+    <div style="padding:10px 0;border-top:1px solid var(--border);"><div style="font-size:13px;font-weight:800;color:var(--text1);">1. 매일 같은 금액</div><div style="font-size:12px;color:var(--text2);line-height:1.65;margin-top:3px;">바닥을 맞히려 하지 않는다. 정해둔 금액으로 매일 QLD를 산다.</div></div><div style="padding:10px 0;border-top:1px solid var(--border);"><div style="font-size:13px;font-weight:800;color:var(--text1);">2. 웅덩이는 세일</div><div style="font-size:12px;color:var(--text2);line-height:1.65;margin-top:3px;">QLD 종가가 120일선 아래면 '웅덩이'. 이때만 TQQQ를 조금 더 얹는다. 매일매수 탭의 배지가 매일 알려준다.</div></div><div style="padding:10px 0;border-top:1px solid var(--border);"><div style="font-size:13px;font-weight:800;color:var(--text1);">3. 레버리지에는 상한</div><div style="font-size:12px;color:var(--text2);line-height:1.65;margin-top:3px;">TQQQ는 전체 자산의 작은 일부로 묶어둔다. 상한에 닿으면 웅덩이여도 쉬고 현금으로 둔다.</div></div><div style="padding:10px 0;border-top:1px solid var(--border);"><div style="font-size:13px;font-weight:800;color:var(--text1);">4. 방어자산 + 연 1회 리밸런싱</div><div style="font-size:12px;color:var(--text2);line-height:1.65;margin-top:3px;">금·배당 ETF처럼 덜 흔들리는 자산을 섞고, 1년에 한 번만 비율을 맞춘다. 그 사이엔 손대지 않는다.</div></div><div style="padding:10px 0;border-top:1px solid var(--border);"><div style="font-size:13px;font-weight:800;color:var(--text1);">5. 추격매수·뇌동매매 금지</div><div style="font-size:12px;color:var(--text2);line-height:1.65;margin-top:3px;">급등한 테마를 따라 사지 않는다. 진짜 커지는 테마는 결국 지수(QQQ)에 들어온다.</div></div><div style="padding:10px 0;border-top:1px solid var(--border);"><div style="font-size:13px;font-weight:800;color:var(--text1);">6. 버틸 수 있는 돈만</div><div style="font-size:12px;color:var(--text2);line-height:1.65;margin-top:3px;">레버리지 ETF는 −50% 이상 빠지는 해가 올 수 있다. 생활비와 섞지 말고, 멈추지 않을 만큼만 넣는다.</div></div>
+    <div style="font-size:10.5px;color:var(--text3);line-height:1.6;margin-top:8px;">투자 권유가 아닙니다. 금액·비율은 각자 상황에 맞게 정하세요.</div>
   </div>
 </div>
-
-<!-- 웅덩노트 종목 수정 모달 -->
-<div id="pond-item-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8100;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg1);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:16px;" id="pond-item-edit-title">종목 수정</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">종목명</div>
-    <input id="pond-item-edit-name" type="text"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수 (소수점 가능)</div>
-    <input id="pond-item-edit-shares" type="number" inputmode="decimal" step="0.01"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">매수 요일 (복수 선택 가능 · 미선택 시 매일)</div>
-    <div style="display:flex;gap:6px;margin-bottom:16px;" id="pond-item-edit-days">
-      <button type="button" data-day="1" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">월</button>
-      <button type="button" data-day="2" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">화</button>
-      <button type="button" data-day="3" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">수</button>
-      <button type="button" data-day="4" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">목</button>
-      <button type="button" data-day="5" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">금</button>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="pondItemEditClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
-      <button onclick="pondItemEditConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- 웅덩노트 개별 매수건 매도 모달 -->
-<div id="pond-buy-sell-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:8200;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg1);border-radius:18px;padding:22px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
-    <div style="font-size:15px;font-weight:800;color:#dc2626;margin-bottom:4px;" id="pond-buy-sell-title">매도 기록</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;" id="pond-buy-sell-sub"></div>
-    <!-- 수익률 미리보기 -->
-    <div id="pond-buy-sell-preview" style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;line-height:1.8;"></div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매도 주수 (최대: <span id="pond-buy-sell-max"></span>주)</div>
-    <input id="pond-buy-sell-shares" type="number" inputmode="decimal" step="0.01"
-      style="width:100%;box-sizing:border-box;border:1.5px solid #fca5a5;border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;"
-      oninput="pondBuySellPreview()">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매도 단가</div>
-    <input id="pond-buy-sell-price" type="number" inputmode="decimal" step="0.01"
-      style="width:100%;box-sizing:border-box;border:1.5px solid #fca5a5;border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;"
-      oninput="pondBuySellPreview()">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">메모 (선택)</div>
-    <input id="pond-buy-sell-memo" type="text" placeholder="예: 25% 익절"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:16px;outline:none;">
-    <div style="display:flex;gap:8px;">
-      <button onclick="pondBuySellClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
-      <button onclick="pondBuySellConfirm()" style="flex:2;background:#dc2626;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">매도 실행</button>
-    </div>
-  </div>
-</div>
-
-<!-- 웅덩노트 AI 분석 모달 -->
-<div id="pond-ai-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;">
-  <div style="background:var(--bg1);border-radius:18px;padding:22px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.4);margin:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div style="font-size:15px;font-weight:800;color:var(--text1);">🤖 웅덩 전략 AI 분석</div>
-      <button onclick="pondAIClose()" style="background:none;border:none;font-size:20px;color:var(--text3);cursor:pointer;">✕</button>
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">분석할 티커 입력</div>
-    <div style="display:flex;gap:8px;margin-bottom:14px;">
-      <input id="pond-ai-ticker" type="text" placeholder="예: AAPL, QLD"
-        style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);outline:none;text-transform:uppercase;"
-        oninput="this.value=this.value.toUpperCase()"
-        onkeydown="if(event.key==='Enter') runPondAI()">
-      <button onclick="runPondAI()" id="btnPondAIRun" style="background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;">
-        <span id="pondAIRunIcon">⚡</span> 분석
-      </button>
-    </div>
-    <!-- 등록 종목 빠른선택 -->
-    <div id="pond-ai-quickpick" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
-    <!-- 차트 영역 -->
-    <div id="pondAIChart" style="display:none;margin-bottom:12px;">
-      <canvas id="pondChartCanvas" style="width:100%;border-radius:10px;"></canvas>
-    </div>
-    <div id="pondAIResult" style="display:none;"></div>
-    <div id="pondAIEmpty" style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;">
-      티커를 입력하거나 위 종목을 탭해서 분석하세요<br>
-      <span style="font-size:10px;">비용 약 ₩3~4/회</span>
-    </div>
-  </div>
-</div>
-
-<!-- 웅덩노트 종목 추가 모달 -->
-<div id="pond-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8000;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg1);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:16px;">종목 추가</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">티커 심볼 (예: AAPL, QLD, 005930)</div>
-    <input id="pond-ticker-input" type="text" placeholder="티커 입력"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;text-transform:uppercase;"
-      oninput="this.value=this.value.toUpperCase()">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">종목명 (선택)</div>
-    <input id="pond-name-input" type="text" placeholder="예: 애플, QLD 레버리지"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수 (소수점 가능 · 예: 0.5)</div>
-    <input id="pond-shares-input" type="number" inputmode="decimal" step="0.01" placeholder="예: 5 또는 0.5"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">매수 요일 (복수 선택 가능 · 미선택 시 매일)</div>
-    <div style="display:flex;gap:6px;margin-bottom:16px;" id="pond-add-days">
-      <button type="button" data-day="1" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">월</button>
-      <button type="button" data-day="2" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">화</button>
-      <button type="button" data-day="3" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">수</button>
-      <button type="button" data-day="4" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">목</button>
-      <button type="button" data-day="5" onclick="pondDayToggle(this)" style="flex:1;padding:8px 2px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">금</button>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="pondModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
-      <button onclick="pondModalConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">추가</button>
-    </div>
-  </div>
-</div>
-
-<!-- 웅덩노트 매수기록 모달 -->
-<div id="pond-buy-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8000;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg1);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:4px;" id="pond-buy-title">매수 기록</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:16px;" id="pond-buy-sub"></div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수</div>
-    <input id="pond-buy-shares" type="number" inputmode="decimal" step="0.01" placeholder="주수"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 단가</div>
-    <input id="pond-buy-price" type="number" inputmode="decimal" placeholder="가격"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">메모 (선택)</div>
-    <input id="pond-buy-memo" type="text" placeholder="예: LOC 주문"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:16px;outline:none;">
-    <div style="display:flex;gap:8px;">
-      <button onclick="pondBuyModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
-      <button onclick="pondBuyModalConfirm()" style="flex:2;background:var(--green);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">기록</button>
-    </div>
-  </div>
-</div>
-
-<!-- 웅덩노트 매수기록 수정 모달 -->
-<div id="pond-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8001;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg1);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:16px;">매수기록 수정</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 주수</div>
-    <input id="pond-edit-shares" type="number" inputmode="numeric"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">매수 단가</div>
-    <input id="pond-edit-price" type="number" inputmode="decimal"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:10px;outline:none;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">메모</div>
-    <input id="pond-edit-memo" type="text"
-      style="width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;background:var(--bg2);color:var(--text1);margin-bottom:16px;outline:none;">
-    <div style="display:flex;gap:8px;">
-      <button onclick="pondEditModalClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
-      <button onclick="pondEditDelete()" style="flex:1;background:#fee2e2;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#dc2626;cursor:pointer;">삭제</button>
-      <button onclick="pondEditConfirm()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── 🌡️ 과열지표 패널 ── -->
-<div class="panel" id="panel-heat">
-  <div class="card" id="heat-head">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div>
-        <div style="font-size:15px;font-weight:800;color:var(--text1);">🌡️ 과열지표</div>
-        <div id="heat-time" style="font-size:10.5px;color:var(--text3);margin-top:2px;">—</div>
-      </div>
-      <button type="button" onclick="heatFetch(true)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;"><span id="heat-icon">↻</span> 새로 불러오기</button>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;">
-      <div id="heat-verdict" style="font-size:20px;font-weight:900;color:var(--text3);">불러오는 중…</div>
-      <div id="heat-counts" style="font-size:12px;font-weight:800;color:var(--text2);"></div>
-    </div>
-    <div style="height:9px;border-radius:6px;overflow:hidden;margin-top:8px;background:linear-gradient(90deg,#86efac 0%,#fde68a 50%,#fca5a5 100%);position:relative;">
-      <div id="heat-marker" style="position:absolute;top:-2px;width:4px;height:13px;border-radius:2px;background:var(--text1);left:0;transition:left .4s;display:none;"></div>
-    </div>
-    <div style="font-size:10.5px;color:var(--text3);line-height:1.6;margin-top:9px;">과열 신호는 <b>매도 신호가 아닙니다.</b> 매일매수는 규칙대로 유지하고, 여기서는 지금이 역사적으로 어느 위치인지 보면서 마음의 준비와 TQQQ 배수 점검에만 쓰세요(뇌동매매 금지).</div>
-  </div>
-  <div id="heat-list"></div>
-  <div id="heat-err" style="display:none;" class="err-box"></div>
-</div>
-
-<!-- ── 래더매수 패널 (탭 숨김 · 기능 보존) ── -->
-<div class="panel" id="panel-ladder">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-    <div>
-      <div style="font-size:15px;font-weight:800;color:var(--text1);">📐 지지선 래더 매수</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">저점 수평선 기반 10분할 · 일괄조회로 매수 구간 판정</div>
-    </div>
-    <div style="display:flex;gap:5px;align-items:center;">
-      <button onclick="ladderScanAll()" id="btnLadderScan" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;white-space:nowrap;"><span id="ladderScanIcon">↻</span> 일괄조회</button>
-      <button onclick="ladderAddOpen()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ 종목</button>
-    </div>
-  </div>
-  <div id="ladder-list"></div>
-  <div id="ladder-empty" style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px;line-height:1.9;">
-    ＋ 종목 버튼으로 등록<br><span style="font-size:11px;">차트에서 읽은 저점 지지선 2~5개를 입력하면<br>10분할 매수 사다리를 자동 생성합니다</span>
-  </div>
-</div>
-
-<!-- 래더 종목 추가/수정 모달 -->
-<div id="ladder-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8200;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg1);border-radius:18px;padding:22px;width:100%;max-width:370px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:88vh;overflow:auto;">
-    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:4px;" id="ladder-modal-title">종목 추가</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">티커와 차트에서 읽은 저점 지지선을 입력하세요</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">티커</div>
-    <input id="ladder-ticker" type="text" placeholder="예: AAPL" oninput="this.value=this.value.toUpperCase()" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:12px;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">저점 지지선 (2~5개, 쉼표로 구분)</div>
-    <input id="ladder-supports" type="text" placeholder="예: 9.0, 7.0, 3.0" oninput="ladderPreview()" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:6px;">
-    <div style="font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.6;">최고가=1번, 최저가=7번에 배치 · 입력값은 가장 가까운 칸에 그대로 반영 · 8~10번은 저점 붕괴 대비 버퍼로 자동 연장</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">총 투입예산 ($, 선택) — 10등분해 회차별 계획수량 자동 계산</div>
-    <input id="ladder-budget" type="number" step="1" placeholder="예: 10000" oninput="ladderPreview()" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:14px;">
-    <div id="ladder-preview" style="margin-bottom:14px;"></div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="ladderModalClose()" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
-      <button onclick="ladderSave()" style="flex:1;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- 래더 회차 매수기록 모달 -->
-<div id="ladder-fill-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8300;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg1);border-radius:18px;padding:22px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-    <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:14px;" id="ladder-fill-title">매수 기록</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">매수가 ($)</div>
-    <input id="ladder-fill-price" type="number" step="0.01" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:12px;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">수량 (주)</div>
-    <input id="ladder-fill-qty" type="number" step="1" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:16px;">
-    <div style="display:flex;gap:8px;">
-      <button onclick="ladderFillDelete()" style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;color:#dc2626;cursor:pointer;">삭제</button>
-      <button onclick="ladderFillModalClose()" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;">취소</button>
-      <button onclick="ladderFillSave()" style="flex:1;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── 단기스캔 패널 ── -->
-<div class="panel" id="panel-swing">
-  <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:16px;padding:16px;margin-bottom:14px;color:#fff;">
-    <div style="font-size:15px;font-weight:900;margin-bottom:4px;">⚡ 단기 스윙 스캔</div>
-    <div style="font-size:11px;opacity:0.9;line-height:1.6;"><b>분야 대표 ETF가 우상향(주봉/월봉)</b>일 때만 그 분야 레버리지의 <b>눌림목(일봉 과매도)</b>을 매수 추천합니다. 하락 추세 분야의 과매도는 걸러내요.</div>
-  </div>
-
-  <!-- 분야별 추세 -->
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:12px 13px;margin-bottom:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
-      <span style="font-size:13px;font-weight:800;color:var(--text1);">📊 분야별 추세 (대표 ETF)</span>
-      <button onclick="swingSectorOpen(null)" style="background:var(--blue);color:#fff;border:none;border-radius:7px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;">+ 분야</button>
-    </div>
-    <div id="swing-sectors"></div>
-  </div>
-
-  <!-- 티커 추가 -->
-  <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-    <input id="swing-ticker-input" type="text" placeholder="레버리지 티커 (예: SOXL)" onkeydown="if(event.key==='Enter')swingAddTicker()"
-      style="flex:1;min-width:130px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:14px;color:var(--text1);outline:none;text-transform:uppercase;">
-    <select id="swing-ticker-sector" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 8px;font-size:13px;color:var(--text1);outline:none;"></select>
-    <button onclick="swingAddTicker()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:0 16px;font-size:13px;font-weight:700;cursor:pointer;">추가</button>
-  </div>
-
-  <!-- 스캔 버튼 -->
-  <button id="btnSwingScan" onclick="swingScan()" style="width:100%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;margin:6px 0 8px;">
-    <span id="swingScanIcon">🔍</span> 오늘의 추천 스캔
-  </button>
-  <div id="swing-updated" style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:14px;"></div>
-
-  <!-- 기준 안내 -->
-  <div style="font-size:10px;color:var(--text3);background:var(--bg3);border-radius:8px;padding:8px 10px;margin-bottom:14px;line-height:1.7;">
-    🟢 <b>강력 추천</b> = 분야 우상향 + 일봉 %K ≤ 20 &nbsp;·&nbsp; 🟡 과매도지만 추세 약함(관망) &nbsp;·&nbsp; 🔴 과매수(%K ≥ 80, 매도)<br>
-    분야 미지정 종목은 추세 필터 없이 일봉 신호만 봅니다. 일봉 종가 기준 · 다음날 매매.<br>
-    <span style="display:inline-block;margin-top:5px;">📊 추세 별칭(지속 주수): 상승 🌱새싹→📈상승→🔥강세→🚀주도주→👑대장 · 하락 ⚠️조정→📉약세→🧊침체→🕳️수렁→🗑️쓰레기통</span><br>
-    <span style="display:inline-block;margin-top:5px;">🥇 <b>강도 순위</b> = 스캔한 분야끼리 상대 비교(12주 수익률·이격도 종합). '지속'과 별개로 <b>지금 가장 센</b> 주도주를 가려냅니다. 🥇1위 · 💪상위 · 약함=하위.</span>
-  </div>
-
-  <div id="swing-empty" style="text-align:center;padding:30px 16px;color:var(--text3);font-size:13px;line-height:1.8;">
-    먼저 <b>+ 분야</b>로 분야와 대표 ETF를 등록하고,<br>레버리지 티커를 추가한 뒤 <b>스캔</b>을 눌러보세요.
-  </div>
-
-  <div id="swing-list"></div>
-</div>
-
-<!-- 분야 추가/수정 모달 -->
-<div id="swing-sector-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg1);border-radius:16px;padding:18px;width:100%;max-width:340px;">
-    <div id="swing-sector-title" style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:14px;">분야 추가</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">분야 이름</div>
-    <input id="swing-sector-name" type="text" placeholder="예: 반도체" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text1);outline:none;margin-bottom:11px;box-sizing:border-box;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">대표 ETF 티커 (추세 판정 기준)</div>
-    <input id="swing-sector-bench" type="text" placeholder="예: SOXX" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text1);outline:none;margin-bottom:11px;text-transform:uppercase;box-sizing:border-box;">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">추세 기준 봉</div>
-    <div style="display:flex;gap:6px;margin-bottom:16px;">
-      <button id="swing-tf-weekly" onclick="swingSetTf('weekly')" style="flex:1;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;background:var(--blue);color:#fff;">주봉 (30주선)</button>
-      <button id="swing-tf-monthly" onclick="swingSetTf('monthly')" style="flex:1;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;background:var(--bg3);color:var(--text2);">월봉 (12개월선)</button>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button id="swing-sector-del" onclick="swingSectorDelete()" style="background:#fee2e2;border:1px solid #fca5a5;border-radius:10px;padding:11px 14px;font-size:13px;color:#dc2626;font-weight:700;cursor:pointer;display:none;">삭제</button>
-      <button onclick="swingSectorClose()" style="flex:1;background:var(--bg3);border:none;border-radius:10px;padding:11px;font-size:13px;color:var(--text2);font-weight:700;cursor:pointer;">취소</button>
-      <button onclick="swingSectorSave()" style="flex:2;background:var(--blue);border:none;border-radius:10px;padding:11px;font-size:13px;color:#fff;font-weight:700;cursor:pointer;">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── 거시모니터 패널 ── -->
-<!-- ── 설정 패널 ── -->
-<div class="panel" id="panel-settings">
-  <style>
-    #panel-settings .bm-btn{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text3);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;}
-    #panel-settings .bm-btn.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);}
-  </style>
-
-  <div style="background:var(--blue-lt);border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
-    <div style="font-size:11px;color:var(--blue);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">📅 일일 매수액 산정</div>
-    <div style="font-size:11px;color:var(--text3);line-height:1.7;">'매일매수' 전략의 핵심 — 1년 투자 페이스를 정해 하루 매수액을 계산합니다. 이 기기에 자동 저장됩니다.</div>
-  </div>
-
-  <div style="display:flex;gap:6px;margin-bottom:14px;">
-    <button type="button" id="bm-simple" onclick="setBuyMode('simple')" class="bm-btn active">심플</button>
-    <button type="button" id="bm-adv" onclick="setBuyMode('advanced')" class="bm-btn">고급 (라이프사이클)</button>
-  </div>
-
-  <div id="buy-simple">
-    <div class="setting-group"><div class="setting-label">연 투자 가능액 (₩/년)</div><input class="setting-input" type="number" inputmode="numeric" id="s-annual" placeholder="예: 100000000" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">1년 동안 이 종목에 넣을 총액. 생활비·비상금 제외한 여유자금만.</div></div>
-    <div class="setting-group"><div class="setting-label">연 거래일수</div><input class="setting-input" type="number" inputmode="numeric" id="s-tdays" placeholder="252" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">미국장 연 거래일 ≈ 252</div></div>
-  </div>
-
-  <div id="buy-adv" style="display:none;">
-    <div class="setting-group"><div class="setting-label">월 소득 (₩/월)</div><input class="setting-input" type="number" inputmode="numeric" id="s-income" placeholder="예: 8000000" oninput="dailySave()"></div>
-    <div style="display:flex;gap:10px;">
-      <div class="setting-group" style="flex:1;"><div class="setting-label">투자율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="1" id="s-rate" placeholder="30" oninput="dailySave()"></div>
-      <div class="setting-group" style="flex:1;"><div class="setting-label">연 거래일수</div><input class="setting-input" type="number" inputmode="numeric" id="s-tdays2" placeholder="252" oninput="dailySave()"></div>
-    </div>
-    <div class="setting-group"><div class="setting-label">연 소득증가율 (%)</div><input class="setting-input" type="number" inputmode="decimal" step="0.5" id="s-growth" placeholder="3" oninput="dailySave()"></div>
-    <div id="adv-note" style="font-size:11px;color:var(--text2);line-height:1.7;background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:12px;"></div>
-  </div>
-
-  <div class="card" style="background:var(--blue-lt);border:1.5px solid rgba(37,99,235,0.22);">
-    <div style="font-size:11px;color:var(--blue);font-weight:800;">하루 매수액 (총액)</div>
-    <div id="s-daily-result" style="font-size:26px;font-weight:900;color:var(--blue);line-height:1.2;margin-top:2px;">—</div>
-    <div id="s-daily-sub" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
-  </div>
-
-  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
-    <div style="background:var(--teal-lt);border:1px solid rgba(8,145,178,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--teal);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">⚖️ 포트 구성 (QLD : 금 : SCHD)</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD(+웅덩이 TQQQ)=수익 엔진, 금·중간자산=<b>방어</b>. QLD·금 비중을 정하면 나머지는 SCHD(또는 SSO)가 자동으로 채웁니다. SCHD는 주식이라 방어 효과를 절반으로, SSO는 레버리지라 공격으로 계산합니다.</div>
-      <div style="display:flex;gap:6px;margin-top:8px;">
-        <button type="button" id="mid-schd" onclick="setMidAsset('schd')" style="flex:1;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:8px;padding:7px 4px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">SCHD · 배당<br><span style="font-weight:600;font-size:9.5px;color:var(--text3);">배당 방어</span></button>
-        
-        <button type="button" id="mid-sso" onclick="setMidAsset('sso')" style="flex:1;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:8px;padding:7px 4px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">SSO · S&P 2배<br><span style="font-weight:600;font-size:9.5px;color:var(--text3);">레버리지 · 방어 아님</span></button>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <div class="setting-group" style="flex:1;"><div class="setting-label">QLD 비중 (%)</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-qldweight" placeholder="100" oninput="dailySave()"></div>
-      <div class="setting-group" style="flex:1;"><div class="setting-label">금 비중 (%) · KRX</div><input class="setting-input" type="number" inputmode="numeric" min="0" max="100" id="s-gldweight" placeholder="0" oninput="dailySave()"></div>
-    </div>
-    <div id="s-sso-auto" style="display:flex;justify-content:space-between;align-items:center;background:var(--teal-lt);border:1px solid rgba(8,145,178,0.22);border-radius:9px;padding:8px 12px;margin:2px 0 8px;">
-      <span style="font-size:11px;color:var(--teal);font-weight:800;">SCHD 자동 배분</span>
-      <span id="s-sso-pct" style="font-size:15px;color:var(--teal);font-weight:900;">—</span>
-    </div>
-    <div id="s-mix-sub" style="font-size:11px;color:var(--text2);font-weight:600;margin:-2px 0 10px;"></div>
-    <button type="button" onclick="applyRecMix()" style="width:100%;background:#ecfdf5;border:1.5px solid rgba(16,163,74,0.3);border-radius:9px;padding:9px;font-size:11.5px;font-weight:800;color:#15803d;cursor:pointer;font-family:inherit;margin-bottom:10px;">⭐ 확정 구성 (QLD 75 · 금 15 · SCHD 10 · TQQQ 1.0배)</button>
-
-    <div style="margin-top:6px;">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
-        <span style="font-size:11px;color:var(--text3);font-weight:700;">📈 20년 적립 중앙 배수 (보통 운)</span>
-        <span id="mix-ret-val" style="font-size:13px;font-weight:900;color:var(--blue);">—</span>
-      </div>
-      <div style="height:10px;background:var(--bg3);border-radius:6px;overflow:hidden;"><div id="mix-ret-bar" style="height:100%;width:0;background:linear-gradient(90deg,#60a5fa,#2563eb);transition:width .35s;"></div></div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 5px;">
-        <span style="font-size:11px;color:var(--text3);font-weight:700;">🛡️ 20년 적립 하위 25% 배수 (나쁜 운)</span>
-        <span id="mix-mdd-val" style="font-size:13px;font-weight:900;color:var(--teal);">—</span>
-      </div>
-      <div style="height:10px;background:var(--bg3);border-radius:6px;overflow:hidden;"><div id="mix-mdd-bar" style="height:100%;width:0;background:linear-gradient(90deg,#5eead4,#0891b2);transition:width .35s;"></div></div>
-      <div id="mix-note" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;"></div>
-      <div id="gld-note" style="display:none;font-size:10.5px;color:var(--amber);line-height:1.6;margin-top:8px;background:var(--amber-lt);border:1px solid rgba(217,119,6,0.2);border-radius:9px;padding:9px 11px;"></div>
-    </div>
-  </div>
-
-  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
-    <div style="background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--purple);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔔 웅덩이 TQQQ 추가 배수</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">QLD가 120선 아래(웅덩이)일 때, 그날 QLD 금액의 몇 배로 TQQQ를 추가 매수할지. <b>확정 1.0배</b>. 웅덩이 날 추가로 들어가는 돈은 예비금에서 마련하고, <b>쓰고 남은 예비금은 현금(단기국채·MMF)으로 계속 보유</b> — 적립 종료 후에도 다음 웅덩이 실탄으로만 씁니다.</div>
-    </div>
-    <div id="tq-rec" style="background:var(--bg2);border:1.5px dashed rgba(124,58,237,0.35);border-radius:11px;padding:11px 13px;margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:10px;color:var(--text3);font-weight:700;">검증 기준 권장 배수</div>
-          <div id="tq-rec-val" style="font-size:20px;font-weight:900;color:var(--purple);line-height:1.15;">—</div>
-        </div>
-        <button type="button" id="tq-rec-apply" onclick="applyTqRec()" style="background:var(--purple);color:#fff;border:none;border-radius:9px;padding:9px 15px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">적용</button>
-      </div>
-      <div id="tq-rec-why" style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:6px;"></div>
-    </div>
-    <div class="setting-group"><div class="setting-label">TQQQ 배수 (확정 1.0 · 남는 예비금 현금 보유)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="2" id="s-tqqqmult" placeholder="1.0" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">금·SCHD + 연 1회 리밸런싱이 있으면 1.5~2배에서 나쁜 경로(하위 10%)는 그대로, 중앙값만 오릅니다. 2배 초과는 미검증.</div></div>
-  </div>
-
-  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
-    <div style="background:#eef2ff;border:1px solid rgba(79,70,229,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:#4f46e5;font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🔮 미래가치 시뮬레이터</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">나스닥100 지수(1986~2026, 닷컴·2008 포함)로 만든 가상 QLD·TQQQ로 <b>가상 역사 300개 + 실제 40년(분기마다 시작)</b>을 하나하나 끝까지 돌린 결과입니다 — 매일 적립 → 적립 종료 → 보유, 매년 1월 리밸런싱, 양도세 22%까지 포함. 지금 설정한 <b>방어 비중·TQQQ 배수</b>가 그대로 반영되고, 시나리오 4개를 한 번에 보여줍니다.</div>
-    </div>
-    <div style="font-size:10px;color:var(--text3);font-weight:700;margin-bottom:5px;">수익률 가정 · 40년 검증(1986~2026) 분포</div>
-    <div style="display:flex;gap:6px;margin-bottom:6px;">
-      <button type="button" id="scn-p50" onclick="setScenario('p50')" style="flex:1;padding:9px 4px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg2);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--text2);line-height:1.3;">📊 중앙값<br><span style="font-size:9px;font-weight:600;">평범한 운</span></button>
-      <button type="button" id="scn-p25" onclick="setScenario('p25')" style="flex:1;padding:9px 4px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg2);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--text2);line-height:1.3;">🌧️ 하위 25%<br><span style="font-size:9px;font-weight:600;">운 나쁨</span></button>
-      <button type="button" id="scn-p10" onclick="setScenario('p10')" style="flex:1;padding:9px 4px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg2);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--text2);line-height:1.3;">💀 하위 10%<br><span style="font-size:9px;font-weight:600;">닷컴급</span></button>
-    </div>
-    <div id="scn-note" style="font-size:10px;color:var(--text3);line-height:1.6;margin-bottom:10px;"></div>
-
-      <div class="setting-group" style="flex:1;"><div class="setting-label">적립 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-accyears" placeholder="10" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">실제 매수하는 기간</div></div>
-      <div class="setting-group" style="flex:1;"><div class="setting-label">총 투자 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="40" id="s-projyears" placeholder="10" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">거치 포함 전체</div></div>
-    </div>
-    <div class="setting-group"><div class="setting-label">물가상승률 (연 %, 실질가치 환산용)</div><input class="setting-input" type="number" inputmode="decimal" step="0.1" min="0" max="20" id="s-inflrate" placeholder="2.5" oninput="dailySave()"><div style="font-size:10px;color:var(--text3);margin-top:3px;">미래 금액을 '오늘 돈 가치'로 환산 (기본 2.5%)</div></div>
-    <div id="proj-phase" style="font-size:10.5px;color:var(--text3);line-height:1.6;margin:-2px 0 10px;"></div>
-
-    <div class="card" style="background:#eef2ff;border:1.5px solid rgba(79,70,229,0.22);">
-      <div id="proj-table"></div>
-      <div id="proj-chart" style="margin:4px 0 8px;"></div>
-      <div style="font-size:11px;color:#4f46e5;font-weight:800;margin-top:6px;">선택 시나리오 평가액 · 웅덩이 TQQQ 포함 (세전)</div>
-      <div id="proj-value" style="font-size:24px;font-weight:900;color:#4f46e5;line-height:1.2;margin-top:2px;">—</div>
-      <div id="proj-sub" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
-      <div id="proj-real" style="font-size:11px;color:var(--text2);margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);line-height:1.6;"></div>
-      <div id="proj-tax-row" style="display:none;margin-top:10px;padding:10px 12px;background:#fef2f2;border:1px solid rgba(220,38,38,0.2);border-radius:10px;">
-        <div style="font-size:11px;color:#b91c1c;font-weight:800;">🧾 양도세·물가 반영 실수령 (전량 매도 가정)</div>
-        <div id="proj-tax-real" style="font-size:20px;font-weight:900;color:#b91c1c;line-height:1.2;margin-top:2px;">—</div>
-        <div id="proj-tax-sub" style="font-size:10px;color:var(--text2);margin-top:4px;line-height:1.6;"></div>
-      </div>
-
-      <div id="proj-boost-row" style="display:none;margin-top:12px;padding:10px 12px;background:var(--purple-lt);border:1px solid rgba(124,58,237,0.25);border-radius:10px;">
-        <div style="font-size:10px;color:var(--purple);font-weight:800;">🔕 비교: 웅덩이 TQQQ 없이 했다면</div>
-        <div id="proj-boost" style="font-size:26px;font-weight:900;color:var(--purple);line-height:1.15;margin-top:2px;">—</div>
-        <div id="proj-boost-sub" style="font-size:10px;color:var(--text2);margin-top:3px;"></div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:12px;">
-        <div style="flex:1;background:var(--bg2);border-radius:8px;padding:8px;text-align:center;">
-          <div style="font-size:9px;color:var(--text3);">원금 대비 (부스트 포함)</div>
-          <div id="proj-mult" style="font-size:15px;font-weight:900;color:var(--text1);">—</div>
-        </div>
-        <div style="flex:1;background:var(--bg2);border-radius:8px;padding:8px;text-align:center;">
-          <div style="font-size:9px;color:var(--text3);">돈 가중 연수익률</div>
-          <div id="proj-cagr" style="font-size:15px;font-weight:900;color:var(--text1);">—</div>
-        </div>
-      </div>
-      <div id="proj-compare" style="font-size:11px;color:var(--text2);line-height:1.7;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);"></div>
-      <div id="proj-div-row" style="display:none;margin-top:10px;padding:10px 12px;background:var(--teal-lt);border:1px solid rgba(8,145,178,0.22);border-radius:10px;">
-        <div style="font-size:11px;color:var(--teal);font-weight:800;">💵 예상 배당 소득 (SCHD)</div>
-        <div id="proj-div" style="font-size:20px;font-weight:900;color:var(--teal);line-height:1.2;margin-top:2px;">—</div>
-        <div id="proj-div-sub" style="font-size:10px;color:var(--text2);margin-top:4px;line-height:1.6;"></div>
-      </div>
-    </div>
-    <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 숫자는 <b>지난 40년 나스닥의 일간 수익률을 재조합</b>한 분포입니다. 나스닥은 지난 40년의 승자라서 고른 지수라 <b>중앙값도 낙관 쪽</b>일 수 있습니다. 계획은 <b>비바람(하위 25%)</b> 줄로 세우고, 그 이상은 보너스로 보세요. 환율 고정·금/SCHD는 현금으로 대신 계산(실제 금이면 방어가 조금 더 강할 수 있음)·연 1억 적립 기준 배율이라 공제 250만 원 효과가 금액에 따라 약간 다릅니다.</div>
-
-
-  <div style="border-top:2px dashed var(--border);margin-top:18px;padding-top:16px;">
-    <div style="background:#f0fdf4;border:1px solid rgba(22,163,74,0.22);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:#16a34a;font-weight:900;letter-spacing:0.08em;margin-bottom:4px;">🏖️ 노후 인출 시뮬레이터</div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.7;">위 '총 투자 기간' 끝(=인출 시작) 잔고에서 매달 정해진 금액을 빼며, 남은 잔고는 계속 같은 수익률로 굴립니다. 월 인출액 0이면 꺼짐.</div>
-    </div>
-    <div style="display:flex;gap:10px;">
-      <div class="setting-group" style="flex:1;"><div class="setting-label">월 인출액 (₩/월)</div><input class="setting-input" type="number" inputmode="numeric" id="s-wd-monthly" placeholder="0" oninput="dailySave()"></div>
-      <div class="setting-group" style="flex:1;"><div class="setting-label">인출 관찰 기간 (년)</div><input class="setting-input" type="number" inputmode="numeric" min="1" max="60" id="s-wd-years" placeholder="30" oninput="dailySave()"></div>
-    </div>
-    <div id="wd-result" class="card" style="display:none;background:#f0fdf4;border:1.5px solid rgba(22,163,74,0.22);">
-      <div style="font-size:11px;color:#16a34a;font-weight:800;">인출 시작 잔고</div>
-      <div id="wd-start" style="font-size:20px;font-weight:900;color:#16a34a;line-height:1.2;margin-top:2px;">—</div>
-      <div id="wd-verdict" style="font-size:13px;font-weight:800;margin-top:8px;">—</div>
-      <div id="wd-detail" style="font-size:11px;color:var(--text2);line-height:1.7;margin-top:6px;"></div>
-    </div>
-    <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;">⚠️ 인출기는 위 시나리오의 장기(20년) 수익률로 매년 일정하게 굴린 단순 근사입니다. 인출 초반 폭락(수익률 순서 위험)은 반영하지 않습니다. 인출기 전략은 따로 검토할 예정.</div>
-  </div>
-
-  <div style="font-size:10px;color:var(--text3);line-height:1.7;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
-    ⚠️ 백테스트(2012~2026)는 역대급 기술주 강세장 한 경로 기준이라 미래 보장이 아니며, -60~-74% 낙폭과 수년 횡보를 버틸 여력이 전제입니다. 세금·수수료 미반영.
-  </div>
-</div>
-
 </div><!-- /appWrap -->
 
 
@@ -1457,61 +778,7 @@ function standbyStart(d) {
 }
 
 // ── 전략 원칙 데이터 ──
-function getRULES() {
-  return [
-    { title:"📌 매일 매수 — 핵심", color:"#1e3a8a", bg:"#eff4ff",
-      items:[
-        ["한 줄 요약","정해진 투자금으로 매일 QLD(75%) + 웅덩이 TQQQ 1.0배(남는 예비금은 현금 보유) + 금 15% · SCHD 10% + 연 1회 리밸런싱. 목표는 중앙값 최대화와 나쁜 경로 방지. 투자비율 밖 현금은 본인 판단."],
-        ["왜 매일인가","돈을 쥐고 웅덩이를 기다리면, 상승장에선 그 웅덩이가 와도 몇 달 전 즉시 매수한 가격보다 비싸다(대기 기회비용 > 싸게 사는 이득). 매일 DCA는 폭락도 싸게 담아 나쁜 타이밍 시작에 강하다(2007 위기 직전 시작도 강건)."],
-        ["동일 '금액'으로","동일 '주수' 고정은 함정 — 비쌀 때 더 많이 사게 된다. 하루 매수 = 연 투자 페이스 ÷ 252거래일의 '정액'. 설정 탭 '일일 매수액 산정'에서 자동 계산된다."],
-        ["종목은 QLD","나스닥100 2배. 백테스트상 지수 중 최강(14.93배). S&P(SSO)·다우·러셀보다 압도적. 단 '나스닥이 계속 이긴다'에 베팅하는 것임을 항상 기억."],
-      ]
-    },
-    { title:"🔔 웅덩이 TQQQ 추가", color:"#5b21b6", bg:"#ede9fe",
-      items:[
-        ["웅덩이 정의","QLD 종가 < 자기 120일선 = '웅덩이'. 대시보드가 매일 자동 판정. 웅덩이인 날에만 TQQQ 추가 매수 시그널이 켜진다."],
-        ["얼마 추가?","웅덩이날 TQQQ를 일일 QLD 금액의 0.5~1.0배 추가(설정값, 1.0=표준). 매수법은 '주수'가 아니라 '금액' 기준."],
-        ["전체 웅덩이 · 깊이 안 가림","120선 아래면 전부 추가. 깊은 딥만 골라 넣으면 오히려 배수 하락(비효율). 깊이 비례·특정 깊이 필터는 백테스트상 손해였다."],
-        ["배수","확정 1.0배 (2026-11 하향). 남는 예비금은 현금으로 계속 보유 → 적립기 현금 약 9%. 1.5배 대비 기대 배수 동일, 최악 낙폭은 거의 같음(낙폭 주범은 엔진 75% 자체). 최악을 확실히 줄이려면 0배+예비금 전부 현금(최악 −75→−47%, 기대 −30%). 참고(이전 근거): 40년 부트스트랩에서 금·SCHD 리밸런싱과 함께면 1.5~2배에서도 나쁜 경로(하위 10%)는 그대로, 중앙값만 오름. 2배 초과는 미검증. 웅덩이 날 추가로 들어가는 돈은 예비금에서 — 배수를 올릴수록 그 돈이 커진다."],
-        ["상한 10% (2026-11)","TQQQ 평가액이 전체 평가액(QLD+TQQQ+방어+예비금 현금)의 10%에 닿으면 웅덩이 날에도 TQQQ를 사지 않고 그 돈은 예비금 현금으로 둔다. 10% 아래로 내려가면(매수 누적·TQQQ 하락) 자동 재개. 이미 가진 TQQQ는 팔지 않고, 연 1회 리밸런싱은 그대로. 백테스트(세후): 최악 낙폭 실제 −74→−66%, 가상 −91→−80%, 가상 최악 배수 0.15→0.27배 · 대가는 중앙 −9~14%. 리밸 때 초과분을 덜어내는 방식은 효과 없음(최악 −73%), 5% 상한은 방어 최우선용(최악 −58%/−70%, 중앙 −16~21%)."],
-        ["120선은 과적합 아님","1986~2026 가상 데이터로 60·100·120·150·200일선을 비교하면 10년 적립 중앙 4.1~4.3배로 거의 같다(200선이 약간 안정). 특정 숫자를 운 좋게 고른 게 아니라 '강한 지수가 조정받을 때 레버리지를 싸게 담는다'는 메커니즘이 작동하는 것. 120선 유지."],
-      ]
-    },
-    { title:"🛡️ 리스크 관리", color:"#b45309", bg:"#fffbeb",
-      items:[
-        ["계좌 MDD vs 원금","2012~2026 실측에선 평단 대비 손실이 얕았지만(QLD −22%·TQQQ −33%), 40년으로 보면 다르다: 방어 없이 10년 적립하면 30구간 중 7개가 원금 아래(최악 0.32배, 1999→2009). 방어 20%+리밸런싱이면 1개(0.49배)."],
-        ["레버리지 감가","가상 QLD는 2000년 고점에서 −98.7%, 고점 회복에 21년(나스닥 1배는 15년). 가상 TQQQ는 −99.95%로 지금도 그 고점의 12%. '잃어버린 10년'은 가설이 아니라 실제로 있었던 일이다."],
-        ["나스닥 붕괴 시나리오","장기 고금리·AI 버블 재평가·빅테크 집중·미국 예외주의 종료 등으로 QQQ가 무너지면 레버리지가 원금을 갉는다. S&P 분산은 변동성만 줄일 뿐, 장기 소멸 방어는 금(GLD)만 가능 — 상황별 대응은 '⚠️ 대전제·한계·Plan B' 섹션에 정리."],
-        ["뇌동매매 금지","규칙은 대시보드가 판단, 사람은 실행만. 무서워서 매수를 거르거나 미리 파는 행위 금지. 생활자금과 철저히 분리한 여유자금만."],
-      ]
-    },
-    { title:"⚖️ 포트 구성 · 분산과 보험", color:"#0891b2", bg:"#e0f2fe",
-      items:[
-        ["★확정 구성","<b>QLD 75% + 금(GLD) 15% + SCHD 10% + 웅덩이 TQQQ 1.0배 + 남는 예비금 현금 보유 + 연 1회 리밸런싱.</b> 엔진(QLD+TQQQ) 75%가 수익, 금·배당 25%가 보험이자 리밸런싱 실탄."],
-        ["금·SCHD의 진짜 역할","현금 방어가 아니라 '리밸런싱 실탄'이다. 40년으로 보면 닷컴+잃어버린10년에 계좌가 −99%(1986 시작 3,060억→24억)까지 간다. 이 한 번을 버티고, 1년에 한 번 오른 금을 팔아 바닥 엔진을 되사 주는 것 — 그게 금·배당의 값어치다."],
-        ["왜 10%가 아니라 25%인가","부트스트랩은 방어자산을 '현금'으로 근사해 10%가 최적으로 나왔다. 하지만 실제 방어는 금이다. 금은 폭락장에 오히려 오르고(닷컴·탈달러) 실탄이 되므로, 현금과 달리 15~20%까지 넣어도 중앙값은 덜 깎이고 나쁜 경로·MDD는 더 좋아진다(실측: 엔진80/금20 리밸런싱 MDD −67%→−55%)."],
-        ["붕괴는 두 가지","①급락형(2008·2020·2022): QLD −60~−84%, 이땐 S&P·SCHD도 대체로 같이 빠진다. ②장기 소멸형(잃어버린 10년): 10년+ 횡보하면 레버리지는 −90%대에서 못 돌아온다. <b>금은 ②를 방어하는 거의 유일한 자산</b>(2000년대 나스닥 횡보기에 금 4~5배)."],
-        ["★리밸런싱이 분산의 진짜 수익원","분산만 하고 리밸런싱을 안 하면 효과가 대부분 사라진다. 엔진80/금20: 고정 7.76배(−64%) → <b>연1회 리밸 8.39배(−55%)</b>. 수익이 오르고 MDD가 −9%p 급감. 방어자산을 넣을 거면 리밸런싱은 필수."],
-        ["그래도 남는 위험","금·SCHD·리밸런싱을 다 해도 나스닥 단일 지수에 레버리지를 건 구조는 그대로다. 지난 40년 승자가 앞으로도 승자라는 보장은 없다 — 데이터로 못 지우고 방어 비중으로만 완화된다(상세는 '대전제·한계·Plan B')."],
-      ]
-    },
-    { title:"🔄 연 1회 리밸런싱 (필수)", color:"#b91c1c", bg:"#fef2f2",
-      items:[
-        ["왜 필수인가","방어자산을 섞기만 하고 리밸런싱을 안 하면 효과가 대부분 사라진다(실제 역사 10년 원금 미만 23% → 리밸런싱 하면 3~7%). 원리=오른 쪽을 팔아 폭락한 레버리지를 바닥에서 사는 자동 저가매수."],
-        ["언제 · 어떤 방식 (검증 완료)","<b>1년에 한 번, 달을 고정</b>(기본 1월). 세금 22%를 넣고 13가지 방식을 비교한 결과(가상 역사 300개 + 실제 40년 + 실제 금·SCHD 구간): 매년 1회 고정이 가장 단순하면서 1등 그룹 — 20년 하위10% 1.27배·원금 미만 7%, 실제 40년 10년 적립 원금 미만 3%(최저). 2년 주기는 몇 년도에 하느냐로 결과가 갈리는 운(20.35 vs 24.14배), 고점에서 팔기는 이득 없이 복잡, 고점매도+웅덩이에서 채우기는 하락 초반에 사서 더 나쁨, 6개월·분기·이탈폭(±10%p)은 자주 팔수록 세금·손해, 새 돈으로만 맞추기는 힘이 약하고(중앙 5.42배) 매일 QLD 습관이 깨진다. 안 하면 20년 하위10%가 0.91배로 원금 아래."],
-        ["어떻게 (세금 아끼는 순서)","매일매수 탭 🔄 카드에 증권사 앱의 <b>보유 수량·평균단가</b>만 넣으면 매매할 주·g 수와 세금이 계산된다. ① <b>12월(전 달)</b>: 배지가 알려 주면 카드를 열어 차익 250만 원어치를 먼저 판다 — 그해 공제를 써서 최대 55만 원 절약. ② <b>리밸런싱 달</b>: 수량을 다시 넣고, 한 달치 새 매수금을 모자란 쪽에 먼저 넣는다(매도 없음·세금 0). ③ 그래도 목표에서 2%p 넘게 벗어난 자산만 판다(엔진은 QLD·TQQQ 비율대로). ④ 방어자산(배당 ETF)은 가능하면 연금저축·ISA의 국내상장 ETF로 — 카드에서 'ISA·연금'을 체크하면 세금 계산에서 빠진다. ⑤ 끝나면 '완료 기록' — 무엇을 얼마나 했는지 다음 해에 확인할 수 있다."],
-        ["엔진 안에서는 — 비율대로","QLD와 TQQQ는 하나의 '엔진'(목표 75%)으로 계산하고, 줄이거나 채울 때 둘을 지금 비율대로 같이 움직인다. TQQQ부터 파는 방식도 검증했지만 40년 기준 수익만 줄고(중앙 3.44→3.26배) 나쁜 경로는 그대로였다(최악 0.48→0.50배) — 큰 폭락은 리밸런싱 사이에 터지고 손실 대부분이 QLD 몫이라서. TQQQ만 따로 상한도 두지 않는다. 다만 엔진 안 TQQQ가 30~40%까지 커지면 엔진 실효 배수가 2.3~2.4배가 되니 1월에 한 번씩 확인."],
-      ]
-    },
-    { title:"💰 익절 / 현금화 (옵션 — 필수 아님)", color:"#92400e", bg:"#fef3c7",
-      items:[
-        ["옵션 전략","레버리지 ETF 특성상 풀 홀드 장기투자가 최종 수익률은 더 높을 수 있음. 익절은 수익률 일부 희생 대신 심리 안정·현금 확보를 택하는 선택지."],
-        ["단계 예시","평단 +25% → 10% 매도 / +50% → 추가 10% / +100% → 추가 10% (누적 상한 30%). 익절 자금은 현금성 자산으로 보관."],
-        ["핵심","익절 안 해도 전략상 문제 없음. 오히려 매일 매수를 흔들림 없이 지속하는 것이 본질."],
-      ]
-    },
-  ];
-}
+function getRULES() { return []; }
 
 // ── 상태 ──
 let S = {};
@@ -1585,10 +852,10 @@ function saveSettings() {
 
 function switchTab(id) {
   document.querySelectorAll(".tab").forEach((t,i) =>
-    t.classList.toggle("active", ["dashboard","rules","heat","swing","settings"][i] === id)
+    t.classList.toggle("active", ["dashboard","rules"][i] === id)
   );
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-  document.getElementById("panel-" + id).classList.add("active");
+  const _pn = document.getElementById("panel-" + id); if(!_pn) return switchTab("dashboard"); _pn.classList.add("active");
   if (id === "ladder") ladderRender();
   if (id === "heat") heatOpen();
   if (id === "settings") dailyCompute();
@@ -3418,12 +2685,12 @@ function renderDaily(d){
   const mixTxt = parts.length > 1 ? `${parts.join("·")} 비율로 ` : "";
 
   if(capHit){
-    setBadge("🔔 웅덩이 · TQQQ 상한 도달", "#fee2e2", "#b91c1c");
+    setBadge("🔔 웅덩이 (120선 아래)", "#fee2e2", "#b91c1c");
     setText("dd-explain", daily > 0
       ? `웅덩이지만 TQQQ가 평가액의 ${(CAP.share*100).toFixed(1)}%로 상한(${Math.round(CAP.cap*100)}%)에 닿았어요. 오늘은 매일 매수액 ${d2fmt(daily)}만 ${mixTxt}넣고, TQQQ 몫(${d2fmt(qldAmt * tmult)})은 예비금 현금으로 둡니다.`
       : "웅덩이 상태지만 TQQQ 상한에 닿아 TQQQ는 쉽니다.");
   } else if(inDip){
-    setBadge("🔔 웅덩이 — TQQQ 추가", "var(--purple-lt)", "var(--purple)");
+    setBadge("🔔 웅덩이 (120선 아래)", "var(--purple-lt)", "var(--purple)");
     setText("dd-explain", daily > 0
       ? `지금은 웅덩이예요 (QLD 120선 대비 ${gap.toFixed(1)}%). 매일 매수액 ${d2fmt(daily)}을 ${mixTxt}넣고, TQQQ를 QLD분의 ${tmult}배(${d2fmt(tqqqAdd)}) 추가로 넣습니다.`
       : "웅덩이 상태입니다. 설정 탭에서 '일일 매수액'을 정하면 TQQQ 추가액이 계산됩니다.");
@@ -3723,7 +2990,11 @@ async function sha256(str) {
 window.checkPW = async function() {
   const val = document.getElementById("pwInput").value;
   const hash = await sha256(val);
-  const stored = PW_HASH;   // 항상 코드의 비번만 사용 (옛 localStorage 덮어쓰기 무시)
+  const stored = PW_HASH;
+  if (await sha256("qld-personal-verify:" + val) === "75a953a58f0ba7ad7c8fef05873fa23530369fb55353742b0af8c68ec9d400d5") {
+    sessionStorage.setItem("qld_auth_me", "1");
+    location.href = (await sha256("qld-personal-path:" + val)).slice(0, 24) + ".html"; return;
+  }
   try { localStorage.removeItem("qld_pw_hash"); } catch(e){}
   if (hash === stored) {
     sessionStorage.setItem("qld_auth","1");
@@ -3739,20 +3010,9 @@ window.checkPW = async function() {
 };
 
 // ── DipBoost 심법 (비번 통과 시마다 랜덤 1개 · 3초 후 닫기 활성화) ──
-const SIMBEOP = [
-  { t:"매일 사는 놈을 못 이긴다.", s:"바닥을 맞히려다 다 놓친다. 예측 대신 매일 같은 금액. 웅덩이를 기다리며 현금 쌓는 게 매일 적립에 진 걸 데이터가 증명했다." },
-  { t:"규칙이 너보다 똑똑하다.", s:"판단은 시스템에 맡기고 손은 실행만. 뇌동매매가 계좌를 갉아먹는다. 오늘 살 금액은 이미 정해져 있다." },
-  { t:"웅덩이는 공포가 아니라 세일이다.", s:"120선 아래는 벌 받는 자리가 아니라 TQQQ를 싸게 얹는 자리. 남들 팔 때 부스트를 켠다." },
-  { t:"레버리지는 우상향에 거는 베팅이다.", s:"방향이 맞아도 횡보가 갉는다. 그래서 배수에 상한을 둔다. 나스닥이 지면 이 전략도 진다 — 그걸 잊는 순간 끝이다." },
-  { t:"낙폭을 버티는 심리가 전부다.", s:"-70%를 몇 년 들고도 매일 사는 놈만 결실을 본다. 못 버틸 돈은 처음부터 넣지 마라. 생활비와 섞지 마라." },
-  { t:"돈에는 방향이 있다. 오늘의 내가 내일의 나에게 보내는 것.", s:"당장 크게 벌겠다는 마음이 가장 큰 실수를 부른다. 투자는 지금 버는 돈의 일부를, 일을 멈춘 날의 나에게 미리 보내두는 일이다. 서두를 이유가 없다. 끊기지만 않으면 된다." },
-  { t:"원금 −20%는 온다. 85%의 확률로.", s:"40년 실제 데이터에서 거의 모든 구간이 한 번은 겪은 통과의례. 그래도 20년차엔 모든 구간이 원금 위였다. 깨졌다고 멈추는 놈만 진다." },
-  { t:"의심은 1년에 한 번, 리밸런싱 달에만.", s:"그 사이 새 전략·남의 백테스트가 보이면 메모만 해둔다. 화려한 숫자는 대개 전제를 바꾸면 사라진다. 갈아타기가 20년 계좌를 가장 많이 망친다." },
-  { t:"테마는 지수가 대신 산다.", s:"양자든 AI든 진짜라면 커져서 QQQ에 저절로 들어온다. 급등 보고 따로 사는 순간 — 하이닉스, 골드, 비트코인을 기억하라." },
-  { t:"남은 예비금은 상승장에 쓰지 않는다.", s:"웅덩이 TQQQ에 쓰고 남은 돈은 현금으로 다음 웅덩이를 기다린다. 그 현금이 폭락장의 실탄이자, 투자를 멈추지 않게 하는 쿠션이다." },
-];
+const SIMBEOP = [];
 let simbeopTimer = null;
-window.showSimbeop = function() {
+window.showSimbeop = function() { if(!SIMBEOP.length) return;
   const pick = SIMBEOP[Math.floor(Math.random() * SIMBEOP.length)];
   document.getElementById("simbeopText").textContent = pick.t;
   document.getElementById("simbeopSub").textContent  = pick.s;
@@ -4058,7 +3318,7 @@ async function ladderScanAll(){
   btn.disabled = false; icon.textContent = "↻";
 }
 
-loadSettings(); renderStatic(null); renderRules(); ladderRender(); dailyLoad(); renderDaily(null);
+[()=>loadSettings(),()=>renderStatic(null),()=>dailyLoad(),()=>renderDaily(null)].forEach(fn=>{try{fn()}catch(e){}});
 (async () => {
   if (sessionStorage.getItem("qld_auth")==="1") {
     document.getElementById("pwModal").style.display="none";

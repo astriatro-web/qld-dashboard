@@ -2072,6 +2072,36 @@ function goldPrice(){
   if(GOLD && GOLD.data && GOLD.data.price) return { p: GOLD.data.price, src: GOLD.data.source, d: GOLD.data };
   return null;
 }
+// ══ 미국장(NYSE·나스닥) 휴장일 — NYSE 공식 발표(2026~2028). 2029년부터는 목록 추가 필요 ══
+const US_HOL_LAST_YEAR = 2028;
+const US_HOLIDAYS = new Set([
+  "2026-01-01","2026-01-19","2026-02-16","2026-04-03","2026-05-25","2026-06-19","2026-07-03","2026-09-07","2026-11-26","2026-12-25",
+  "2027-01-01","2027-01-18","2027-02-15","2027-03-26","2027-05-31","2027-06-18","2027-07-05","2027-09-06","2027-11-25","2027-12-24",
+  "2028-01-17","2028-02-21","2028-04-14","2028-05-29","2028-06-19","2028-07-04","2028-09-04","2028-11-23","2028-12-25"
+]);
+const US_HALF_DAYS = new Set(["2026-11-27","2026-12-24","2027-11-26","2028-07-03","2028-11-24"]);   // 오후 1시(ET) 조기 폐장
+const US_HOL_NAME = { "01-01":"새해", "07-03":"독립기념일(대체)", "07-04":"독립기념일", "07-05":"독립기념일(대체)", "06-18":"준틴스(대체)", "06-19":"준틴스", "12-24":"크리스마스(대체)", "12-25":"크리스마스" };
+function usHolName(ymd){
+  const md = ymd.slice(5), d = new Date(ymd + "T00:00:00"), m = d.getMonth() + 1, w = d.getDay();
+  if(US_HOL_NAME[md]) return US_HOL_NAME[md];
+  if(m === 1) return "마틴 루서 킹 데이"; if(m === 2) return "대통령의 날"; if(m === 3 || m === 4) return "성금요일";
+  if(m === 5) return "메모리얼 데이"; if(m === 9) return "노동절"; if(m === 11 && w === 4) return "추수감사절";
+  return "미국 공휴일";
+}
+function usYmd(dt){ return (dt || new Date()).toLocaleDateString("en-CA", { timeZone: "America/New_York" }); }
+function usClosed(ymd){ const w = new Date(ymd + "T00:00:00").getDay(); return w === 0 || w === 6 || US_HOLIDAYS.has(ymd); }
+function usToday(){
+  const ymd = usYmd(), w = new Date(ymd + "T00:00:00").getDay();
+  if(w === 0 || w === 6) return { ymd, closed: true, label: "🏖️ 주말 — 미국장 휴장", why: "주말" };
+  if(US_HOLIDAYS.has(ymd)) return { ymd, closed: true, label: `🇺🇸 미국장 휴장 · ${usHolName(ymd)}`, why: usHolName(ymd) };
+  return { ymd, closed: false, half: US_HALF_DAYS.has(ymd) };
+}
+function usTradingDays(from, to){
+  let n = 0; const a = new Date(from + "T00:00:00"), b = new Date(to + "T00:00:00");
+  for(let x = new Date(a); x <= b; x.setDate(x.getDate() + 1)){ if(!usClosed(goldYmd(x))) n++; }
+  return n;
+}
+
 // KRX 휴장일(평일만 의미 있음): 공휴일·대체공휴일·선거일·근로자의날·연말휴장(12/31). 2028년부터는 목록 추가 필요
 const KRX_HOLIDAYS = new Set([
   // 2026
@@ -2214,16 +2244,20 @@ function tqCapState(){
   const on = S.tqCapOn !== false, cap = (d2num(S.tqCapPct) || 10) / 100;
   let P = null; try { P = rbPlan(); } catch(e){}
   const cash = Math.max(0, d2num(S.pfResCash) || 0);
-  if(!P) return { on, cap, known:false, share:0, tqV:0, tot:cash, cash, P:null };
+  // 시작 1년 예외: 자산이 작을 땐 1주만 사도 상한을 넘으므로 매수 시작일부터 12개월은 상한 미적용 (백테스트상 결과 차이 없음)
+  let graceEnd = null;
+  if(S.pfStart && /^\d{4}-\d{2}-\d{2}$/.test(S.pfStart)){ const g = new Date(S.pfStart + "T00:00:00"); g.setFullYear(g.getFullYear() + 1); if(new Date() < g) graceEnd = g; }
+  const grace = !!graceEnd;
+  if(!P) return { on, cap, known:false, share:0, tqV:0, tot:cash, cash, P:null, grace, graceEnd };
   const tq = P.A.find(a => a.k === "tq"), tqV = tq ? tq.v : 0, tot = P.V + cash;
   const known = !!(tq && tq.sh > 0 && tq.uPx > 0) || (tq && tq.sh === 0 && tot > 0);
-  return { on, cap, known, share: tot > 0 ? tqV / tot : 0, tqV, tot, cash, P };
+  return { on, cap, known, share: tot > 0 ? tqV / tot : 0, tqV, tot, cash, P, grace, graceEnd };
 }
 function pfPrincipal(){
   const man = d2num(S.pfPrin);
   if(man > 0) return { v: man, est: false };
   if(!S.pfStart || !/^\d{4}-\d{2}-\d{2}$/.test(S.pfStart)) return { v: 0, est: true };
-  const days = goldWeekdays(S.pfStart, goldToday());
+  const days = usTradingDays(S.pfStart, usYmd());   // QLD 매일 매수 = 미국장 거래일
   const st = new Date(S.pfStart + "T00:00:00"), now = new Date();
   const months = Math.max(0, (now.getFullYear() - st.getFullYear()) * 12 + now.getMonth() - st.getMonth() + 1);
   return { v: days * (d2num(S.dailyBuy) || 0) + months * (d2num(S.pfResM) || 0), est: true, days, months };
@@ -2264,7 +2298,7 @@ function renderPf(){
   }
   const inp = "width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12.5px;font-family:inherit;background:var(--bg2,#fff);color:var(--text1);";
   const pr = pfPrincipal(), tot = C.tot, pl = pr.v > 0 && tot > 0 ? tot / pr.v - 1 : null;
-  const sharePct = C.share * 100, over = C.on && C.known && C.share >= C.cap;
+  const sharePct = C.share * 100, over = C.on && !C.grace && C.known && C.share >= C.cap;
   const barW = Math.min(100, sharePct / Math.max(capPct * 2, 1) * 100), capX = 50;
   const noHold = !C.P || C.P.V <= 0;
   body.innerHTML = `
@@ -2284,6 +2318,7 @@ function renderPf(){
       <div style="font-size:11px;margin-top:6px;line-height:1.6;color:${over ? "#b91c1c" : "var(--text2)"};font-weight:${over ? 800 : 500};">${
         !C.on ? "상한 꺼짐 — 웅덩이마다 TQQQ를 삽니다." :
         !C.known ? "TQQQ 시세를 불러오는 중이거나 보유 수량이 없습니다." :
+        C.grace ? `🌱 시작 1년 예외 (${C.graceEnd.getFullYear()}.${C.graceEnd.getMonth()+1}.${C.graceEnd.getDate()}까지) — 아직 자산이 작아 1주만 사도 상한을 넘기 때문에, 첫 1년은 상한 없이 웅덩이마다 TQQQ를 삽니다. 그 뒤부터 ${capPct}% 상한이 켜집니다.` :
         over ? `⛔ 상한 도달 — 웅덩이가 와도 TQQQ는 쉬고, 그 돈은 예비금 현금으로 둡니다. ${capPct}% 아래로 내려가면 자동으로 다시 켜집니다.` :
         `✅ 상한 아래 — 웅덩이 날 TQQQ 매수 켜짐 (상한까지 약 ${eokFmt(Math.max(0, C.cap * tot - C.tqV))} 여유)`}</div>
     </div>`}
@@ -2685,9 +2720,10 @@ function renderDaily(d){
 
   const qld = d.qld, ma120 = d.ma120;
   const inDip = (ma120 != null && qld < ma120);
-  const CAP = tqCapState(), capHit = inDip && CAP.on && CAP.known && CAP.share >= CAP.cap;
-  const tqqqAdd = inDip && !capHit ? qldAmt * tmult : 0;
-  const total = daily + tqqqAdd;
+  const CAP = tqCapState(), capHit = inDip && CAP.on && !CAP.grace && CAP.known && CAP.share >= CAP.cap;
+  const USD = usToday();
+  const tqqqAdd = inDip && !capHit && !USD.closed ? qldAmt * tmult : 0;
+  const total = USD.closed ? 0 : daily + tqqqAdd;
   const gap = ma120 ? (qld - ma120) / ma120 * 100 : null;
   const parts = [];
   if(qldW > 0) parts.push(`QLD ${Math.round(qldW)}`);
@@ -2712,11 +2748,17 @@ function renderDaily(d){
       ? `지금은 평상시예요 (QLD 120선 위 +${gap.toFixed(1)}%). 매일 매수액 ${d2fmt(daily)}을 ${mixTxt}넣습니다. QLD가 120선 아래로 내려가면 TQQQ 추가 시그널이 켜집니다.`
       : "평상시입니다. 설정 탭에서 '일일 매수액'을 먼저 정하세요.");
   }
-  setText("dd-total", daily > 0 ? d2fmt(total) : "설정 필요");
-  setText("dd-qld-amt", daily > 0 ? d2fmt(qldAmt) : "—");
+  if(USD.closed){
+    setBadge(USD.label, "var(--bg3)", "var(--text2)");
+    setText("dd-explain", `오늘(뉴욕 ${USD.ymd.slice(5).replace("-","/")})은 ${USD.why === "주말" ? "주말이라" : USD.why + " 휴장일이라"} 미국장이 열리지 않아요. 따로 살 것 없음.${inDip ? " 웅덩이 상태는 그대로라 다음 거래일에 TQQQ 추가가 이어집니다." : ""}`);
+  } else if(USD.half){
+    const ex = document.getElementById("dd-explain"); if(ex) ex.textContent += " ⏰ 오늘은 미국장 조기 폐장(뉴욕 오후 1시 = 한국 새벽 3시) — 주문은 그 전에.";
+  }
+  setText("dd-total", daily > 0 ? (USD.closed ? "휴장 · 0원" : d2fmt(total)) : "설정 필요");
+  setText("dd-qld-amt", USD.closed ? "– 휴장" : daily > 0 ? d2fmt(qldAmt) : "—");
   setText("dd-sso-amt", PW.out ? "매수 안 함 · 연 1회 리밸런싱" : (ssoW > 0 ? d2fmt(ssoAmt) : "—"));
   setText("dd-gld-amt", gldW > 0 ? d2fmt(gldAmt) + " 적립" : "—");
-  setText("dd-tqqq-amt", capHit ? "쉬기 · 상한 도달" : inDip ? (daily > 0 ? "+" + d2fmt(tqqqAdd) : "웅덩이 (금액 미설정)") : "– (웅덩이 아님)");
+  setText("dd-tqqq-amt", USD.closed ? "– 휴장" : capHit ? "쉬기 · 상한 도달" : inDip ? (daily > 0 ? "+" + d2fmt(tqqqAdd) : "웅덩이 (금액 미설정)") : "– (웅덩이 아님)");
   setText("dd-total2", daily > 0 ? d2fmt(total) : "—");
   renderFx(daily, tqqqAdd, d.usdkrw, gldAmt);
   renderGold(gldAmt);
@@ -4498,6 +4540,7 @@ document.getElementById("pwInput").addEventListener("focus", () => { document.ge
     if(!daily){ out.innerHTML = "<div style='font-size:12px;color:var(--text3);'>하루에 넣을 금액을 적으면 오늘 살 금액이 나와요.</div>"; return; }
     var d = (typeof MD !== "undefined") ? MD : null;
     if(!d || d.qld == null){ out.innerHTML = "<div style='font-size:12px;color:var(--text3);'>시세를 불러오는 중… (상단 새로고침)</div>"; return; }
+    if(typeof usToday === "function"){ var U = usToday(); if(U.closed){ out.innerHTML = "<div style='font-size:13px;font-weight:800;color:var(--text1);padding:6px 0;'>" + U.label + "</div><div style='font-size:12px;color:var(--text2);line-height:1.6;'>오늘은 미국장이 열리지 않아 살 것 없음. 다음 거래일에 평소대로 사면 돼요.</div>"; return; } }
     var fx = d.usdkrw || 0, dip = d.ma120 != null && d.qld < d.ma120;
     var h = row("QLD", won(daily) + sh(daily, d.qld, fx), "var(--blue)");
     if(dip) h += row("TQQQ (웅덩이 추가)", "+" + won(daily) + sh(daily, d.tqqq, fx), "var(--purple)");
